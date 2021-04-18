@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "HOjaagmnsaaBnonFdOzDfx/8wMw+5tDIzXHain68TjMxPY6pW7mhX7R2Fcev2qa9ztWFNaVCPVRBrCyt40g+ow==",
+  "dgSpecHash": "DccTGtR5FO/2u5goF1gWRHM9epyddETToQr6b2nSeoK4Aw9d4S8hv6uyjCWglu1ikW14OKV3F49ND4unnav7ww==",
   "success": true,
   "projectFilePath": "E:\\Lab&Excercises\\NetworkProgramming\\Project\\Emeow\\Emeow\\Emeow.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "C:\\Program Files (x86)\\Microsoft SDKs\\UWPNuGetPackages\\microsoft.net.uwpcoreruntimesdk\\2.2.11\\microsoft.net.uwpcoreruntimesdk.2.2.11.nupkg.sha512",
     "C:\\Program Files (x86)\\Microsoft SDKs\\UWPNuGetPackages\\microsoft.netcore.platforms\\2.1.0\\microsoft.netcore.platforms.2.1.0.nupkg.sha512",
     "C:\\Program Files (x86)\\Microsoft SDKs\\UWPNuGetPackages\\microsoft.netcore.universalwindowsplatform\\6.2.11\\microsoft.netcore.universalwindowsplatform.6.2.11.nupkg.sha512",
+    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.ui.xaml\\2.5.0\\microsoft.ui.xaml.2.5.0.nupkg.sha512",
     "C:\\Program Files (x86)\\Microsoft SDKs\\UWPNuGetPackages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
     "C:\\Program Files (x86)\\Microsoft SDKs\\UWPNuGetPackages\\runtime.win10-arm-aot.microsoft.netcore.universalwindowsplatform\\6.2.11\\runtime.win10-arm-aot.microsoft.netcore.universalwindowsplatform.6.2.11.nupkg.sha512",
     "C:\\Program Files (x86)\\Microsoft SDKs\\UWPNuGetPackages\\runtime.win10-arm.microsoft.net.native.compiler\\2.2.9-rel-29512-01\\runtime.win10-arm.microsoft.net.native.compiler.2.2.9-rel-29512-01.nupkg.sha512",

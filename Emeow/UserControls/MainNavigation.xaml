@@ -1,0 +1,103 @@
+﻿<UserControl
+    x:Class="Emeow.UserControls.MainNavigation"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Emeow.UserControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxmedia="using:Microsoft.UI.Xaml.Media"
+    xmlns:usr="using:Emeow.User"
+    xmlns:ci="using:Emeow.ControlItems"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <muxmedia:AcrylicBrush 
+                        x:Key ="NavigationViewExpandedPaneBackground"
+                        BackgroundSource="HostBackdrop"
+                        FallbackColor="White"
+                        TintColor="{ThemeResource SystemChromeWhiteColor}"
+                        TintOpacity="0.6"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <DataTemplate
+                x:Key="NewMailNavItem" 
+                x:DataType="usr:MailItem">
+                <muxc:NavigationViewItem 
+                    BorderThickness="0.8"
+                    CanDrag="False"
+                    Content="{x:Bind Content}"
+                    Tag="{x:Bind Tag}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind Glyph}"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+
+            <DataTemplate
+                x:Key="AccountsNavItem" 
+                x:DataType="usr:AccountItem">
+                <muxc:NavigationViewItem
+                    BorderThickness ="0.8"
+                    Content="{x:Bind Content}"
+                    Tag="{x:Bind Tag}"
+                    MenuItemsSource="{x:Bind Child}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind Glyph}"/>
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+
+            <DataTemplate 
+                x:Key="SpaceSeparatorNavItem" 
+                x:DataType="ci:SpaceSeparatorItem">
+                <muxc:NavigationViewItemHeader
+                    Content=""
+                    MaxHeight="12"/>
+            </DataTemplate>
+            <local:NavigationItemDataTemplateSelector
+                x:Key="NavItemSelector"
+                NewMailNavigationItemTemplate="{StaticResource NewMailNavItem}"
+                AccountNavigationItemTemplate="{StaticResource AccountsNavItem}"
+                SpaceSeparatorNavigationItemTemplate="{StaticResource SpaceSeparatorNavItem}"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <muxc:NavigationView 
+            x:Name="MainNavigationView"                
+            IsBackButtonVisible="Collapsed"
+            IsTitleBarAutoPaddingEnabled="False"
+            MenuItemTemplateSelector="{StaticResource NavItemSelector}"
+            MenuItemsSource="{x:Bind Items}"
+            
+            ItemInvoked="MainNavigationView_ItemInvoked">
+
+            <muxc:NavigationView.PaneHeader>
+                <muxc:NavigationViewItemHeader
+                x:Name="AppTitle"
+                Content="Emeow"
+                FontSize="70"
+                VerticalAlignment="Center"/>
+            </muxc:NavigationView.PaneHeader>
+
+            <ScrollViewer>
+                <Frame
+                x:Name="ContentFrame"
+                Background="{StaticResource PageBackgroundColorDefaultBrush}">
+                    <Frame.ContentTransitions>
+                        <TransitionCollection>
+                            <NavigationThemeTransition />
+                        </TransitionCollection>
+                    </Frame.ContentTransitions>
+                </Frame>
+            </ScrollViewer>
+        </muxc:NavigationView>
+    </Grid>
+</UserControl>
