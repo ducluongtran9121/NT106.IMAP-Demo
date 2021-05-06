@@ -1,2 +1,0 @@
-E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Emeow.csproj;x64
-E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\EmeowDatabase\EmeowDatabase.csproj;x64
