@@ -1,20 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.ApplicationModel.Core;
-using System.Diagnostics;
 using Windows.UI.Text;
 
 namespace Emeow.Pages
@@ -40,11 +29,9 @@ namespace Emeow.Pages
         public bool IsEdittingRichEditBoxText
         {
             get { return _isEdittingRichEditBoxText; }
-
             set
             {
                 _isEdittingRichEditBoxText = value;
-
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsEdittingRichEditBoxText"));
             }
         }
@@ -56,7 +43,6 @@ namespace Emeow.Pages
             set
             {
                 _canUndo = value;
-
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CanUndo"));
             }
         }
@@ -68,7 +54,6 @@ namespace Emeow.Pages
             set
             {
                 _canRedo = value;
-
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CanRedo"));
             }
         }
@@ -125,46 +110,40 @@ namespace Emeow.Pages
 
         private void UndoButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CanUndo)
+            if (Editor.Document.CanUndo())
             {
                 Editor.Document.Undo();
+                Editor.Focus(FocusState.Programmatic);
             }
         }
 
         private void RedoButton_Click(object sender, RoutedEventArgs e)
         {
-            if (CanRedo)
+            if (Editor.Document.CanRedo())
             {
                 Editor.Document.Redo();
+                Editor.Focus(FocusState.Programmatic);
             }
         }
 
-        private void Editor_GettingFocus(UIElement sender, GettingFocusEventArgs args)
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            IsEdittingRichEditBoxText = false;
+            CanUndo = false;
+            CanRedo = false;
+        }
+
+        private void Editor_GotFocus(object sender, RoutedEventArgs e)
         {
             IsEdittingRichEditBoxText = true;
             CanUndo = Editor.TextDocument.CanUndo();
             CanRedo = Editor.TextDocument.CanRedo();
         }
 
-        private void TextBox_GettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            IsEdittingRichEditBoxText = false;
-        }
-
         private void Editor_TextChanged(object sender, RoutedEventArgs e)
         {
             CanUndo = Editor.TextDocument.CanUndo();
             CanRedo = Editor.TextDocument.CanRedo();
-        }
-
-        private void Editor_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
-        private void Editor_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            
         }
 
         private void Editor_SelectionChanging(RichEditBox sender, RichEditBoxSelectionChangingEventArgs args)
@@ -182,7 +161,6 @@ namespace Emeow.Pages
                 {
                     BoldButton.IsChecked = false;
                     BoldButton.Background = (SolidColorBrush)App.Current.Resources["ControlColorLowBrush"];
-                    Debug.Print("ngu");
                 }
 
                 if (textCharacterFormat.Italic == FormatEffect.On)

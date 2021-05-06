@@ -1,24 +1,12 @@
 ﻿using Emeow.ControlItems;
-using Emeow.User;
 using Emeow.Pages;
+using Emeow.Dialog;
+using EmeowDatabase;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Controls;
-
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Emeow.UserControls
 {
@@ -37,15 +25,63 @@ namespace Emeow.UserControls
         public MainNavigation()
         {
             this.InitializeComponent();
+
+            InitializeNavItems();
+
             CompactWidth = MainNavigationView.CompactPaneLength.ToString();
-            Items.Add(new MailItem { Content = "New Mail", Glyph = "\xE948", ItemType = NavigationControlItemType.NewMail, Tag = "Nav_NewMail" });
-            Items.Add(new SpaceSeparatorItem { Content = "", Glyph = "", ItemType = NavigationControlItemType.SpaceSeparator, Tag = "nfu" });
-            Items.Add(new AccountItem { Content = "Account", Glyph = "\xE77B", ItemType = NavigationControlItemType.Account, Tag = "Nav_Account", 
-                Child = new ObservableCollection<INavigationControlItem>() { new MailItem { Content = "ng8", Glyph = "\xE77B", ItemType = NavigationControlItemType.NewMail } }
-            });;
         }
 
-        private void MainNavigationView_ItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
+        private void InitializeNavItems()
+        {
+            Items.Add(new NavItem()
+            {
+                Content = "New Mail",
+                Glyph = "\xE948",
+                Tag = "Nav_NewMail",
+                SelectOnInvoked = false,
+            });
+            Items.Add(new NavSeparatorItem());
+            Items.Add(new NavListItem()
+            {
+                Content = "Accounts",
+                Glyph = "\xE77B",
+                Tag = "Nav_Account",
+                Child = new ObservableCollection<INavigationControlItem>()
+                {
+                    new NavItem
+                    {
+                        Content = "Add account",
+                        Glyph = "\xE8FA",
+                        Tag = "Nav_Add_Account",
+                        SelectOnInvoked = false
+                    }
+                }
+            });
+        }
+
+        private async void MainNavigationView_Loaded(object sender, RoutedEventArgs e)
+        {
+            List<List<string>> data = await Database.GetTableData(Database.Table.Accounts);
+
+            try
+            {
+                NavListItem accounts = Items[2] as NavListItem;
+
+                foreach (List<string> i in data)
+                {
+                    accounts.Child.Insert(accounts.Child.Count - 1, new NavAccountItem
+                    {
+                        Address = i[0] + "@" + i[1],
+                        Content = i[2],
+                        Tag = "Nav_Account_" + (accounts.Child.Count - 1).ToString(),
+                        Glyph = i[4],
+                    });
+                }
+            }
+            catch(Exception) { }
+        }
+
+        private async void MainNavigationView_ItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
             {
@@ -59,21 +95,64 @@ namespace Emeow.UserControls
                     switch (item.Tag.ToString())
                     {
                         case "Nav_NewMail":
-                            ContentFrame.Navigate(typeof(NewMailPage));
+                            if (ContentFrame.CurrentSourcePageType != typeof(NewMailPage))
+                            {
+                                ContentFrame.Navigate(typeof(NewMailPage));
+                            }
                             break;
+
                         case "Nav_Account":
+                            break;
+
+                        case "Nav_Add_Account":
+                            SigninDialog signinDialog = new SigninDialog();
+                            await signinDialog.ShowAsync();
+
+                            if (signinDialog.Account != null)
+                            {
+                                NavListItem accounts = Items[2] as NavListItem;
+
+                                signinDialog.Account.Tag = "Nav_Account_" + accounts.Child.Count.ToString();
+
+                                accounts.Child.Insert(accounts.Child.Count - 1, signinDialog.Account);
+                            }
+                            break;
+                           
+                        default:
                             break;
                     }
                 }
 
             }
         }
+
+        private void NavAccountItem_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            Microsoft.UI.Xaml.Controls.NavigationViewItem item = sender as Microsoft.UI.Xaml.Controls.NavigationViewItem;
+
+            (NavAccountItemFlyout.Items[0] as MenuFlyoutItem).Click += (sender, e) =>
+            {
+                NavListItem list = Items[2] as NavListItem;
+
+                list.Child.Remove(list.Child[int.Parse(item.Tag.ToString()[item.Tag.ToString().Length - 1].ToString())]);
+
+                for (int i = 0; i < list.Child.Count; i++)
+                {
+                    list.Child[i].Tag = "Nav_Account_" + i.ToString();
+                }
+            };
+
+            item.ContextFlyout = NavAccountItemFlyout;
+            item.ContextFlyout.ShowAt(item);
+        }
     }
+
     public class NavigationItemDataTemplateSelector : DataTemplateSelector
     {
-        public DataTemplate NewMailNavigationItemTemplate { get; set; }
-        public DataTemplate AccountNavigationItemTemplate { get; set; }
-        public DataTemplate SpaceSeparatorNavigationItemTemplate { get; set; }
+        public DataTemplate NavigationItemTemplate { get; set; }
+        public DataTemplate NavigationListItemTemplate { get; set; }
+        public DataTemplate NavigationAccountItemTemplate { get; set; }
+        public DataTemplate NavigationSeparatorItemTemplate { get; set; }
 
         protected override DataTemplate SelectTemplateCore(object item)
         {
@@ -83,14 +162,17 @@ namespace Emeow.UserControls
 
                 switch (navigationControlItem.ItemType)
                 {
-                    case NavigationControlItemType.NewMail:
-                        return NewMailNavigationItemTemplate;
+                    case NavigationControlItemType.NavItem:
+                        return NavigationItemTemplate;
 
-                    case NavigationControlItemType.Account:
-                        return AccountNavigationItemTemplate;
+                    case NavigationControlItemType.NavList:
+                        return NavigationListItemTemplate;
 
-                    case NavigationControlItemType.SpaceSeparator:
-                        return SpaceSeparatorNavigationItemTemplate;
+                    case NavigationControlItemType.NavSeparator:
+                        return NavigationSeparatorItemTemplate;
+
+                    case NavigationControlItemType.NavAccount:
+                        return NavigationAccountItemTemplate;
                 }
             }
             return null;

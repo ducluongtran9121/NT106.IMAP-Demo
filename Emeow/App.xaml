@@ -14,8 +14,12 @@
                             <SolidColorBrush x:Key="PageBackgroundColorLowBrush" Color="#FFF3F3F3"/>
                             <SolidColorBrush x:Key="ControlColorDefaultBrush" Color="#B3FFFFFF"/>
                             <SolidColorBrush x:Key="ControlColorLowBrush" Color="#FFF3F3F3"/>
+                            <SolidColorBrush x:Key="ControlColorMediumBrush" Color="#FFF7F7F7"/>
                             <SolidColorBrush x:Key="ControlColorPointerOverBrush" Color="#FFF3F3F3"/>
+                            <SolidColorBrush x:Key="ControlFillColorTransparentBrush" Color="#00FFFFFF"/>
                             <SolidColorBrush x:Key="TextSelectionHighlightColorDefaultBrush" Color="#DACCCCCC"/>
+                            <Color x:Key="SolidBackgroundAcrylic">#FFFFFF</Color>
+                            <Color x:Key="SolidFallbackBackground">#50FFFFFF</Color>
                         </ResourceDictionary>
                     </ResourceDictionary.ThemeDictionaries>
                 </ResourceDictionary>

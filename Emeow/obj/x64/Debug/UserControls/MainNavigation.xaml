@@ -1,0 +1,148 @@
+﻿<UserControl x:ConnectionId='1'
+    x:Class="Emeow.UserControls.MainNavigation"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Emeow.UserControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:ci="using:Emeow.ControlItems"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <AcrylicBrush 
+                        x:Key ="NavigationViewExpandedPaneBackground"
+                        BackgroundSource="HostBackdrop"
+                        FallbackColor="{StaticResource SolidFallbackBackground}"
+                        TintColor="{StaticResource SolidBackgroundAcrylic}"
+                        TintOpacity="0.8"
+                        TintLuminosityOpacity=".85"/>
+                    <AcrylicBrush 
+                        x:Key ="NavigationViewDefaultPaneBackground"
+                        BackgroundSource="HostBackdrop"
+                        FallbackColor="{StaticResource SolidFallbackBackground}"
+                        TintColor="{StaticResource SolidBackgroundAcrylic}"
+                        TintOpacity="0.8"
+                        TintLuminosityOpacity="0.85"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <DataTemplate
+                x:Key="NavItem" 
+                                       >
+                <muxc:NavigationViewItem x:ConnectionId='14' 
+                    BorderThickness="0.8"
+                                              
+                    CanDrag="False"
+                                                               
+                                      >
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon x:ConnectionId='15'                       />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+
+            <DataTemplate
+                x:Key="NavListItem" 
+                                           >
+                <muxc:NavigationViewItem x:ConnectionId='11'
+                    BorderThickness ="0.8"
+                                              
+                    CanDrag="False"
+                    IsExpanded="True"
+                                                               
+                                                    
+                                      >
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon x:ConnectionId='12'                       />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+
+            <DataTemplate
+                x:Key="NavAccountItem" 
+                                              >
+                <muxc:NavigationViewItem x:ConnectionId='6' 
+                    BorderThickness="0.8"
+                    MinHeight="45"
+                    CanDrag="False"
+                    IsRightTapEnabled="True"
+                                                            
+                                                               
+                                      >
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon x:ConnectionId='7'                       />
+                    </muxc:NavigationViewItem.Icon>
+                    <StackPanel>
+                        <TextBlock x:ConnectionId='8' 
+                                                   
+                            FontWeight="SemiBold"
+                            FontSize="15"/>
+                        <TextBlock x:ConnectionId='9' 
+                                                   
+                            FontSize="12"/>
+                    </StackPanel>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+
+            <DataTemplate 
+                x:Key="NavSeparatorItem" 
+                                                >
+                <muxc:NavigationViewItemHeader
+                    Content=""
+                    MaxHeight="12"/>
+            </DataTemplate>
+            <local:NavigationItemDataTemplateSelector
+                x:Key="NavItemSelector"
+                NavigationItemTemplate="{StaticResource NavItem}"
+                NavigationListItemTemplate="{StaticResource NavListItem}"
+                NavigationSeparatorItemTemplate="{StaticResource NavSeparatorItem}"
+                NavigationAccountItemTemplate="{StaticResource NavAccountItem}"/>
+            <MenuFlyout x:ConnectionId='2'
+                x:Name="NavAccountItemFlyout">
+                <MenuFlyoutItem
+                    Text="Remove this account">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE74D;"/>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuFlyout>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <muxc:NavigationView x:ConnectionId='16' 
+            x:Name="MainNavigationView"                
+            IsBackButtonVisible="Collapsed"
+            IsTitleBarAutoPaddingEnabled="False"
+            MenuItemTemplateSelector="{StaticResource NavItemSelector}"
+                                            
+                                                                                           >
+            <muxc:NavigationView.PaneHeader>
+                <muxc:NavigationViewItemHeader x:ConnectionId='17'
+                    x:Name="AppTitle"
+                    Content="Emeow"
+                    FontSize="70"
+                    VerticalAlignment="Center"/>
+            </muxc:NavigationView.PaneHeader>
+            
+            <ScrollViewer>
+                <Frame x:ConnectionId='18'
+                    x:Name="ContentFrame"
+                    Background="{StaticResource ControlFillColorTransparentBrush}">
+                    <Frame.ContentTransitions>
+                        <TransitionCollection>
+                            <NavigationThemeTransition />
+                        </TransitionCollection>
+                    </Frame.ContentTransitions>
+                </Frame>
+            </ScrollViewer>
+        </muxc:NavigationView>
+    </Grid>
+</UserControl>
+

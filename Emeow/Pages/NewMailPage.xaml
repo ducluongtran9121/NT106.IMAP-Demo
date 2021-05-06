@@ -96,24 +96,26 @@
                 <uc:HorizontalHeaderTextBox
                         x:Name="FromTextBox"
                         Header="From:"
-                        GettingFocus="TextBox_GettingFocus"/>
+                        GotFocus="TextBox_GotFocus"/>
                 <Rectangle/>
                 <uc:HorizontalHeaderTextBox
                         x:Name="ToTextBox"
                         Header="To:"
-                        GettingFocus="TextBox_GettingFocus"/>
+                        GotFocus="TextBox_GotFocus"/>
                 <Rectangle/>
                 <uc:HorizontalHeaderTextBox
                         x:Name="SubjectTextBox"
                         Header="Subject:"
-                        GettingFocus="TextBox_GettingFocus"/>
+                        GotFocus="TextBox_GotFocus"/>
                 <Rectangle/>
                 <RichEditBox
                     x:Name="Editor"
+                    Height="200"
+                    PlaceholderText="Content"
                     Style="{StaticResource CustomRichEditBoxStyle}"
-                    GettingFocus="Editor_GettingFocus"
+                    SelectionFlyout="{x:Null}"
+                    GotFocus="Editor_GotFocus"
                     TextChanged="Editor_TextChanged"
-                    SelectionChanged="Editor_SelectionChanged"
                     SelectionChanging="Editor_SelectionChanging">
                 </RichEditBox>
             </StackPanel>

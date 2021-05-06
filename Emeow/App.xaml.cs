@@ -1,4 +1,5 @@
 ﻿using Emeow.Pages;
+using EmeowDatabase;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,6 +32,8 @@ namespace Emeow
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+
+            Database.InitializeDatabase();
         }
 
         /// <summary>

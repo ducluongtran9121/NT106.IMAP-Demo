@@ -8,8 +8,7 @@
     xmlns:uc="using:Emeow.UserControls"
     xmlns:ap="using:Emeow.AttachProperties"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+    Background="{StaticResource ControlFillColorTransparentBrush}">
     <Grid
         x:Name="MainGrid">
         <uc:MainNavigation

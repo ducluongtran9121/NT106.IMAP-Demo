@@ -10,7 +10,7 @@
     <PackageArchitecture>x86</PackageArchitecture>
     <PackageIdentityName>9ee88ec2-c212-48aa-84a1-d87b895cdc16</PackageIdentityName>
     <PackageIdentityPublisher>CN=hoang</PackageIdentityPublisher>
-    <IntermediateOutputPath>E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\obj\x86\Debug\</IntermediateOutputPath>
+    <IntermediateOutputPath>E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\obj\x86\Debug\</IntermediateOutputPath>
     <RemoteDeploymentType>
     </RemoteDeploymentType>
     <PackageRegistrationPath>
@@ -18,7 +18,7 @@
     <RemoveNonLayoutFiles>true</RemoveNonLayoutFiles>
     <DeployOptionalPackages>false</DeployOptionalPackages>
     <WindowsSdkPath>C:\Program Files %28x86%29\Windows Kits\10\</WindowsSdkPath>
-    <LayoutDir>E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\AppX</LayoutDir>
+    <LayoutDir>E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\AppX</LayoutDir>
     <RegisteredManifestChecksum>0FD95FDCC0E8F1E1B2152CE83922F53E1BAEB528284FF1B7153BC7C9FBC970EE</RegisteredManifestChecksum>
     <RegisteredPackageMoniker>9ee88ec2-c212-48aa-84a1-d87b895cdc16_1.0.0.0_x86__mjpew8n4hpgkr</RegisteredPackageMoniker>
     <RegisteredUserModeAppID>9ee88ec2-c212-48aa-84a1-d87b895cdc16_mjpew8n4hpgkr!App</RegisteredUserModeAppID>
@@ -27,16 +27,16 @@
     <RegisteredVersion>1.0.0.0</RegisteredVersion>
   </PropertyGroup>
   <ItemGroup>
-    <AppXManifest Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Core\AppxManifest.xml">
+    <AppXManifest Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Core\AppxManifest.xml">
       <PackagePath>AppxManifest.xml</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
-      <Modified>2021-04-18T16:07:27.675</Modified>
+      <Modified>2021-04-23T17:20:32.222</Modified>
     </AppXManifest>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Emeow.exe">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Emeow.exe">
       <PackagePath>entrypoint\Emeow.exe</PackagePath>
-      <Modified>2021-04-18T16:07:26.768</Modified>
+      <Modified>2021-04-23T17:20:30.763</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Microsoft SDKs\UWPNuGetPackages\runtime.win10-x86.microsoft.netcore.universalwindowsplatform\6.2.11\runtimes\win10-x86\lib\uap10.0.15138\System.Runtime.dll">
       <PackagePath>System.Runtime.dll</PackagePath>
@@ -46,91 +46,95 @@
       <PackagePath>Microsoft.UI.Xaml.Markup.winmd</PackagePath>
       <Modified>2020-12-01T21:52:00.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Properties\Default.rd.xml">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Properties\Default.rd.xml">
       <PackagePath>Properties\Default.rd.xml</PackagePath>
       <Modified>2021-04-18T12:44:05.792</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\LockScreenLogo.scale-200.png">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\LockScreenLogo.scale-200.png">
       <PackagePath>Assets\LockScreenLogo.scale-200.png</PackagePath>
       <Modified>2021-04-15T07:42:15.241</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\SplashScreen.scale-200.png">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\SplashScreen.scale-200.png">
       <PackagePath>Assets\SplashScreen.scale-200.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2021-04-15T07:42:15.243</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Square150x150Logo.scale-200.png">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Square150x150Logo.scale-200.png">
       <PackagePath>Assets\Square150x150Logo.scale-200.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2021-04-15T07:42:15.244</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Square44x44Logo.scale-200.png">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Square44x44Logo.scale-200.png">
       <PackagePath>Assets\Square44x44Logo.scale-200.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2021-04-15T07:42:15.244</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
       <PackagePath>Assets\Square44x44Logo.targetsize-24_altform-unplated.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2021-04-15T07:42:15.245</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\StoreLogo.png">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\StoreLogo.png">
       <PackagePath>Assets\StoreLogo.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2021-04-15T07:42:15.245</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Wide310x150Logo.scale-200.png">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\Assets\Wide310x150Logo.scale-200.png">
       <PackagePath>Assets\Wide310x150Logo.scale-200.png</PackagePath>
       <ReRegisterAppIfChanged>true</ReRegisterAppIfChanged>
       <Modified>2021-04-15T07:42:15.246</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Emeow.xr.xml">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Emeow.xr.xml">
       <PackagePath>Emeow.xr.xml</PackagePath>
-      <Modified>2021-04-18T16:04:51.593</Modified>
+      <Modified>2021-04-20T05:07:55.944</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\App.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\App.xbf">
       <PackagePath>App.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.653</Modified>
+      <Modified>2021-04-23T17:20:30.348</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Pages\MainPage.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ContentDialogs\AddAccountDialog.xbf">
+      <PackagePath>ContentDialogs\AddAccountDialog.xbf</PackagePath>
+      <Modified>2021-04-23T17:20:30.348</Modified>
+    </AppxPackagedFile>
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Pages\MainPage.xbf">
       <PackagePath>Pages\MainPage.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.653</Modified>
+      <Modified>2021-04-23T17:20:30.348</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Pages\NewMailPage.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Pages\NewMailPage.xbf">
       <PackagePath>Pages\NewMailPage.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.653</Modified>
+      <Modified>2021-04-23T17:20:30.348</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomButtonStyle.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomButtonStyle.xbf">
       <PackagePath>ResourceDictionaries\CustomButtonStyle.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.652</Modified>
+      <Modified>2021-04-23T17:20:30.347</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomRichEditBoxStyle.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomRichEditBoxStyle.xbf">
       <PackagePath>ResourceDictionaries\CustomRichEditBoxStyle.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.624</Modified>
+      <Modified>2021-04-23T17:20:30.301</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomTextBoxStyle.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomTextBoxStyle.xbf">
       <PackagePath>ResourceDictionaries\CustomTextBoxStyle.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.634</Modified>
+      <Modified>2021-04-23T17:20:30.334</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomToggleButtonStyle.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\ResourceDictionaries\CustomToggleButtonStyle.xbf">
       <PackagePath>ResourceDictionaries\CustomToggleButtonStyle.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.644</Modified>
+      <Modified>2021-04-23T17:20:30.312</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\CustomButton.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\CustomButton.xbf">
       <PackagePath>UserControls\CustomButton.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.653</Modified>
+      <Modified>2021-04-23T17:20:30.348</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\CustomToggleButton.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\CustomToggleButton.xbf">
       <PackagePath>UserControls\CustomToggleButton.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.653</Modified>
+      <Modified>2021-04-23T17:20:30.348</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\HorizontalHeaderTextBox.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\HorizontalHeaderTextBox.xbf">
       <PackagePath>UserControls\HorizontalHeaderTextBox.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.654</Modified>
+      <Modified>2021-04-23T17:20:30.348</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\MainNavigation.xbf">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\UserControls\MainNavigation.xbf">
       <PackagePath>UserControls\MainNavigation.xbf</PackagePath>
-      <Modified>2021-04-18T16:07:26.654</Modified>
+      <Modified>2021-04-23T17:20:30.348</Modified>
     </AppxPackagedFile>
     <AppxPackagedFile Include="C:\Program Files %28x86%29\Microsoft SDKs\Windows Kits\10\ExtensionSDKs\Microsoft.UniversalCRT.Debug\10.0.19041.0\\redist\Debug\x86\ucrtbased.dll">
       <PackagePath>ucrtbased.dll</PackagePath>
@@ -144,13 +148,13 @@
       <PackagePath>WinMetadata\Microsoft.UI.Xaml.winmd</PackagePath>
       <Modified>2020-12-03T02:46:54.000</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\resources.pri">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\resources.pri">
       <PackagePath>resources.pri</PackagePath>
-      <Modified>2021-04-18T14:09:06.529</Modified>
+      <Modified>2021-04-23T17:20:31.219</Modified>
     </AppxPackagedFile>
-    <AppxPackagedFile Include="E:\Lab&amp;Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Core\Emeow.exe">
+    <AppxPackagedFile Include="E:\Lab_n_Excercises\NetworkProgramming\Project\Emeow\Emeow\bin\x86\Debug\Core\Emeow.exe">
       <PackagePath>Emeow.exe</PackagePath>
-      <Modified>2021-04-18T16:07:27.671</Modified>
+      <Modified>2021-04-23T17:20:32.208</Modified>
     </AppxPackagedFile>
   </ItemGroup>
   <ItemGroup>

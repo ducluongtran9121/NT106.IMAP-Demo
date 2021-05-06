@@ -6,8 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:muxmedia="using:Microsoft.UI.Xaml.Media"
-    xmlns:usr="using:Emeow.User"
     xmlns:ci="using:Emeow.ControlItems"
     mc:Ignorable="d"
     d:DesignHeight="300"
@@ -17,22 +15,31 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <muxmedia:AcrylicBrush 
+                    <AcrylicBrush 
                         x:Key ="NavigationViewExpandedPaneBackground"
                         BackgroundSource="HostBackdrop"
-                        FallbackColor="White"
-                        TintColor="{ThemeResource SystemChromeWhiteColor}"
-                        TintOpacity="0.6"/>
+                        FallbackColor="{StaticResource SolidFallbackBackground}"
+                        TintColor="{StaticResource SolidBackgroundAcrylic}"
+                        TintOpacity="0.8"
+                        TintLuminosityOpacity=".85"/>
+                    <AcrylicBrush 
+                        x:Key ="NavigationViewDefaultPaneBackground"
+                        BackgroundSource="HostBackdrop"
+                        FallbackColor="{StaticResource SolidFallbackBackground}"
+                        TintColor="{StaticResource SolidBackgroundAcrylic}"
+                        TintOpacity="0.8"
+                        TintLuminosityOpacity="0.85"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
 
             <DataTemplate
-                x:Key="NewMailNavItem" 
-                x:DataType="usr:MailItem">
+                x:Key="NavItem" 
+                x:DataType="ci:NavItem">
                 <muxc:NavigationViewItem 
                     BorderThickness="0.8"
-                    CanDrag="False"
                     Content="{x:Bind Content}"
+                    CanDrag="False"
+                    SelectsOnInvoked="{x:Bind SelectOnInvoked}"
                     Tag="{x:Bind Tag}">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon Glyph="{x:Bind Glyph}"/>
@@ -41,31 +48,70 @@
             </DataTemplate>
 
             <DataTemplate
-                x:Key="AccountsNavItem" 
-                x:DataType="usr:AccountItem">
+                x:Key="NavListItem" 
+                x:DataType="ci:NavListItem">
                 <muxc:NavigationViewItem
                     BorderThickness ="0.8"
                     Content="{x:Bind Content}"
-                    Tag="{x:Bind Tag}"
-                    MenuItemsSource="{x:Bind Child}">
+                    CanDrag="False"
+                    IsExpanded="True"
+                    SelectsOnInvoked="{x:Bind SelectOnInvoked}"
+                    MenuItemsSource="{x:Bind Child}"
+                    Tag="{x:Bind Tag}">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon Glyph="{x:Bind Glyph}"/>
                     </muxc:NavigationViewItem.Icon>
                 </muxc:NavigationViewItem>
             </DataTemplate>
 
+            <DataTemplate
+                x:Key="NavAccountItem" 
+                x:DataType="ci:NavAccountItem">
+                <muxc:NavigationViewItem 
+                    BorderThickness="0.8"
+                    MinHeight="45"
+                    CanDrag="False"
+                    IsRightTapEnabled="True"
+                    RightTapped="NavAccountItem_RightTapped"
+                    SelectsOnInvoked="{x:Bind SelectOnInvoked}"
+                    Tag="{x:Bind Tag}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind Glyph}"/>
+                    </muxc:NavigationViewItem.Icon>
+                    <StackPanel>
+                        <TextBlock 
+                            Text="{x:Bind Content}"
+                            FontWeight="SemiBold"
+                            FontSize="15"/>
+                        <TextBlock 
+                            Text="{x:Bind Address}"
+                            FontSize="12"/>
+                    </StackPanel>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+
             <DataTemplate 
-                x:Key="SpaceSeparatorNavItem" 
-                x:DataType="ci:SpaceSeparatorItem">
+                x:Key="NavSeparatorItem" 
+                x:DataType="ci:NavSeparatorItem">
                 <muxc:NavigationViewItemHeader
                     Content=""
                     MaxHeight="12"/>
             </DataTemplate>
             <local:NavigationItemDataTemplateSelector
                 x:Key="NavItemSelector"
-                NewMailNavigationItemTemplate="{StaticResource NewMailNavItem}"
-                AccountNavigationItemTemplate="{StaticResource AccountsNavItem}"
-                SpaceSeparatorNavigationItemTemplate="{StaticResource SpaceSeparatorNavItem}"/>
+                NavigationItemTemplate="{StaticResource NavItem}"
+                NavigationListItemTemplate="{StaticResource NavListItem}"
+                NavigationSeparatorItemTemplate="{StaticResource NavSeparatorItem}"
+                NavigationAccountItemTemplate="{StaticResource NavAccountItem}"/>
+            <MenuFlyout
+                x:Name="NavAccountItemFlyout">
+                <MenuFlyoutItem
+                    Text="Remove this account">
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE74D;"/>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuFlyout>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -76,21 +122,19 @@
             IsTitleBarAutoPaddingEnabled="False"
             MenuItemTemplateSelector="{StaticResource NavItemSelector}"
             MenuItemsSource="{x:Bind Items}"
-            
-            ItemInvoked="MainNavigationView_ItemInvoked">
-
+            ItemInvoked="MainNavigationView_ItemInvoked" Loaded="MainNavigationView_Loaded">
             <muxc:NavigationView.PaneHeader>
                 <muxc:NavigationViewItemHeader
-                x:Name="AppTitle"
-                Content="Emeow"
-                FontSize="70"
-                VerticalAlignment="Center"/>
+                    x:Name="AppTitle"
+                    Content="Emeow"
+                    FontSize="70"
+                    VerticalAlignment="Center"/>
             </muxc:NavigationView.PaneHeader>
-
+            
             <ScrollViewer>
                 <Frame
-                x:Name="ContentFrame"
-                Background="{StaticResource PageBackgroundColorDefaultBrush}">
+                    x:Name="ContentFrame"
+                    Background="{StaticResource ControlFillColorTransparentBrush}">
                     <Frame.ContentTransitions>
                         <TransitionCollection>
                             <NavigationThemeTransition />

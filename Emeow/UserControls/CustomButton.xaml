@@ -19,16 +19,18 @@
         <Button
             x:Name="MainButton"
             VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
             Background="{x:Bind Background, Mode=OneWay}"
             Style="{StaticResource CustomButtonStyle}">
             <StackPanel Orientation="Horizontal">
                 <FontIcon 
-                Glyph="{x:Bind Glyph}" 
-                FontSize="{x:Bind FontSize, Mode=OneWay}"/>
+                    Glyph="{x:Bind Glyph}" 
+                    FontSize="{x:Bind FontSize, Mode=OneWay}"/>
                 <TextBlock
-                Text="{x:Bind Text}"
-                FontSize="{x:Bind FontSize, Mode=OneWay}"
-                VerticalAlignment="Center"/>
+                    Text="{x:Bind Text}"
+                    FontSize="{x:Bind FontSize, Mode=OneWay}"
+                    VerticalAlignment="Stretch"
+                    HorizontalAlignment="Stretch"/>
             </StackPanel>
         </Button>
     </Grid>

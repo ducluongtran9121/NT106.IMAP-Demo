@@ -30,8 +30,9 @@
         </TextBlock>
         <TextBox
             Grid.Column="2"
-            Style="{StaticResource CustomTextBoxStyle}"
-            Text="{x:Bind Text, Mode=TwoWay}">
+            VerticalAlignment="Center"
+            Text="{x:Bind Text, Mode=TwoWay}"
+            Style="{StaticResource CustomTextBoxStyle}">
         </TextBox>
     </Grid>
 </UserControl>
