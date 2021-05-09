@@ -7,12 +7,15 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System.Diagnostics;
 
 namespace Emeow.UserControls
 {
     public sealed partial class MainNavigation : UserControl
     {
-        public ObservableCollection<INavigationControlItem> Items { get; private set; } = new ObservableCollection<INavigationControlItem>();
+        public ObservableCollection<INavigationControlItem> Items { get; set; } = new ObservableCollection<INavigationControlItem>();
+
+        public Microsoft.UI.Xaml.Controls.NavigationViewItem itemRightClickSelected { get; set; }
 
         public string CompactWidth
         {
@@ -130,20 +133,25 @@ namespace Emeow.UserControls
         {
             Microsoft.UI.Xaml.Controls.NavigationViewItem item = sender as Microsoft.UI.Xaml.Controls.NavigationViewItem;
 
-            (NavAccountItemFlyout.Items[0] as MenuFlyoutItem).Click += (sender, e) =>
-            {
-                NavListItem list = Items[2] as NavListItem;
-
-                list.Child.Remove(list.Child[int.Parse(item.Tag.ToString()[item.Tag.ToString().Length - 1].ToString())]);
-
-                for (int i = 0; i < list.Child.Count; i++)
-                {
-                    list.Child[i].Tag = "Nav_Account_" + i.ToString();
-                }
-            };
+            itemRightClickSelected = item;
 
             item.ContextFlyout = NavAccountItemFlyout;
             item.ContextFlyout.ShowAt(item);
+        }
+
+        private void RemovemenuFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            MenuFlyoutItem menuFlyoutItem = sender as MenuFlyoutItem;
+
+            NavListItem list = Items[2] as NavListItem;
+
+            list.Child.Remove(list.Child[itemRightClickSelected.Tag.ToString()[itemRightClickSelected.Tag.ToString().Length - 1] - 48]);
+
+            for (int i = 0; i < list.Child.Count - 1; i++)
+            {
+                list.Child[i].Tag = "Nav_Account_" + i.ToString();
+            }
+
         }
     }
 

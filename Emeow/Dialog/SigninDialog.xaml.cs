@@ -28,7 +28,8 @@ namespace Emeow.Dialog
             "💡 Do you know: IMAP was originally created by Mark Crispin at Stanford in the 1980s.",
             "💡 Do you know: IMAP has a total of 4 versions. The latest version is IMAP4.",
             "📮📮📮 S: * OK IMAP4rev1 Service Ready.",
-            "💡 Do you know: IMAP stands for Internet Message Access Protocol. Interesting! Right? 😍"
+            "💡 Do you know: IMAP stands for Internet Message Access Protocol. Interesting! Right? 😍",
+
         };
 
         public SigninDialog()

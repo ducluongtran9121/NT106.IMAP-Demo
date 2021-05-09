@@ -1,18 +1,49 @@
-﻿using System;
+﻿using Emeow.Common;
+using System;
 
 namespace Emeow.ControlItems
 {
-    public class NavItem : INavigationControlItem
+    public class NavItem : BindableBase, INavigationControlItem
     {
-        public string Content { get; set; }
+        private string content;
 
-        public string Glyph { get; set; }
+        private string glyph;
 
-        public string Tag { get; set; }
+        private string tag;
 
-        public bool SelectOnInvoked { get; set; }
+        private bool selectOnInvoked;
 
-        public NavigationControlItemType ItemType { get; set; }
+        private NavigationControlItemType itemType;
+
+        public string Content
+        {
+            get { return this.content; }
+            set { this.SetProperty(ref this.content, value); }
+        }
+
+        public string Glyph 
+        {
+            get { return this.glyph; }
+            set { this.SetProperty(ref this.glyph, value); }
+        }
+
+        public string Tag
+        {
+            get { return this.tag; }
+            set { this.SetProperty(ref this.tag, value); }
+        }
+
+        public bool SelectOnInvoked 
+        {
+            get { return this.selectOnInvoked; }
+            set { this.SetProperty(ref this.selectOnInvoked, value); }
+        }
+
+        public NavigationControlItemType ItemType 
+        {
+            get { return this.itemType; }
+            set { this.SetProperty(ref this.itemType, value); }
+        }
 
         public int CompareTo(INavigationControlItem other) => Content.CompareTo(other.Content);
 

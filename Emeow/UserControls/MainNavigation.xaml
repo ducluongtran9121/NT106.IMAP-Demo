@@ -74,7 +74,7 @@
                     IsRightTapEnabled="True"
                     RightTapped="NavAccountItem_RightTapped"
                     SelectsOnInvoked="{x:Bind SelectOnInvoked}"
-                    Tag="{x:Bind Tag}">
+                    Tag="{x:Bind Tag, Mode=OneWay}">
                     <muxc:NavigationViewItem.Icon>
                         <FontIcon Glyph="{x:Bind Glyph}"/>
                     </muxc:NavigationViewItem.Icon>
@@ -104,9 +104,12 @@
                 NavigationSeparatorItemTemplate="{StaticResource NavSeparatorItem}"
                 NavigationAccountItemTemplate="{StaticResource NavAccountItem}"/>
             <MenuFlyout
-                x:Name="NavAccountItemFlyout">
+                x:Name="NavAccountItemFlyout"
+                >
                 <MenuFlyoutItem
-                    Text="Remove this account">
+                    x:Name="RemovemenuFlyoutItem"
+                    Text="Remove this account"
+                    Click="RemovemenuFlyoutItem_Click">
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE74D;"/>
                     </MenuFlyoutItem.Icon>

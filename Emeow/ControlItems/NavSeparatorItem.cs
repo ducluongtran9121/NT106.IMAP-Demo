@@ -24,6 +24,5 @@ namespace Emeow.ControlItems
             SelectOnInvoked = false;
             ItemType = NavigationControlItemType.NavSeparator;
         }
-
     }
 }
