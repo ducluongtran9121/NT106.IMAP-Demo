@@ -4,13 +4,16 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
+using MailServer.Imap;
 
 namespace MailServer
 {
     internal class MailServer
     {
         private TcpListener listener;
+        private Thread serverThread;
         private List<TcpClient> clientconnectionList = new List<TcpClient>();
 
         public MailServer(int port)
@@ -22,7 +25,7 @@ namespace MailServer
         {
             try
             {
-                Thread serverThread = new Thread(new ThreadStart(Run));
+                serverThread = new Thread(new ThreadStart(Run));
                 serverThread.Start();
             }
             catch (Exception ex)
@@ -38,9 +41,10 @@ namespace MailServer
                 listener.Start();
                 while (true)
                 {
+                    MakeServerDirctory();
                     Console.WriteLine("Waiting for new  the connection...");
                     TcpClient client = listener.AcceptTcpClient();
-                    Console.WriteLine("New client connected");
+                    Console.WriteLine(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString() + " : " + ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString() + " connected");
                     clientconnectionList.Add(client);
                     Thread t = new Thread(HandleClientMessage);
                     t.Start(client);
@@ -57,31 +61,51 @@ namespace MailServer
             }
         }
 
+        private void MakeServerDirctory()
+        {
+            string path = Environment.CurrentDirectory + @"\Data";
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+        }
+
         private void HandleClientMessage(object agrument)
         {
             TcpClient client = (TcpClient)agrument;
+            string clientIP = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
+            string clientPort = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
             try
             {
                 StreamReader sr = new StreamReader(client.GetStream());
-                //sr.BaseStream.ReadTimeout = 10000;
                 StreamWriter sw = new StreamWriter(client.GetStream());
-                sw.WriteLine("* OK IMAP4rev1 Service Ready");
+
+                sr.BaseStream.ReadTimeout = 1800000;
+                sw.BaseStream.ReadTimeout = 1800000;
+
+                ImapSession session = new ImapSession();
+                string msg = "";
+                string resposed = session.GetResposed();
+                sw.WriteLine(resposed);
                 sw.Flush();
-                string lineContent = "";
+
                 while (client.Connected)
                 {
                     try
                     {
-                        lineContent = sr.ReadLine();
+                        msg = sr.ReadLine(); // có thể sinh ra exception trong winform xảy ra khi client đột ngột ngắt kết nối
+                        if (msg == null) break; //msg = null khi client đột ngột ngắt kết nối chỉ trên console
+                        resposed = session.GetResposed(msg);
+                        sw.WriteLine(resposed);
+                        sw.Flush();
                     }
                     catch (IOException)
                     {
+                        sw.WriteLine("* BYE connection timed out");
+                        sw.Flush();
                         break;
                     }
-                    if (lineContent == null) break;
-                    Console.WriteLine(lineContent);
+
+                    Console.WriteLine(msg);
                 }
-                Console.WriteLine("One client disconnected");
+                Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
                 clientconnectionList.Remove(client);
                 sr.Close();
                 sw.Close();
@@ -92,7 +116,7 @@ namespace MailServer
                 Console.WriteLine(ex.Message);
                 client.Close();
                 clientconnectionList.Remove(client);
-                Console.WriteLine("One client disconnected");
+                Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
             }
         }
 
@@ -100,7 +124,7 @@ namespace MailServer
         {
             if (clientconnectionList.Remove(client))
             {
-                Console.WriteLine("One client is Removed");
+                Console.WriteLine(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString() + " : " + ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString() + "is Removed");
             }
             else
             {
@@ -111,7 +135,6 @@ namespace MailServer
         public void Stop()
         {
             for (int i = 0; i < clientconnectionList.Count; i++) clientconnectionList[i].Close();
-            clientconnectionList.Clear();
             listener.Stop();
         }
     }
