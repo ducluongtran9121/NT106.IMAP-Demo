@@ -41,7 +41,6 @@ namespace MailServer
                 listener.Start();
                 while (true)
                 {
-                    MakeServerDirctory();
                     Console.WriteLine("Waiting for new  the connection...");
                     TcpClient client = listener.AcceptTcpClient();
                     Console.WriteLine(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString() + " : " + ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString() + " connected");
@@ -59,12 +58,6 @@ namespace MailServer
                 if (listener != null)
                     listener.Stop();
             }
-        }
-
-        private void MakeServerDirctory()
-        {
-            string path = Environment.CurrentDirectory + @"\Data";
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
         }
 
         private void HandleClientMessage(object agrument)

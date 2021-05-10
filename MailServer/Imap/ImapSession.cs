@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-//using MailServer.Imap;
 namespace MailServer.Imap
 {
     internal class ImapSession
@@ -14,6 +13,8 @@ namespace MailServer.Imap
         private string argument1 = "";
         private string argument2 = "";
         private string respose = "* OK IMAP4rev1 Service Ready";
+        private string userSession = "";
+        private string userMailBox = "";
 
         public string GetResposed()
         {
@@ -30,7 +31,7 @@ namespace MailServer.Imap
         {
             if (commands.Length == 1)
             {
-                this.tag = "";
+                this.tag = commands[0];
                 this.command = "";
                 this.argument1 = "";
                 this.argument2 = "";
@@ -130,8 +131,15 @@ namespace MailServer.Imap
                     break;
 
                 case "starttls":
+                    break;
+
                 case "authenticate":
+                    break;
+
                 case "login":
+                    this.respose = Command.LoginCommand(this.tag, this.command, this.argument1, this.argument2, ref this.state, ref this.userSession);
+                    break;
+
                 case "select":
                 case "examine":
                 case "create":
@@ -182,10 +190,11 @@ namespace MailServer.Imap
                     break;
 
                 case "login":
-                    this.respose = Command.LoginCommand(this.tag, this.command, this.argument1, this.argument2, ref this.state);
+                    this.respose = Command.LoginCommand(this.tag, this.command, this.argument1, this.argument2, ref this.state, ref this.userSession);
                     break;
 
                 case "select":
+                    this.respose = Command.SelectedCommand(this.tag, this.argument1, ref this.state, this.userSession, ref this.userMailBox);
                     break;
 
                 case "examine":
@@ -277,6 +286,7 @@ namespace MailServer.Imap
                     break;
 
                 case "fetch":
+                    this.respose = Command.FetchCommand(this.tag, this.argument1, this.argument2, this.userSession, this.userMailBox);
                     break;
 
                 case "store":
@@ -295,11 +305,6 @@ namespace MailServer.Imap
         }
 
         private void NoopCommand()
-        {
-            throw new NotImplementedException();
-        }
-
-        private void CapabilityCommand()
         {
             throw new NotImplementedException();
         }
