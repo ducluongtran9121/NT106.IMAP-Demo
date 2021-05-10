@@ -134,7 +134,7 @@ namespace MailServer.Imap
         }
 
         //selected state
-        public static string FetchCommand(string tag, string agrument1, string agrument2, string userSession, string userMailBox)
+        public static string FetchCommand(string tag, string agrument1, string agrument2, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
         {
             int mailNum;
             string respose = "";
