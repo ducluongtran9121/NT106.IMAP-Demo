@@ -174,8 +174,8 @@ namespace MailServer.Imap
 
         private static string GetProjectDir()
         {
-            Regex regex = new Regex(@"\\bin\\.*$");
-            return regex.Replace(Environment.CurrentDirectory, "");
+            Regex regex = new Regex(@"\\MailServer\\bin.*$");
+            return regex.Replace(Environment.CurrentDirectory, "\\MailServer");
         }
     }
 }
