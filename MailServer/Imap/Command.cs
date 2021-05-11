@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Net.Mail;
+using System.Text.RegularExpressions;
 
 namespace MailServer.Imap
 {
@@ -51,7 +52,7 @@ namespace MailServer.Imap
             if (argument1 == "" || argument2 == "") return Command.ReturnParseError(tag, command);
             else
             {
-                FileStream fs = new FileStream(Environment.CurrentDirectory + @"\Data\user_password", FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
+                FileStream fs = new FileStream(Command.GetProjectDir() + @"\Data\user_password", FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
                 StreamReader sr = new StreamReader(fs);
                 string lineContent = "";
                 while ((lineContent = sr.ReadLine()) != null)
@@ -75,7 +76,7 @@ namespace MailServer.Imap
         //authenticate state
         static public string SelectedCommand(string tag, string agrument1, ref string state, string userSession, ref string userMailBox)
         {
-            string path = Environment.CurrentDirectory + $"\\Data\\{userSession}\\{agrument1.ToLower()}";
+            string path = Command.GetProjectDir() + $"\\Data\\{userSession}\\{agrument1.ToLower()}";
             if (!Directory.Exists(path)) return tag + " NO Mailbox does not exist";
             string[] mailBoxInfo = Command.ReadMailBoxInfo(path);
             int firstUnseen = Command.GetFirstUnseen(path);
@@ -140,7 +141,7 @@ namespace MailServer.Imap
             string respose = "";
             if (!Int32.TryParse(agrument1, out mailNum)) return ReturnParseError(tag, "fetch");
             if (mailNum < 1 || (agrument2.ToLower() != "body[header]" && agrument2.ToLower() != "body[text]")) return ReturnParseError(tag, "fetch");
-            string path = Environment.CurrentDirectory + $"\\Data\\{userSession}\\{userMailBox.ToLower()}";
+            string path = Command.GetProjectDir() + $"\\Data\\{userSession}\\{userMailBox.ToLower()}";
             FileStream fs = new FileStream(path + @"\MailInfo.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
             StreamReader sr = new StreamReader(fs);
             string lineContent = "";
@@ -169,6 +170,12 @@ namespace MailServer.Imap
             sr.Close();
             fs.Close();
             return respose;
+        }
+
+        private static string GetProjectDir()
+        {
+            Regex regex = new Regex(@"\\bin\\.*$");
+            return regex.Replace(Environment.CurrentDirectory, "");
         }
     }
 }
