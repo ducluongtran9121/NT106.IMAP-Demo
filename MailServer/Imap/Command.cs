@@ -164,6 +164,7 @@ namespace MailServer.Imap
                 respose += $"Subject: {message.Subject}\n\r";
             }
             if (agrument2.ToLower() == "body[text]") respose += message.Body;
+            respose = $"* {agrument1} FETCH({agrument2} " + "{" + respose.Length + "} \n\r" + respose + ")\n\r";
             respose += tag + " OK FETCH completed";
             sr.Close();
             fs.Close();
