@@ -36,14 +36,27 @@ namespace MailServer
 
         private void Run()
         {
+            // try-catch sai port hoặc post đã được sử dụng
             try
             {
+                // bắt đầu lắng nghe
                 listener.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return;
+            }
+            //try-catch lỗi server và khỏi động lại server
+            try
+            {
                 while (true)
                 {
+                    // đợi client connect
                     Console.WriteLine("Waiting for new  the connection...");
                     TcpClient client = listener.AcceptTcpClient();
                     Console.WriteLine(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString() + " : " + ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString() + " connected");
+                    // tạo thread và lưu thread của client đang connecting
                     clientconnectionList.Add(client);
                     Thread t = new Thread(HandleClientMessage);
                     t.Start(client);
@@ -55,51 +68,62 @@ namespace MailServer
             }
             finally
             {
+                // ngừng lắng nghe
                 if (listener != null)
                     listener.Stop();
+                //khởi động lại
+                Run();
             }
         }
 
         private void HandleClientMessage(object agrument)
         {
+            //một phiên làm việc với một client
             TcpClient client = (TcpClient)agrument;
             string clientIP = ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString();
             string clientPort = ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString();
+            // try-cacth lỗi client
             try
             {
+                // khởi tạo luồng đọc ghi
                 StreamReader sr = new StreamReader(client.GetStream());
                 StreamWriter sw = new StreamWriter(client.GetStream());
-
+                // cài đặt timeout = 30 phút
                 sr.BaseStream.ReadTimeout = 1800000;
-                sw.BaseStream.ReadTimeout = 1800000;
-
+                // tạo sessionImap
                 ImapSession session = new ImapSession();
                 string msg = "";
                 string resposed = session.GetResposed();
                 sw.WriteLine(resposed);
                 sw.Flush();
-
+                // kiểm tra client đang kết nối
                 while (client.Connected)
                 {
+                    // try-cacth timeout
                     try
                     {
                         msg = sr.ReadLine(); // có thể sinh ra exception trong winform xảy ra khi client đột ngột ngắt kết nối
                         if (msg == null) break; //msg = null khi client đột ngột ngắt kết nối chỉ trên console
+                        // trả lời lại các lệnh của client trong session hiện tại
                         resposed = session.GetResposed(msg);
                         sw.WriteLine(resposed);
                         sw.Flush();
                     }
-                    catch (IOException)
+                    catch (IOException ex)
                     {
+                        Console.WriteLine(ex.InnerException.GetType());
+                        // thông báo timeout cho client
                         sw.WriteLine("* BYE connection timed out");
                         sw.Flush();
                         break;
                     }
-
+                    // in console server
                     Console.WriteLine(msg);
+                    Console.WriteLine(resposed);
                 }
                 Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
                 clientconnectionList.Remove(client);
+                // giải phóng stream và TCPclient connect
                 sr.Close();
                 sw.Close();
                 client.Close();

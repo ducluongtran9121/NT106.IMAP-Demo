@@ -16,6 +16,7 @@ namespace MailServer.Imap
         private string userSession = "";
         private string userMailBox = "";
 
+        // trả về response ứng với từng lệnh trong session
         public string GetResposed()
         {
             return this.respose;
@@ -83,16 +84,17 @@ namespace MailServer.Imap
             this.respose = "";
         }
 
+        //xử lý theo trạng thái
         private void ProcessCommand()
         {
             if (this.tag == "")
             {
-                this.respose = Command.ReturnMissingTag();
+                this.respose = Response.ReturnMissingTagResponse();
                 return;
             }
             if (this.command == "")
             {
-                this.respose = Command.ReturnParseError(this.tag);
+                this.respose = Response.ReturnParseErrorResponse(this.tag);
                 return;
             }
             switch (this.state)
@@ -114,12 +116,14 @@ namespace MailServer.Imap
             }
         }
 
+        // trạng thái chưa xác thực
+        // các lệnh được dùng: capability,noop,logout,starttls,authenticate,login
         private void ProcessNotAuthenticatedState()
         {
             switch (this.command.ToLower())
             {
                 case "capability":
-                    this.respose = Command.CapabilityCommand(this.tag);
+                    this.respose = Response.ReturnCapabilityResponse(this.tag);
                     break;
 
                 case "noop":
@@ -127,7 +131,7 @@ namespace MailServer.Imap
                     break;
 
                 case "logout":
-                    this.respose = Command.LogoutCommand(this.tag);
+                    this.respose = Response.ReturnLogoutResponse(this.tag);
                     break;
 
                 case "starttls":
@@ -137,7 +141,7 @@ namespace MailServer.Imap
                     break;
 
                 case "login":
-                    this.respose = Command.LoginCommand(this.tag, this.command, this.argument1, this.argument2, ref this.state, ref this.userSession);
+                    this.respose = Response.ReturnLoginResponse(this.tag, this.command, this.argument1, this.argument2, ref this.state, ref this.userSession);
                     break;
 
                 case "select":
@@ -158,21 +162,23 @@ namespace MailServer.Imap
                 case "store":
                 case "copy":
                 case "uid":
-                    this.respose = Command.ReturnBadState(this.tag, this.command);
+                    this.respose = Response.ReturnBadStateResponse(this.tag, this.command);
                     break;
 
                 default:
-                    this.respose = Command.ReturnInvaildCommand(this.tag);
+                    this.respose = Response.ReturnInvaildCommandResponse(this.tag);
                     break;
             }
         }
 
+        // trạng thái đã xác thực
+        // các lệnh được dùng: capability,noop,logout,select,examine,create,delete,subscribe,unsubscribe,list,lsub,status,append
         private void ProcessAuthenticatedState()
         {
             switch (this.command.ToLower())
             {
                 case "capability":
-                    this.respose = Command.CapabilityCommand(this.tag);
+                    this.respose = Response.ReturnCapabilityResponse(this.tag);
                     break;
 
                 case "noop":
@@ -180,21 +186,17 @@ namespace MailServer.Imap
                     break;
 
                 case "logout":
-                    this.respose = Command.LogoutCommand(this.tag);
+                    this.respose = Response.ReturnLogoutResponse(this.tag);
                     break;
 
                 case "starttls":
-                    break;
-
                 case "authenticate":
-                    break;
-
                 case "login":
-                    this.respose = Command.LoginCommand(this.tag, this.command, this.argument1, this.argument2, ref this.state, ref this.userSession);
+                    this.respose = Response.ReturnBadStateResponse(this.tag, this.command);
                     break;
 
                 case "select":
-                    this.respose = Command.SelectedCommand(this.tag, this.argument1, ref this.state, this.userSession, ref this.userMailBox);
+                    this.respose = Response.ReturnSelectedResponse(this.tag, this.argument1, ref this.state, this.userSession, ref this.userMailBox);
                     break;
 
                 case "examine":
@@ -232,21 +234,23 @@ namespace MailServer.Imap
                 case "store":
                 case "copy":
                 case "uid":
-                    this.respose = Command.ReturnBadState(this.tag, this.command);
+                    this.respose = Response.ReturnBadStateResponse(this.tag, this.command);
                     break;
 
                 default:
-                    this.respose = Command.ReturnInvaildCommand(this.tag);
+                    this.respose = Response.ReturnInvaildCommandResponse(this.tag);
                     break;
             }
         }
 
+        // trạng thái đã chọn hộp thư
+        // các lệnh được dùng: capability,noop,logout,select,examine,create,delete,subscribe,unsubscribe,list,lsub,status,append,expunge,search,fetch,store,copy,uid
         private void ProcessSelectedState()
         {
             switch (this.command.ToLower())
             {
                 case "capability":
-                    this.respose = Command.CapabilityCommand(this.tag);
+                    this.respose = Response.ReturnCapabilityResponse(this.tag);
                     break;
 
                 case "noop":
@@ -254,23 +258,44 @@ namespace MailServer.Imap
                     break;
 
                 case "logout":
-                    this.respose = Command.LogoutCommand(this.tag);
+                    this.respose = Response.ReturnLogoutResponse(this.tag);
                     break;
 
                 case "starttls":
                 case "authenticate":
                 case "login":
+                    this.respose = Response.ReturnBadStateResponse(this.tag, this.command);
+                    break;
+
                 case "select":
+                    this.respose = Response.ReturnSelectedResponse(this.tag, this.argument1, ref this.state, this.userSession, ref this.userMailBox);
+                    break;
+
                 case "examine":
+                    break;
+
                 case "create":
+                    break;
+
                 case "delete":
+                    break;
+
                 case "subscribe":
+                    break;
+
                 case "unsubscribe":
+                    break;
+
                 case "list":
+                    break;
+
                 case "lsub":
+                    break;
+
                 case "status":
+                    break;
+
                 case "append":
-                    this.respose = Command.ReturnBadState(this.tag, this.command);
                     break;
 
                 case "check":
@@ -286,7 +311,7 @@ namespace MailServer.Imap
                     break;
 
                 case "fetch":
-                    this.respose = Command.FetchCommand(this.tag, this.argument1, this.argument2, this.userSession, this.userMailBox);
+                    this.respose = Response.ReturnFetchResponse(this.tag, this.argument1, this.argument2, this.userSession, this.userMailBox);
                     break;
 
                 case "store":
@@ -299,7 +324,7 @@ namespace MailServer.Imap
                     break;
 
                 default:
-                    this.respose = Command.ReturnInvaildCommand(this.tag);
+                    this.respose = Response.ReturnInvaildCommandResponse(this.tag);
                     break;
             }
         }

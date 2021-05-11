@@ -7,52 +7,52 @@ using System.Text.RegularExpressions;
 
 namespace MailServer.Imap
 {
-    internal static class Command
+    internal static class Response
     {
         // syntax error
-        static public string ReturnInvaildCommand(string tag)
+        static public string ReturnInvaildCommandResponse(string tag)
         {
             return tag + " BAD Invalid command";
         }
 
-        static public string ReturnBadState(string tag, string command)
+        static public string ReturnBadStateResponse(string tag, string command)
         {
             return tag + " BAD Bad state for " + command.ToUpper();
         }
 
-        static public string ReturnParseError(string tag, string command)
+        static public string ReturnParseErrorResponse(string tag, string command)
         {
             return tag + " BAD " + command + " parse error";
         }
 
-        static public string ReturnParseError(string tag)
+        static public string ReturnParseErrorResponse(string tag)
         {
             return tag + " BAD parse error";
         }
 
-        static public string ReturnMissingTag()
+        static public string ReturnMissingTagResponse()
         {
             return "* BAD missing tag";
         }
 
         // any state
-        static public string LogoutCommand(string tag)
+        static public string ReturnLogoutResponse(string tag)
         {
             return "* BYE IMAP4rev1 Server logging out\n\r" + tag + " OK LOGOUT completed";
         }
 
-        static public string CapabilityCommand(string tag)
+        static public string ReturnCapabilityResponse(string tag)
         {
             return "* CAPABILITY IMAP4rev1 AUTH = LOGIN AUTH=PLAIN\n\r" + tag + " OK CAPABILITY completed";
         }
 
         // not authenticate state
-        static public string LoginCommand(string tag, string command, string argument1, string argument2, ref string state, ref string userSession)
+        static public string ReturnLoginResponse(string tag, string command, string argument1, string argument2, ref string state, ref string userSession)
         {
-            if (argument1 == "" || argument2 == "") return Command.ReturnParseError(tag, command);
+            if (argument1 == "" || argument2 == "") return Response.ReturnParseErrorResponse(tag, command);
             else
             {
-                FileStream fs = new FileStream(Command.GetProjectDir() + @"\Data\user_password", FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
+                FileStream fs = new FileStream(Response.GetProjectDir() + @"\Data\user_password", FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
                 StreamReader sr = new StreamReader(fs);
                 string lineContent = "";
                 while ((lineContent = sr.ReadLine()) != null)
@@ -74,12 +74,12 @@ namespace MailServer.Imap
         }
 
         //authenticate state
-        static public string SelectedCommand(string tag, string agrument1, ref string state, string userSession, ref string userMailBox)
+        static public string ReturnSelectedResponse(string tag, string agrument1, ref string state, string userSession, ref string userMailBox)
         {
-            string path = Command.GetProjectDir() + $"\\Data\\{userSession}\\{agrument1.ToLower()}";
+            string path = Response.GetProjectDir() + $"\\Data\\{userSession}\\{agrument1.ToLower()}";
             if (!Directory.Exists(path)) return tag + " NO Mailbox does not exist";
-            string[] mailBoxInfo = Command.ReadMailBoxInfo(path);
-            int firstUnseen = Command.GetFirstUnseen(path);
+            string[] mailBoxInfo = Response.ReadMailBoxInfo(path);
+            int firstUnseen = Response.GetFirstUnseen(path);
             string respose = "";
             respose += $"* { mailBoxInfo[0]} EXISTS\n\r";
             respose += $"* {mailBoxInfo[1]} RECENT\n\r";
@@ -135,13 +135,13 @@ namespace MailServer.Imap
         }
 
         //selected state
-        public static string FetchCommand(string tag, string agrument1, string agrument2, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
+        public static string ReturnFetchResponse(string tag, string agrument1, string agrument2, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
         {
             int mailNum;
             string respose = "";
-            if (!Int32.TryParse(agrument1, out mailNum)) return ReturnParseError(tag, "fetch");
-            if (mailNum < 1 || (agrument2.ToLower() != "body[header]" && agrument2.ToLower() != "body[text]")) return ReturnParseError(tag, "fetch");
-            string path = Command.GetProjectDir() + $"\\Data\\{userSession}\\{userMailBox.ToLower()}";
+            if (!Int32.TryParse(agrument1, out mailNum)) return ReturnParseErrorResponse(tag, "fetch");
+            if (mailNum < 1 || (agrument2.ToLower() != "body[header]" && agrument2.ToLower() != "body[text]")) return ReturnParseErrorResponse(tag, "fetch");
+            string path = Response.GetProjectDir() + $"\\Data\\{userSession}\\{userMailBox.ToLower()}";
             FileStream fs = new FileStream(path + @"\MailInfo.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
             StreamReader sr = new StreamReader(fs);
             string lineContent = "";
@@ -156,7 +156,7 @@ namespace MailServer.Imap
                     break;
                 }
             }
-            if (i < mailNum) return ReturnParseError(tag, "fetch");
+            if (i < mailNum) return ReturnParseErrorResponse(tag, "fetch");
             MailMessage message = GetMail(path + $"\\{email}.eml");
             if (agrument2.ToLower() == "body[header]")
             {
