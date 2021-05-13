@@ -129,6 +129,9 @@
     <Compile Include="Dialog\SigninDialog.xaml.cs">
       <DependentUpon>SigninDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\MailPage.xaml.cs">
+      <DependentUpon>MailPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -144,6 +147,9 @@
     </Compile>
     <Compile Include="UserControls\HorizontalHeaderTextBox.xaml.cs">
       <DependentUpon>HorizontalHeaderTextBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ListMail.xaml.cs">
+      <DependentUpon>ListMail.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\MainNavigation.xaml.cs">
       <DependentUpon>MainNavigation.xaml</DependentUpon>
@@ -173,6 +179,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Dialog\SigninDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\MailPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -212,6 +222,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserControls\ListMail.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\MainNavigation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -223,6 +237,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.12</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
+      <Version>7.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.5.0</Version>
@@ -239,8 +256,14 @@
       <Project>{769acf27-cd73-41d3-b801-139d15e7b6e3}</Project>
       <Name>EmeowDatabase</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EmeowImap\EmeowImap.csproj">
+      <Project>{ab77ea99-2918-47f6-81e3-45a648d8a68e}</Project>
+      <Name>EmeowImap</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

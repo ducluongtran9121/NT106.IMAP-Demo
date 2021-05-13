@@ -26,7 +26,7 @@
             Grid.Column="0"
             VerticalAlignment="Center"
             Text="{x:Bind Header}"
-            Foreground="{ThemeResource SystemColorDisabledTextColor}">
+            Foreground="{ThemeResource TextDisableBrush}">
         </TextBlock>
         <TextBox
             Grid.Column="2"

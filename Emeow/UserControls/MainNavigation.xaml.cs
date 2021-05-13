@@ -2,36 +2,31 @@
 using Emeow.Pages;
 using Emeow.Dialog;
 using EmeowDatabase;
+using Emeow.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using System.Diagnostics;
+using Windows.UI.Core;
 
 namespace Emeow.UserControls
 {
-    public sealed partial class MainNavigation : UserControl
+    public sealed partial class MainNavigation : Microsoft.UI.Xaml.Controls.NavigationView
     {
-        public ObservableCollection<INavigationControlItem> Items { get; set; } = new ObservableCollection<INavigationControlItem>();
+        public ObservableCollection<INavigationControlItem> Items { get; private set; } = new ObservableCollection<INavigationControlItem>();
 
         public Microsoft.UI.Xaml.Controls.NavigationViewItem itemRightClickSelected { get; set; }
 
-        public string CompactWidth
-        {
-            get => (string)GetValue(compactWidth);
-            set => SetValue(compactWidth, value);
-        }
-        public static readonly DependencyProperty compactWidth =
-            DependencyProperty.Register("CompactWidth", typeof(double), typeof(UserControl), new PropertyMetadata(0.0));
+        public delegate void EvenHandler(object sender, EventArgs e);
+
+        public event EventHandler OnNavigatePage;
 
         public MainNavigation()
         {
             this.InitializeComponent();
 
             InitializeNavItems();
-
-            CompactWidth = MainNavigationView.CompactPaneLength.ToString();
         }
 
         private void InitializeNavItems()
@@ -47,7 +42,7 @@ namespace Emeow.UserControls
             Items.Add(new NavListItem()
             {
                 Content = "Accounts",
-                Glyph = "\xE77B",
+                Glyph = "\xE716",
                 Tag = "Nav_Account",
                 Child = new ObservableCollection<INavigationControlItem>()
                 {
@@ -62,29 +57,38 @@ namespace Emeow.UserControls
             });
         }
 
-        private async void MainNavigationView_Loaded(object sender, RoutedEventArgs e)
+        private void ResizePaneBar_ManipulationDelta(object sender, Windows.UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
         {
-            List<List<string>> data = await Database.GetTableData(Database.Table.Accounts);
-
-            try
+            if (IsPaneOpen)
             {
-                NavListItem accounts = Items[2] as NavListItem;
-
-                foreach (List<string> i in data)
-                {
-                    accounts.Child.Insert(accounts.Child.Count - 1, new NavAccountItem
-                    {
-                        Address = i[0] + "@" + i[1],
-                        Content = i[2],
-                        Tag = "Nav_Account_" + (accounts.Child.Count - 1).ToString(),
-                        Glyph = i[4],
-                    });
-                }
+                if (OpenPaneLength >= 200)
+                    OpenPaneLength += e.Delta.Translation.X;
+                if (OpenPaneLength < 200)
+                    OpenPaneLength = 200;
+                if (OpenPaneLength > 350)
+                    OpenPaneLength = 350;
             }
-            catch(Exception) { }
         }
 
-        private async void MainNavigationView_ItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
+        private void ResizePaneBar_PointerCanceled(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
+
+        private void ResizePaneBar_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (IsPaneOpen)
+            {
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);
+            }
+        }
+
+        private void ResizePaneBar_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
+
+        private async void NavigationView_ItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
             {
@@ -98,10 +102,7 @@ namespace Emeow.UserControls
                     switch (item.Tag.ToString())
                     {
                         case "Nav_NewMail":
-                            if (ContentFrame.CurrentSourcePageType != typeof(NewMailPage))
-                            {
-                                ContentFrame.Navigate(typeof(NewMailPage));
-                            }
+                            OnNavigatePage(typeof(NewMailPage), null);
                             break;
 
                         case "Nav_Account":
@@ -120,38 +121,12 @@ namespace Emeow.UserControls
                                 accounts.Child.Insert(accounts.Child.Count - 1, signinDialog.Account);
                             }
                             break;
-                           
+
                         default:
                             break;
                     }
                 }
-
             }
-        }
-
-        private void NavAccountItem_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
-        {
-            Microsoft.UI.Xaml.Controls.NavigationViewItem item = sender as Microsoft.UI.Xaml.Controls.NavigationViewItem;
-
-            itemRightClickSelected = item;
-
-            item.ContextFlyout = NavAccountItemFlyout;
-            item.ContextFlyout.ShowAt(item);
-        }
-
-        private void RemovemenuFlyoutItem_Click(object sender, RoutedEventArgs e)
-        {
-            MenuFlyoutItem menuFlyoutItem = sender as MenuFlyoutItem;
-
-            NavListItem list = Items[2] as NavListItem;
-
-            list.Child.Remove(list.Child[itemRightClickSelected.Tag.ToString()[itemRightClickSelected.Tag.ToString().Length - 1] - 48]);
-
-            for (int i = 0; i < list.Child.Count - 1; i++)
-            {
-                list.Child[i].Tag = "Nav_Account_" + i.ToString();
-            }
-
         }
     }
 

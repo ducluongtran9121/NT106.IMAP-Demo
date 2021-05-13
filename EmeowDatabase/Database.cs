@@ -85,7 +85,6 @@ namespace EmeowDatabase
             {
 
             }
-
         }
 
         public async static Task<List<string>> GetColumnData(Table table, string column)
@@ -159,12 +158,6 @@ namespace EmeowDatabase
                     " WHERE LocalPart = " + localPart +
                     " AND Domain = " + domain + 
                     " AND Password = " + pwd, db);
-
-                Debug.Print("SELECT *" +
-                    " FROM Accounts" +
-                    " WHERE LocalPart = " + localPart +
-                    " AND Domain = " + domain +
-                    " AND Password = " + pwd);
 
                 SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
 

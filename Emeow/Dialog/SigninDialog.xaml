@@ -16,15 +16,12 @@
             Text="Sign in - Emeow"
             FontWeight="SemiBold"
             FontSize="20"/>
-
         <TextBlock
             Margin="0, 5"
             Padding="0 ,2"
             Text="Welcome back ❤🎉🍻"
             FontSize="16"/>
-
         <Grid MinHeight="10"/>
-
         <Grid
             Margin="2">
             <Grid.RowDefinitions>
@@ -32,18 +29,15 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-
             <TextBox
                 Grid.Row="0"
                 x:Name="EmailAddrTbx"
                 Header="Email Address"
                 KeyDown="SignIn_KeyDown"/>
-
             <Grid 
                 Grid.Row="1"
                 VerticalAlignment="Stretch"
                 MinHeight="10"/>
-
             <PasswordBox
                 Grid.Row="2"
                 x:Name="PasswordPwb"
@@ -54,7 +48,6 @@
             x:Name="StatusTbl"
             Margin="0 10 0 5"
             TextWrapping="WrapWholeWords"/>
-
         <Grid>
             <Grid.Resources>
                 <Style TargetType="uc:CustomButton">
@@ -67,14 +60,11 @@
                 <ColumnDefinition Width="0.1*"/>
                 <ColumnDefinition Width="0.45*"/>
             </Grid.ColumnDefinitions>
-
             <uc:CustomButton
                 x:Name="SignInBtn"
                 Text="Sign in"
                 Click="SignInBtn_Click"/>
-            
             <AppBarSeparator Grid.Column="1"/>
-            
             <uc:CustomButton
                 Grid.Column="3"       
                 x:Name="CancelBtn"

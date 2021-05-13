@@ -16,11 +16,9 @@ namespace Emeow.Pages
         public string TitleBarHeight
         {
             get { return _titleBarHeight; }
-
             set
             {
                 _titleBarHeight = value;
-
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("TitleBarHeight"));
             }
         }

@@ -12,7 +12,6 @@ namespace Emeow.Dialog
 {
     public sealed partial class SigninDialog : ContentDialog
     {
-
         public NavAccountItem Account
         {
             get => (NavAccountItem)GetValue(account);
@@ -20,7 +19,6 @@ namespace Emeow.Dialog
         }
         public static readonly DependencyProperty account =
             DependencyProperty.Register("Username", typeof(NavAccountItem), typeof(UserControl), new PropertyMetadata(null));
-
 
         // Interesting things about IMAP :D
         List<string> interestingIMAP = new List<string>
