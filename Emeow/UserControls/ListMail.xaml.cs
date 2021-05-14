@@ -1,8 +1,6 @@
 ﻿using Emeow.User;
-using Emeow.Common;
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Windows.UI.Xaml.Controls;
 
 namespace Emeow.UserControls

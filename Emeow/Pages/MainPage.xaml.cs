@@ -14,7 +14,7 @@ namespace Emeow.Pages
 {
     public sealed partial class MainPage : Page
     {
-        public MailClient Client { get; set; }
+        private MailClient _Client { get; set; }
 
         public MainPage()
         {
@@ -30,37 +30,35 @@ namespace Emeow.Pages
             {
                 ListMailControls.StartLoadingAnimation();
 
-                Client = new MailClient();
+                _Client = new MailClient();
 
-                if (!Client.InitiallizeConnection())
+                if (!_Client.InitiallizeConnection())
                     throw new Exception("❗❗❗ Can't connect to server! Please check your connection and try again!");
 
-                var check = await Client.Login();
+                var check = await _Client.Login();
                 if (check == false)
                     throw new Exception("❗❗❗ Can't log into your account! Please check your connection and try again!");
 
-                check = await Client.SelectMailBox("inbox");
+                check = await _Client.SelectMailBox("inbox");
                 if(check == false)
                     throw new Exception("❗❗❗ Can't select this mailbox! Please check your connection and try again!");
 
-                ObservableCollection<Mail> temp = new ObservableCollection<Mail>();
+                ObservableCollection<Mail> mails = new ObservableCollection<Mail>();
 
                 for (int i = 1; i <= 2; i++)
                 {
-                    List<string> a = await Client.GetMailHeader(i);
-                    if (a == null)
+                    List<string> header = await _Client.GetMailHeader(i);
+                    if (header == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
-                    string mess = await Client.GetMailText(i);
-                    if (mess == null)
+                    string text = await _Client.GetMailText(i);
+                    if (text == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
-                    Mail c = new Mail(a, mess);
-
-                    temp.Add(c);
+                    mails.Add(new Mail(header, text));
                 }
 
-                foreach (Mail i in temp)
+                foreach (Mail i in mails)
                 {
                     ListMailControls.MailItems.Add(i);
                 }
@@ -69,7 +67,7 @@ namespace Emeow.Pages
             }
             catch (Exception ex) 
             {
-                Client = null;
+                _Client = null;
                 ListMailControls.StopLoadingAnimation();
 
                 ContentDialog dialog = new ContentDialog();
@@ -91,46 +89,44 @@ namespace Emeow.Pages
             {
                 ListMailControls.StartLoadingAnimation();
 
-                if (Client == null)
+                if (_Client == null)
                 {
-                    Client = new MailClient();
+                    _Client = new MailClient();
 
-                    if (!Client.InitiallizeConnection())
+                    if (!_Client.InitiallizeConnection())
                         throw new Exception("❗❗❗ Can't connect to server! Please check your connection and try again!");
 
-                    var check = await Client.Login();
+                    var check = await _Client.Login();
                     if (check == false)
                         throw new Exception("❗❗❗ Can't log into your account! Please check your connection and try again!");
 
-                    check = await Client.SelectMailBox("inbox");
+                    check = await _Client.SelectMailBox("inbox");
                     if (check == false)
                         throw new Exception("❗❗❗ Can't select this mailbox! Please check your connection and try again!");
                 }
 
-                ObservableCollection<Mail> temp = new ObservableCollection<Mail>();
+                ObservableCollection<Mail> mails = new ObservableCollection<Mail>();
 
                 for (int i = 1; i <= 3; i++)
                 {
-                    List<string> a = await Client.GetMailHeader(i);
-                    if (a == null)
+                    List<string> header = await _Client.GetMailHeader(i);
+                    if (header == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
-                    string mess = await Client.GetMailText(i);
-                    if (mess == null)
+                    string text = await _Client.GetMailText(i);
+                    if (text == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
-                    Mail c = new Mail(a, mess);
-
-                    temp.Add(c);
+                    mails.Add(new Mail(header, text));
                 }
 
                 foreach (Mail i in ListMailControls.MailItems.ToArray())
                 {
-                    if (!temp.Any(x => x.AddressFrom == i.AddressFrom && x.Subject == i.Subject))
+                    if (!mails.Any(x => x.AddressFrom == i.AddressFrom && x.Subject == i.Subject))
                         ListMailControls.MailItems.Remove(i);
                 }
 
-                foreach (Mail i in temp)
+                foreach (Mail i in mails)
                 {
                     if (!ListMailControls.MailItems.Any(x => x.AddressFrom == i.AddressFrom && x.Subject == i.Subject))
                         ListMailControls.MailItems.Add(i);
@@ -140,7 +136,7 @@ namespace Emeow.Pages
             }
             catch(Exception ex)
             {
-                Client = null;
+                _Client = null;
                 ListMailControls.StopLoadingAnimation();
 
                 ContentDialog dialog = new ContentDialog();

@@ -5,11 +5,11 @@ namespace EmeowIMAP
 {
     public class Command
     {
-        public string Tag { get; set; }
+        private string Tag { get; set; }
 
-        public TypeCommand Type { get; set; }
+        private TypeCommand Type { get; set; }
 
-        public List<string> Arguments { get; set; }
+        private List<string> Arguments { get; set; }
 
         public Command()
         {

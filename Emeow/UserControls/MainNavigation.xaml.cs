@@ -1,8 +1,6 @@
 ﻿using Emeow.ControlItems;
 using Emeow.Pages;
 using Emeow.Dialog;
-using EmeowDatabase;
-using Emeow.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -16,7 +14,7 @@ namespace Emeow.UserControls
     {
         public ObservableCollection<INavigationControlItem> Items { get; private set; } = new ObservableCollection<INavigationControlItem>();
 
-        public Microsoft.UI.Xaml.Controls.NavigationViewItem itemRightClickSelected { get; set; }
+        public Microsoft.UI.Xaml.Controls.NavigationViewItem ItemRightClickSelected { get; set; }
 
         public delegate void EvenHandler(object sender, EventArgs e);
 

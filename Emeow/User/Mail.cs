@@ -35,7 +35,7 @@ namespace Emeow.User
 
             this.Text = Text;
 
-            TextPreview = Text.Replace('\n', ' ').Substring(0, Text.Length > 50 ? 50 : Text.Length);
+            TextPreview = Text.Replace('\n', ' ').Substring(0, Text.Length >= 70 ? 70 : Text.Length);
         }
 
         public void GetHeaderFromResponse(List<string> header)

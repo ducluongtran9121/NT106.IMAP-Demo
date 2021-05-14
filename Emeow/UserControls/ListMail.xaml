@@ -129,6 +129,7 @@
                         Foreground="{StaticResource TextDisableBrush}"/>
                 </StackPanel>
                 <TextBlock
+                    Visibility="Collapsed"
                     Grid.Column="1"
                     Text="ahih"
                     VerticalAlignment="Center"

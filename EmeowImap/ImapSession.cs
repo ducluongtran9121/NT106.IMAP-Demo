@@ -5,9 +5,9 @@ namespace EmeowIMAP.Client
 {
     public class ImapSession
     {
-        public string CurrentTag { get; set; }
+        private string CurrentTag { get; set; }
 
-        public int TagCount { get; set; }
+        private int TagCount { get; set; }
 
         public ImapSession()
         {
@@ -15,7 +15,7 @@ namespace EmeowIMAP.Client
             TagCount = 0;
         }
 
-        public string InitiallizeSession()
+        public string Login()
         {
             CurrentTag = string.Format("a{0:0000} ", ++TagCount);
             Command command = new Command(CurrentTag, TypeCommand.LOGIN, "19522256@thi123.com", "Thi123");
@@ -29,14 +29,14 @@ namespace EmeowIMAP.Client
             return command.GetString();
         }
 
-        public string GetMailHeader(int Sequence)
+        public string FetchMailHeader(int Sequence)
         {
             CurrentTag = string.Format("a{0:0000} ", ++TagCount);
             Command command = new Command(CurrentTag, TypeCommand.FETCH, Sequence.ToString(), "body[header]");
             return command.GetString();
         }
 
-        public string GetMailText(int Sequence)
+        public string FetchMailText(int Sequence)
         {
             CurrentTag = string.Format("a{0:0000} ", ++TagCount);
             Command command = new Command(CurrentTag, TypeCommand.FETCH, Sequence.ToString(), "body[text]");

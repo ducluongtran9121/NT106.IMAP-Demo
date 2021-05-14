@@ -14,19 +14,19 @@ namespace EmeowIMAP
     {
         private readonly string ServerRespose = "* OK IMAP4rev1 Service Ready";
 
+        private IPEndPoint EndPoint { get; set; } = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1578);
+
+        private static readonly object Lock = new object();
+
         private TcpClient Client { get; set; }
 
         private StreamWriter SWriter { get; set; }
 
         private StreamReader SReader { get; set; }
 
-        private IPEndPoint EndPoint { get; set; } = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1578);
-
         private Thread ListenThread { get; set; }
 
-        private static readonly object Lock  = new object();
-
-        public ImapSession Session { get; private set; }
+        private ImapSession Session { get; set; }
 
         private bool IsDataReady { get; set; } = false;
 
@@ -70,7 +70,7 @@ namespace EmeowIMAP
             {
                 if (SWriter != null)
                 {
-                    await SWriter.WriteLineAsync(Session.InitiallizeSession());
+                    await SWriter.WriteLineAsync(Session.Login());
                     await SWriter.FlushAsync();
                     IsDataReady = false;
                     return true;
@@ -118,7 +118,7 @@ namespace EmeowIMAP
             {
                 if (SWriter != null)
                 {
-                    await SWriter.WriteLineAsync(Session.GetMailHeader(Sequence));
+                    await SWriter.WriteLineAsync(Session.FetchMailHeader(Sequence));
 
                     await SWriter.FlushAsync();
 
@@ -153,7 +153,7 @@ namespace EmeowIMAP
             {
                 if (SWriter != null)
                 {
-                    await SWriter.WriteLineAsync(Session.GetMailText(Sequence));
+                    await SWriter.WriteLineAsync(Session.FetchMailText(Sequence));
                     await SWriter.FlushAsync();
 
                     while (!IsDataReady) { }
