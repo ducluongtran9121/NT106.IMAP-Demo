@@ -14,7 +14,7 @@ namespace Emeow.Pages
 {
     public sealed partial class MainPage : Page
     {
-        private MailClient _Client { get; set; }
+        private MailClient Client { get; set; }
 
         public MainPage()
         {
@@ -30,16 +30,16 @@ namespace Emeow.Pages
             {
                 ListMailControls.StartLoadingAnimation();
 
-                _Client = new MailClient();
+                Client = new MailClient();
 
-                if (!_Client.InitiallizeConnection())
+                if (!Client.InitiallizeConnection())
                     throw new Exception("❗❗❗ Can't connect to server! Please check your connection and try again!");
 
-                var check = await _Client.Login();
+                var check = await Client.Login();
                 if (check == false)
                     throw new Exception("❗❗❗ Can't log into your account! Please check your connection and try again!");
 
-                check = await _Client.SelectMailBox("inbox");
+                check = await Client.SelectMailBox("inbox");
                 if(check == false)
                     throw new Exception("❗❗❗ Can't select this mailbox! Please check your connection and try again!");
 
@@ -47,11 +47,11 @@ namespace Emeow.Pages
 
                 for (int i = 1; i <= 2; i++)
                 {
-                    List<string> header = await _Client.GetMailHeader(i);
+                    List<string> header = await Client.GetMailHeader(i);
                     if (header == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
-                    string text = await _Client.GetMailText(i);
+                    string text = await Client.GetMailText(i);
                     if (text == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
@@ -67,7 +67,7 @@ namespace Emeow.Pages
             }
             catch (Exception ex) 
             {
-                _Client = null;
+                Client = null;
                 ListMailControls.StopLoadingAnimation();
 
                 ContentDialog dialog = new ContentDialog();
@@ -89,18 +89,18 @@ namespace Emeow.Pages
             {
                 ListMailControls.StartLoadingAnimation();
 
-                if (_Client == null)
+                if (Client == null)
                 {
-                    _Client = new MailClient();
+                    Client = new MailClient();
 
-                    if (!_Client.InitiallizeConnection())
+                    if (!Client.InitiallizeConnection())
                         throw new Exception("❗❗❗ Can't connect to server! Please check your connection and try again!");
 
-                    var check = await _Client.Login();
+                    var check = await Client.Login();
                     if (check == false)
                         throw new Exception("❗❗❗ Can't log into your account! Please check your connection and try again!");
 
-                    check = await _Client.SelectMailBox("inbox");
+                    check = await Client.SelectMailBox("inbox");
                     if (check == false)
                         throw new Exception("❗❗❗ Can't select this mailbox! Please check your connection and try again!");
                 }
@@ -109,11 +109,11 @@ namespace Emeow.Pages
 
                 for (int i = 1; i <= 3; i++)
                 {
-                    List<string> header = await _Client.GetMailHeader(i);
+                    List<string> header = await Client.GetMailHeader(i);
                     if (header == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
-                    string text = await _Client.GetMailText(i);
+                    string text = await Client.GetMailText(i);
                     if (text == null)
                         throw new Exception("❗❗❗ Error while fetching your mails! Please check your connection and try again!");
 
@@ -136,7 +136,7 @@ namespace Emeow.Pages
             }
             catch(Exception ex)
             {
-                _Client = null;
+                Client = null;
                 ListMailControls.StopLoadingAnimation();
 
                 ContentDialog dialog = new ContentDialog();

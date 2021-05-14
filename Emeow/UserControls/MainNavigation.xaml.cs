@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Core;
+using System.Diagnostics;
 
 namespace Emeow.UserControls
 {
@@ -44,6 +45,14 @@ namespace Emeow.UserControls
                 Tag = "Nav_Account",
                 Child = new ObservableCollection<INavigationControlItem>()
                 {
+                    new NavAccountItem
+                    {
+                        Content = "Huỳnh Thái Thi",
+                        Address = "1922256@thi123.com",
+                        Glyph = "\xED56",
+                        Tag = "Nav_Account_1",
+                        SelectOnInvoked = true
+                    },
                     new NavItem
                     {
                         Content = "Add account",
@@ -53,6 +62,8 @@ namespace Emeow.UserControls
                     }
                 }
             });
+
+            this.SelectedItem = (Items[2] as NavListItem).Child[0];
         }
 
         private void ResizePaneBar_ManipulationDelta(object sender, Windows.UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
@@ -88,6 +99,8 @@ namespace Emeow.UserControls
 
         private async void NavigationView_ItemInvoked(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
         {
+            Debug.WriteLine("Count: ", this.MenuItems.Count.ToString());
+
             if (args.IsSettingsInvoked)
             {
 
