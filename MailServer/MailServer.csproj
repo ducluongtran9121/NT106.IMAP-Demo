@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -6,6 +6,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MsgReader" Version="4.0.1" />
+		<None Remove="ImapDB.db" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Imap\ImapDB.db">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.0.90" />
+		<PackageReference Include="MsgReader" Version="4.0.1" />
+		<PackageReference Include="System.Data.SQLite" Version="1.0.113.7" />
 	</ItemGroup>
 </Project>

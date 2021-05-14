@@ -10,7 +10,7 @@ using MailServer.Imap;
 
 namespace MailServer
 {
-    internal class MailServer
+    public class MailServer
     {
         private TcpListener listener;
         private Thread serverThread;

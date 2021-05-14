@@ -49,81 +49,48 @@ namespace MailServer.Imap
         // not authenticate state
         static public string ReturnLoginResponse(string tag, string[] arguments, ref string state, ref string userSession)
         {
+            // kiểm tra đối số của lênh login
             if (arguments == null || arguments.Length < 2) return Response.ReturnParseErrorResponse(tag, "LOGIN");
-            else
-            {
-                FileStream fs = new FileStream(Response.GetProjectDir() + @"\Data\user_password", FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
-                StreamReader sr = new StreamReader(fs);
-                string lineContent = "";
-                while ((lineContent = sr.ReadLine()) != null)
-                {
-                    string[] user_pass = lineContent.Split(' ');
-                    if (user_pass[0] == arguments[0] && user_pass[1] == arguments[1])
-                    {
-                        sr.Close();
-                        fs.Close();
-                        userSession = user_pass[0].Split('@')[0];
-                        state = "auth";
-                        return tag + " OK LOGIN completed";
-                    }
-                }
-                sr.Close();
-                fs.Close();
-                return tag + " NO LOGIN failed";
-            }
+
+            // kiểm tra tên tài khoảng và mật khẩu trong ImapDB
+            List<User> userInfo = SqliteData.LoadUserInfo(arguments[0].Split('@')[0], arguments[1]);
+            //báo lỗi nếu user không tồn tại
+            if (userInfo.Count == 0) return tag + " NO LOGIN failed";
+            state = "auth";
+            userSession = userInfo[0].name;
+            return tag + " OK LOGIN completed";
         }
 
         //authenticate state
         static public string ReturnSelectedResponse(string tag, string[] arguments, ref string state, string userSession, ref string userMailBox)
         {
-            if (arguments == null || arguments.Length < 1) return ReturnParseErrorResponse(tag, "SELECT");
-            string path = Response.GetProjectDir() + $"\\Data\\{userSession}\\{arguments[0].ToLower()}";
-            if (!Directory.Exists(path)) return tag + " NO Mailbox does not exist";
-            string[] mailBoxInfo = Response.ReadMailBoxInfo(path);
-            int firstUnseen = Response.GetFirstUnseen(path);
+            // kiểm tra đối số của lênh select
+            if (arguments == null) return ReturnParseErrorResponse(tag, "SELECT");
+            //truy xuất thông tin về mailbox từ ImapDB
+            List<MailBox> mailBoxInfo = SqliteData.LoadMailBoxInfo(userSession, arguments[0]);
+            //báo lỗi nếu mailbox không tồn tại
+            if (mailBoxInfo.Count == 0) return tag + " NO Mailbox does not exist";
+
+            // thay đổi trạng thái sang selected state
+            state = "selected";
+            // gán usermailbox cho session
+            userMailBox = arguments[0];
+            // gán thông tin trả về vào response
             string respose = "";
-            respose += $"* { mailBoxInfo[0]} EXISTS\n\r";
-            respose += $"* {mailBoxInfo[1]} RECENT\n\r";
-            respose += $"* OK [UNSEEN {firstUnseen.ToString()}] Message {firstUnseen.ToString()} is first unseen\n\r";
-            respose += $"* OK [UIDVALIDITY {mailBoxInfo[2]}] UIDs valid\n\r";
-            respose += $"* OK [UIDNEXT {mailBoxInfo[3]}] Predicted next UID\n\r";
+            respose += $"* { mailBoxInfo[0].exists} EXISTS\n\r";
+            respose += $"* {mailBoxInfo[0].recent} RECENT\n\r";
+            respose += $"* OK [UNSEEN {mailBoxInfo[0].firstunseen}] Message {mailBoxInfo[0].firstunseen} is first unseen\n\r";
+            respose += $"* OK [UIDVALIDITY {mailBoxInfo[0].uidvalidity}] UIDs valid\n\r";
+            respose += $"* OK [UIDNEXT {mailBoxInfo[0].uidnext}] Predicted next UID\n\r";
             respose += @"* OK [PERMANENTFLAGS (\Seen \Answered \Flagged \Deleted \Draft] ." + "\n\r";
             respose += tag + " OK [READ-WRITE] SELECT completed";
-            state = "selected";
-            userMailBox = arguments[0];
+
             return respose;
-        }
-
-        private static string[] ReadMailBoxInfo(string path)
-        {
-            string[] mailBoxInfo = new string[4];
-            FileStream fs = new FileStream(path + @"\MailBoxInfo.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
-            StreamReader sr = new StreamReader(fs);
-            for (int i = 0; i < 4; i++)
-                mailBoxInfo[i] = sr.ReadLine().Split(' ')[1];
-            sr.Close();
-            fs.Close();
-            return mailBoxInfo;
-        }
-
-        private static int GetFirstUnseen(string path)
-        {
-            int firstUnseen = 0;
-            FileStream fs = new FileStream(path + @"\MailInfo.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
-            StreamReader sr = new StreamReader(fs);
-            string lineContent = "";
-            while ((lineContent = sr.ReadLine()) != null)
-            {
-                firstUnseen++;
-                if (lineContent.Split(' ').Length < 2) break;
-            }
-            sr.Close();
-            fs.Close();
-            return firstUnseen;
         }
 
         private static MailMessage GetMail(string path)
         {
+            //dịch mail bằng msgReader vào đưa vào MailMessage
             MailMessage mailMessage = new MailMessage();
             FileInfo fileInfo = new FileInfo(path);
             var emlFileMessage = MsgReader.Mime.Message.Load(fileInfo);
@@ -138,28 +105,25 @@ namespace MailServer.Imap
         //selected state
         public static string ReturnFetchResponse(string tag, string[] arguments, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
         {
+            // kiểm tra số đối số của lệnh fetch
             if (arguments == null || arguments.Length < 2) ReturnParseErrorResponse(tag, "FETCH");
-            int mailNum;
+            //kiểm tra fetch number
+            uint mailNum;
+            if (!UInt32.TryParse(arguments[0], out mailNum)) return ReturnParseErrorResponse(tag, "FETCH");
+            // truy vấn UID của fetch number
+            List<string> MailUID = SqliteData.LoadUIDMail(mailNum);
+            // trả về lỗi nếu không tồn tại fetch number
+            if (MailUID.Count == 0) return ReturnParseErrorResponse(tag, "FETCH");
+
             string respose = "";
-            if (!Int32.TryParse(arguments[0], out mailNum)) return ReturnParseErrorResponse(tag, "FETCH");
-            if (mailNum < 1 || (arguments[1].ToLower() != "body[header]" && arguments[1].ToLower() != "body[text]")) return ReturnParseErrorResponse(tag, "FETCH");
-            string path = Response.GetProjectDir() + $"\\Data\\{userSession}\\{userMailBox.ToLower()}";
-            FileStream fs = new FileStream(path + @"\MailInfo.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
-            StreamReader sr = new StreamReader(fs);
-            string lineContent = "";
-            string email = "";
-            int i = 0;
-            while ((lineContent = sr.ReadLine()) != null)
-            {
-                i++;
-                if (i == mailNum)
-                {
-                    email = lineContent.Split(' ')[0];
-                    break;
-                }
-            }
-            if (i < mailNum) return ReturnParseErrorResponse(tag, "FETCH");
-            MailMessage message = GetMail(path + $"\\{email}.eml");
+            // kiểm tra đối số của fetch
+            if (arguments[1].ToLower() != "body[header]" && arguments[1].ToLower() != "body[text]") return ReturnParseErrorResponse(tag, "FETCH");
+
+            // ...\MailServer\Imap\MailBoxImap\....
+            string path = Response.GetProjectDir() + $"\\Imap\\MailBoxImap\\{userSession}\\{userMailBox.ToLower()}";
+
+            // đọc mail được lưu trong mail box
+            MailMessage message = GetMail(path + $"\\email_{MailUID[0]}.eml");
             if (arguments[1].ToLower() == "body[header]")
             {
                 respose += $"From: {message.From}\n\r";
@@ -169,14 +133,45 @@ namespace MailServer.Imap
             if (arguments[1].ToLower() == "body[text]") respose += message.Body;
             respose = $"* {arguments[0]} FETCH({arguments[1]} " + "{" + respose.Length + "} \n\r" + respose + ")\n\r";
             respose += tag + " OK FETCH completed";
-            sr.Close();
-            fs.Close();
+
             return respose;
+        }
+
+        private static bool IsListPermanentFlags(string[] arguments)
+        {
+            //kiểm tra danh sách flag nhập vào
+            if (!arguments[4].StartsWith('(')) return IsPermanentFlags(arguments[4]);
+            else
+            {
+                arguments[4].Replace("(", string.Empty);
+                arguments[arguments.Length - 1].Replace(")", string.Empty);
+                for (int i = 5; i < arguments.Length; i++)
+                    if (!IsPermanentFlags(arguments[i])) return false;
+                return true;
+            }
+        }
+
+        private static bool IsPermanentFlags(string flag)
+        {
+            // kiểm tra flag nhập vào
+            switch (flag.ToLower())
+            {
+                case "\\seen":
+                case "\\answered":
+                case "\\flagged":
+                case "\\deleted":
+                case "\\draft":
+                    return true;
+
+                default:
+                    return false;
+            }
         }
 
         private static string GetProjectDir()
         {
-            Regex regex = new Regex(@"\\MailServer\\bin.*$");
+            // lấy directory của project
+            Regex regex = new Regex(@"\\MailServer\\bin\\(Debug|Release).*$");
             return regex.Replace(Environment.CurrentDirectory, "\\MailServer");
         }
     }
