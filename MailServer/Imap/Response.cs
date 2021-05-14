@@ -22,7 +22,7 @@ namespace MailServer.Imap
 
         static public string ReturnParseErrorResponse(string tag, string command)
         {
-            return tag + " BAD " + command + " parse error";
+            return tag + " BAD " + command.ToUpper() + " parse error";
         }
 
         static public string ReturnParseErrorResponse(string tag)
@@ -43,13 +43,13 @@ namespace MailServer.Imap
 
         static public string ReturnCapabilityResponse(string tag)
         {
-            return "* CAPABILITY IMAP4rev1 AUTH = LOGIN AUTH=PLAIN\n\r" + tag + " OK CAPABILITY completed";
+            return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN\n\r" + tag + " OK CAPABILITY completed";
         }
 
         // not authenticate state
-        static public string ReturnLoginResponse(string tag, string command, string argument1, string argument2, ref string state, ref string userSession)
+        static public string ReturnLoginResponse(string tag, string[] arguments, ref string state, ref string userSession)
         {
-            if (argument1 == "" || argument2 == "") return Response.ReturnParseErrorResponse(tag, command);
+            if (arguments == null || arguments.Length < 2) return Response.ReturnParseErrorResponse(tag, "LOGIN");
             else
             {
                 FileStream fs = new FileStream(Response.GetProjectDir() + @"\Data\user_password", FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
@@ -58,7 +58,7 @@ namespace MailServer.Imap
                 while ((lineContent = sr.ReadLine()) != null)
                 {
                     string[] user_pass = lineContent.Split(' ');
-                    if (user_pass[0] == argument1 && user_pass[1] == argument2)
+                    if (user_pass[0] == arguments[0] && user_pass[1] == arguments[1])
                     {
                         sr.Close();
                         fs.Close();
@@ -74,9 +74,10 @@ namespace MailServer.Imap
         }
 
         //authenticate state
-        static public string ReturnSelectedResponse(string tag, string agrument1, ref string state, string userSession, ref string userMailBox)
+        static public string ReturnSelectedResponse(string tag, string[] arguments, ref string state, string userSession, ref string userMailBox)
         {
-            string path = Response.GetProjectDir() + $"\\Data\\{userSession}\\{agrument1.ToLower()}";
+            if (arguments == null || arguments.Length < 1) return ReturnParseErrorResponse(tag, "SELECT");
+            string path = Response.GetProjectDir() + $"\\Data\\{userSession}\\{arguments[0].ToLower()}";
             if (!Directory.Exists(path)) return tag + " NO Mailbox does not exist";
             string[] mailBoxInfo = Response.ReadMailBoxInfo(path);
             int firstUnseen = Response.GetFirstUnseen(path);
@@ -89,7 +90,7 @@ namespace MailServer.Imap
             respose += @"* OK [PERMANENTFLAGS (\Seen \Answered \Flagged \Deleted \Draft] ." + "\n\r";
             respose += tag + " OK [READ-WRITE] SELECT completed";
             state = "selected";
-            userMailBox = agrument1;
+            userMailBox = arguments[0];
             return respose;
         }
 
@@ -135,12 +136,13 @@ namespace MailServer.Imap
         }
 
         //selected state
-        public static string ReturnFetchResponse(string tag, string agrument1, string agrument2, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
+        public static string ReturnFetchResponse(string tag, string[] arguments, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
         {
+            if (arguments == null || arguments.Length < 2) ReturnParseErrorResponse(tag, "FETCH");
             int mailNum;
             string respose = "";
-            if (!Int32.TryParse(agrument1, out mailNum)) return ReturnParseErrorResponse(tag, "fetch");
-            if (mailNum < 1 || (agrument2.ToLower() != "body[header]" && agrument2.ToLower() != "body[text]")) return ReturnParseErrorResponse(tag, "fetch");
+            if (!Int32.TryParse(arguments[0], out mailNum)) return ReturnParseErrorResponse(tag, "FETCH");
+            if (mailNum < 1 || (arguments[1].ToLower() != "body[header]" && arguments[1].ToLower() != "body[text]")) return ReturnParseErrorResponse(tag, "FETCH");
             string path = Response.GetProjectDir() + $"\\Data\\{userSession}\\{userMailBox.ToLower()}";
             FileStream fs = new FileStream(path + @"\MailInfo.txt", FileMode.Open, FileAccess.Read, FileShare.Read);
             StreamReader sr = new StreamReader(fs);
@@ -156,16 +158,16 @@ namespace MailServer.Imap
                     break;
                 }
             }
-            if (i < mailNum) return ReturnParseErrorResponse(tag, "fetch");
+            if (i < mailNum) return ReturnParseErrorResponse(tag, "FETCH");
             MailMessage message = GetMail(path + $"\\{email}.eml");
-            if (agrument2.ToLower() == "body[header]")
+            if (arguments[1].ToLower() == "body[header]")
             {
                 respose += $"From: {message.From}\n\r";
                 respose += $"To: {message.To}\n\r";
                 respose += $"Subject: {message.Subject}\n\r";
             }
-            if (agrument2.ToLower() == "body[text]") respose += message.Body;
-            respose = $"* {agrument1} FETCH({agrument2} " + "{" + respose.Length + "} \n\r" + respose + ")\n\r";
+            if (arguments[1].ToLower() == "body[text]") respose += message.Body;
+            respose = $"* {arguments[0]} FETCH({arguments[1]} " + "{" + respose.Length + "} \n\r" + respose + ")\n\r";
             respose += tag + " OK FETCH completed";
             sr.Close();
             fs.Close();

@@ -53,7 +53,7 @@ namespace MailServer
                 while (true)
                 {
                     // đợi client connect
-                    Console.WriteLine("Waiting for new  the connection...");
+                    Console.WriteLine("Waiting for new connection...");
                     TcpClient client = listener.AcceptTcpClient();
                     Console.WriteLine(((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString() + " : " + ((IPEndPoint)client.Client.RemoteEndPoint).Port.ToString() + " connected");
                     // tạo thread và lưu thread của client đang connecting

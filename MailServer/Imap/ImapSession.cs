@@ -10,8 +10,7 @@ namespace MailServer.Imap
         private string state = "noAuth";
         private string tag = "";
         private string command = "";
-        private string argument1 = "";
-        private string argument2 = "";
+        private string[] agruments;
         private string respose = "* OK IMAP4rev1 Service Ready";
         private string userSession = "";
         private string userMailBox = "";
@@ -25,51 +24,31 @@ namespace MailServer.Imap
         public string GetResposed(string commandLine)
         {
             string[] commands = commandLine.Split();
+            if (commands.Length == 1)
+            {
+                this.tag = commands[0];
+                this.command = "";
+                this.agruments = null;
+                ProcessCommand();
+                return this.respose;
+            }
+            if (commands.Length == 2)
+            {
+                this.tag = commands[0];
+                this.command = commands[1];
+                this.agruments = null;
+                ProcessCommand();
+                return this.respose;
+            }
             return GetResposed(commands);
         }
 
         public string GetResposed(string[] commands)
         {
-            if (commands.Length == 1)
-            {
-                this.tag = commands[0];
-                this.command = "";
-                this.argument1 = "";
-                this.argument2 = "";
-                ProcessCommand();
-                return this.respose;
-            }
-            if (commands.Length == 2) return GetResposed(commands[0], commands[1]);
-            if (commands.Length == 3) return GetResposed(commands[0], commands[1], commands[2]);
-            return GetResposed(commands[0], commands[1], commands[2], commands[3]);
-        }
-
-        public string GetResposed(string tag, string command)
-        {
-            this.tag = tag;
-            this.command = command;
-            this.argument1 = "";
-            this.argument2 = "";
-            ProcessCommand();
-            return this.respose;
-        }
-
-        public string GetResposed(string tag, string command, string argument1)
-        {
-            this.tag = tag;
-            this.command = command;
-            this.argument1 = argument1;
-            this.argument2 = "";
-            ProcessCommand();
-            return this.respose;
-        }
-
-        public string GetResposed(string tag, string command, string argument1, string argument2)
-        {
-            this.tag = tag;
-            this.command = command;
-            this.argument1 = argument1;
-            this.argument2 = argument2;
+            this.tag = commands[0];
+            this.command = commands[1];
+            agruments = new string[commands.Length - 2];
+            Array.Copy(commands, 2, agruments, 0, commands.Length - 2);
             ProcessCommand();
             return this.respose;
         }
@@ -78,8 +57,7 @@ namespace MailServer.Imap
         {
             this.tag = "";
             this.command = "";
-            this.argument1 = "";
-            this.argument2 = "";
+            this.agruments = null;
             this.state = "";
             this.respose = "";
         }
@@ -141,7 +119,7 @@ namespace MailServer.Imap
                     break;
 
                 case "login":
-                    this.respose = Response.ReturnLoginResponse(this.tag, this.command, this.argument1, this.argument2, ref this.state, ref this.userSession);
+                    this.respose = Response.ReturnLoginResponse(this.tag, this.agruments, ref this.state, ref this.userSession);
                     break;
 
                 case "select":
@@ -196,7 +174,7 @@ namespace MailServer.Imap
                     break;
 
                 case "select":
-                    this.respose = Response.ReturnSelectedResponse(this.tag, this.argument1, ref this.state, this.userSession, ref this.userMailBox);
+                    this.respose = Response.ReturnSelectedResponse(this.tag, this.agruments, ref this.state, this.userSession, ref this.userMailBox);
                     break;
 
                 case "examine":
@@ -268,7 +246,7 @@ namespace MailServer.Imap
                     break;
 
                 case "select":
-                    this.respose = Response.ReturnSelectedResponse(this.tag, this.argument1, ref this.state, this.userSession, ref this.userMailBox);
+                    this.respose = Response.ReturnSelectedResponse(this.tag, this.agruments, ref this.state, this.userSession, ref this.userMailBox);
                     break;
 
                 case "examine":
@@ -311,7 +289,7 @@ namespace MailServer.Imap
                     break;
 
                 case "fetch":
-                    this.respose = Response.ReturnFetchResponse(this.tag, this.argument1, this.argument2, this.userSession, this.userMailBox);
+                    this.respose = Response.ReturnFetchResponse(this.tag, this.agruments, this.userSession, this.userMailBox);
                     break;
 
                 case "store":
