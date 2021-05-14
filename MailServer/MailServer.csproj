@@ -20,4 +20,10 @@
 		<PackageReference Include="MsgReader" Version="4.0.1" />
 		<PackageReference Include="System.Data.SQLite" Version="1.0.113.7" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Imap\MailBoxImap\test1\inbox\" />
+	  <Folder Include="Imap\MailBoxImap\test2\inbox\" />
+	  <Folder Include="Imap\MailBoxImap\test3\inbox\" />
+	</ItemGroup>
 </Project>
