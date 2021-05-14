@@ -1,0 +1,142 @@
+﻿<Page
+    x:Class="Emeow.Pages.NewMailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Emeow.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Emeow.UserControls"
+    mc:Ignorable="d"
+    Background="{StaticResource PageBackgroundColorLowBrush}">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ResourceDictionaries/CustomRichEditBoxStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+    <Grid>
+        <Grid.Resources>
+            <Style TargetType="Rectangle">
+                <Setter Property="Height" Value="6"></Setter>
+                <Setter Property="Fill" Value="{ThemeResource SystemControlBackgroundListLowBrush}"/>
+                <Setter Property="Stroke" Value="Transparent"/>
+                <Setter Property="StrokeThickness" Value="5"/>
+            </Style>
+        </Grid.Resources>
+        <RelativePanel>
+            <StackPanel
+                RelativePanel.AlignLeftWithPanel="True"
+                RelativePanel.AlignRightWithPanel="True"
+                x:Name="ToolBarstpnl"
+                Margin="6 0"
+                MinHeight="36">
+                <RelativePanel>
+                    <uc:CustomButton
+                        x:Name="SendButton"
+                        Glyph="&#xE724; "
+                        Text="Send"
+                        FontSize="16"
+                        RelativePanel.AlignRightWithPanel="True"/>
+                </RelativePanel>
+                <RelativePanel
+                    CornerRadius="4"
+                    Background="{StaticResource PageBackgroundColorLowBrush}">
+                    <StackPanel
+                        Orientation="Horizontal"
+                        RelativePanel.AlignLeftWithPanel="True"
+                        RelativePanel.AlignVerticalCenterWithPanel="True">
+                        <uc:CustomToggleButton
+                            x:Name="BoldButton"
+                            Glyph="&#xE8DD;"
+                            Background="{StaticResource ControlColorLowBrush}"
+                            IsEnabled="{x:Bind IsEdittingRichEditBoxText, Mode=OneWay}"
+                            Click="BoldButton_Click"/>
+                        <uc:CustomToggleButton
+                            x:Name="ItalicButton"
+                            Glyph="&#xE8DB;"
+                            Background="{StaticResource ControlColorLowBrush}"
+                            IsEnabled="{x:Bind IsEdittingRichEditBoxText, Mode=OneWay}"
+                            Click="ItalicButton_Click"/>
+                        <uc:CustomToggleButton
+                            x:Name="UnderlineButton"
+                            Glyph="&#xE8DC;"
+                            Background="{StaticResource ControlColorLowBrush}"
+                            IsEnabled="{x:Bind IsEdittingRichEditBoxText, Mode=OneWay}"
+                            Click="UnderlineButton_Click"/>
+                    </StackPanel>
+                    <StackPanel
+                        x:Name="ToolBarStackPanel"
+                        Orientation="Horizontal"
+                        RelativePanel.AlignRightWithPanel="True"
+                        RelativePanel.AlignVerticalCenterWithPanel="True">
+                        <uc:CustomButton
+                            x:Name="UndoButton"
+                            Glyph="&#xE7A7;"
+                            Text="Undo"
+                            Background="{StaticResource ControlColorLowBrush}"
+                            IsEnabled="{x:Bind CanUndo, Mode=OneWay}"
+                            Click="UndoButton_Click"/>
+                        <uc:CustomButton
+                            x:Name="RedoButton"
+                            Glyph="&#xE7A6;"
+                            Text="Redo"
+                            Background="{StaticResource ControlColorLowBrush}"
+                            IsEnabled="{x:Bind CanRedo, Mode=OneWay}"
+                            Click="RedoButton_Click"/>
+                    </StackPanel>
+                </RelativePanel>
+            </StackPanel>
+            <Rectangle
+                RelativePanel.Below="ToolBarstpnl"
+                RelativePanel.AlignLeftWithPanel="True"
+                RelativePanel.AlignRightWithPanel="True"
+                x:Name="RectSeparator"
+                Margin="6 0"/>
+            <Border
+                RelativePanel.Below="RectSeparator"
+                RelativePanel.AlignLeftWithPanel="True"
+                RelativePanel.AlignRightWithPanel="True"
+                RelativePanel.AlignBottomWithPanel="True"
+                BorderThickness="1"
+                CornerRadius="4"
+                BorderBrush="{StaticResource ControlBorderColorDefaultBrush}"
+                Margin="0 8 6 6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel
+                        Background="{StaticResource PageBackgroundColorDefaultBrush}">
+                        <uc:HorizontalHeaderTextBox
+                            x:Name="FromTextBox"
+                            Header="From:"
+                            GotFocus="TextBox_GotFocus"/>
+                        <Rectangle/>
+                        <uc:HorizontalHeaderTextBox
+                            x:Name="ToTextBox"
+                            Header="To:"
+                            GotFocus="TextBox_GotFocus"/>
+                        <Rectangle/>
+                        <uc:HorizontalHeaderTextBox
+                            x:Name="SubjectTextBox"
+                            Header="Subject:"
+                            GotFocus="TextBox_GotFocus"/>
+                        <Rectangle/>
+                    </StackPanel>
+                    <RichEditBox
+                        Grid.Row="1"
+                        x:Name="Editor"
+                        PlaceholderText="Content"
+                        Style="{StaticResource CustomRichEditBoxStyle}"
+                        SelectionFlyout="{x:Null}"
+                        GotFocus="Editor_GotFocus"
+                        TextChanged="Editor_TextChanged"
+                        SelectionChanging="Editor_SelectionChanging">
+                    </RichEditBox>
+                </Grid>
+            </Border>
+        </RelativePanel>
+    </Grid>
+</Page>

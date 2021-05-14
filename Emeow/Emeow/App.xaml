@@ -1,0 +1,31 @@
+﻿<Application
+    x:Class="Emeow.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Emeow">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls"/>
+                <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Light">
+                            <SolidColorBrush x:Key="PageBackgroundColorDefaultBrush" Color="#93FFFFFF"/>
+                            <SolidColorBrush x:Key="PageBackgroundColorLowBrush" Color="#FFF3F3F3"/>
+                            <SolidColorBrush x:Key="ControlColorDefaultBrush" Color="#B3FFFFFF"/>
+                            <SolidColorBrush x:Key="ControlBorderColorDefaultBrush" Color="#55E1E1E1"/>
+                            <SolidColorBrush x:Key="ControlColorLowBrush" Color="#FFF3F3F3"/>
+                            <SolidColorBrush x:Key="ControlColorMediumBrush" Color="#FFF7F7F7"/>
+                            <SolidColorBrush x:Key="ControlColorPointerOverBrush" Color="#FFF3F3F3"/>
+                            <SolidColorBrush x:Key="ControlFillColorTransparentBrush" Color="#00FFFFFF"/>
+                            <SolidColorBrush x:Key="TextSelectionHighlightColorDefaultBrush" Color="#DACCCCCC"/>
+                            <SolidColorBrush x:Key="TextDisableBrush" Color="{ThemeResource SystemColorDisabledTextColor}"/>
+                            <Color x:Key="SolidBackgroundAcrylic">#FFFFFF</Color>
+                            <Color x:Key="SolidFallbackBackground">#50FFFFFF</Color>
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
