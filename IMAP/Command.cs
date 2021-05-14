@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EmeowIMAP
+namespace IMAP
 {
     public class Command
     {

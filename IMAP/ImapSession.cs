@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace EmeowIMAP.Client
+namespace IMAP.Client
 {
     public class ImapSession
     {

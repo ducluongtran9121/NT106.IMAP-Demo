@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 using Windows.Storage; 
 
-namespace EmeowDatabase
+namespace MailClientDatabase
 {
     public class Database
     {

@@ -1,4 +1,4 @@
-﻿using EmeowIMAP.Client;
+﻿using IMAP.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EmeowIMAP
+namespace IMAP
 {
     public class MailClient
     {

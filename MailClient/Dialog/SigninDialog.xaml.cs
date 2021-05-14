@@ -1,4 +1,4 @@
-﻿using EmeowDatabase;
+﻿using MailClientDatabase;
 using Emeow.ControlItems;
 using System;
 using System.Collections.Generic;

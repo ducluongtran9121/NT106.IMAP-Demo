@@ -1,5 +1,5 @@
 ﻿using Emeow.Pages;
-using EmeowDatabase;
+using MailClientDatabase;
 using System;
 using System.Collections.Generic;
 using System.IO;

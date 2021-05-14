@@ -1,4 +1,4 @@
-﻿using EmeowIMAP;
+﻿using IMAP;
 using Emeow.User;
 using System;
 using System.Linq;
