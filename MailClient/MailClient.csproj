@@ -252,13 +252,13 @@
     <None Include="Directory.Build.props" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EmeowDatabase\EmeowDatabase.csproj">
+    <ProjectReference Include="..\MailClientDatabase\MailClientDatabase.csproj">
       <Project>{769acf27-cd73-41d3-b801-139d15e7b6e3}</Project>
-      <Name>EmeowDatabase</Name>
+      <Name>MailClientDatabase</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EmeowImap\EmeowImap.csproj">
+    <ProjectReference Include="..\IMAP\IMAP.csproj">
       <Project>{ab77ea99-2918-47f6-81e3-45a648d8a68e}</Project>
-      <Name>EmeowImap</Name>
+      <Name>IMAP</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
