@@ -22,8 +22,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Imap\MailBoxImap\test1\inbox\" />
-	  <Folder Include="Imap\MailBoxImap\test2\inbox\" />
-	  <Folder Include="Imap\MailBoxImap\test3\inbox\" />
+	  <Folder Include="Imap\ImapMailBox\test1\inbox\" />
+	  <Folder Include="Imap\ImapMailBox\test2\inbox\" />
+	  <Folder Include="Imap\ImapMailBox\test3\inbox\" />
 	</ItemGroup>
 </Project>

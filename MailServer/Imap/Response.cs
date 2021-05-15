@@ -120,7 +120,7 @@ namespace MailServer.Imap
             if (arguments[1].ToLower() != "body[header]" && arguments[1].ToLower() != "body[text]") return ReturnParseErrorResponse(tag, "FETCH");
 
             // ...\MailServer\Imap\MailBoxImap\....
-            string path = Response.GetProjectDir() + $"\\Imap\\MailBoxImap\\{userSession}\\{userMailBox.ToLower()}";
+            string path = Response.GetProjectDir() + $"\\Imap\\ImapMailBox\\{userSession}\\{userMailBox.ToLower()}";
 
             // đọc mail được lưu trong mail box
             MailMessage message = GetMail(path + $"\\email_{MailUID[0]}.eml");
