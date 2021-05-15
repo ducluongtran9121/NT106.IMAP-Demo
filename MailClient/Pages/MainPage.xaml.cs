@@ -32,15 +32,16 @@ namespace Emeow.Pages
 
                 Client = new MailClient();
 
-                if (!Client.InitiallizeConnection())
+                var check = await Client.InitiallizeConnection();
+                if (!check)
                     throw new Exception("❗❗❗ Can't connect to server! Please check your connection and try again!");
 
-                var check = await Client.Login();
-                if (check == false)
+                check = await Client.Login();
+                if (!check)
                     throw new Exception("❗❗❗ Can't log into your account! Please check your connection and try again!");
 
-                check = await Client.SelectMailBox("inbox");
-                if(check == false)
+                check = await Client.SelectMailBox(ListMailControls.CurrentMailBox);
+                if(!check)
                     throw new Exception("❗❗❗ Can't select this mailbox! Please check your connection and try again!");
 
                 ObservableCollection<Mail> mails = new ObservableCollection<Mail>();
@@ -93,15 +94,16 @@ namespace Emeow.Pages
                 {
                     Client = new MailClient();
 
-                    if (!Client.InitiallizeConnection())
+                    var check = await Client.InitiallizeConnection();
+                    if (!check)
                         throw new Exception("❗❗❗ Can't connect to server! Please check your connection and try again!");
 
-                    var check = await Client.Login();
-                    if (check == false)
+                    check = await Client.Login();
+                    if (!check)
                         throw new Exception("❗❗❗ Can't log into your account! Please check your connection and try again!");
 
-                    check = await Client.SelectMailBox("inbox");
-                    if (check == false)
+                    check = await Client.SelectMailBox(ListMailControls.CurrentMailBox);
+                    if (!check)
                         throw new Exception("❗❗❗ Can't select this mailbox! Please check your connection and try again!");
                 }
 

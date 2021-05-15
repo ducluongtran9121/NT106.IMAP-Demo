@@ -37,7 +37,7 @@ namespace IMAP
             
         }
 
-        public bool InitiallizeConnection()
+        public async Task<bool> InitiallizeConnection()
         {
             try
             {
@@ -45,7 +45,7 @@ namespace IMAP
 
                 Session = new ImapSession();
 
-                Client.Connect(EndPoint);
+                await Client.ConnectAsync(EndPoint.Address, EndPoint.Port);
 
                 SWriter = new StreamWriter(Client.GetStream());
 
@@ -126,7 +126,7 @@ namespace IMAP
 
                     IsDataReady = false;
 
-                    await Task.Delay(300);
+                    await Task.Delay(500);
 
                     List<string> data = new List<string>(CurrentData.Split('\n'));
 
@@ -160,7 +160,7 @@ namespace IMAP
 
                     IsDataReady = false;
 
-                    await Task.Delay(10);
+                    await Task.Delay(100);
 
                     List<string> data = new List<string>(CurrentData.Split('\n'));
 
