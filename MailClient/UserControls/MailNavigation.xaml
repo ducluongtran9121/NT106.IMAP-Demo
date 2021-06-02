@@ -331,8 +331,27 @@
                 ItemsSource="{x:Bind MailItems}"
                 ItemTemplate="{StaticResource MailMessageTemplate}"
                 Loaded="ListView_Loaded"
-                SelectionChanged="ListView_SelectionChanged">
+                SelectionChanged="ListView_SelectionChanged"
+                ContainerContentChanging="ListView_ContainerContentChanging">
             </ListView>
+            <StackPanel
+                x:Name="MailBoxEmptyStatus"
+                VerticalAlignment="Center">
+                <TextBlock
+                    Text="📭"
+                    FontSize="100"
+                    HorizontalAlignment="Center"/>
+                <TextBlock 
+                    Text="Nothing in here..."
+                    HorizontalAlignment="Center"
+                    FontSize="25"/>
+                <TextBlock 
+                    Text="Try sending someone an email 💌"
+                    TextWrapping="WrapWholeWords"
+                    TextAlignment="Center"
+                    HorizontalAlignment="Center"
+                    FontSize="25"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

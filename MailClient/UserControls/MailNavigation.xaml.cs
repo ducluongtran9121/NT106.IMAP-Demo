@@ -147,5 +147,10 @@ namespace MailClient.UserControls
         {
             await MailSyncAsync();
         }
+
+        private void ListView_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            MailBoxEmptyStatus.Visibility = sender.Items.Count == 0 ? Visibility.Visible: Visibility.Collapsed;
+        }
     }
 }
