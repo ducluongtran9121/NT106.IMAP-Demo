@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
-using Windows.Storage; 
+using Windows.Storage;
 
 namespace MailClientDatabase
 {
     public class Database
     {
-        public static string DatabaseName { get; set; } = "EmeowDatabase.db";
+        public static string DatabaseName { get; set; } = "MailClientDatabase.db";
 
         public enum Table
         {
@@ -34,7 +34,7 @@ namespace MailClientDatabase
                     "Domain NVARCHAR(50) NOT NULL, " +
                     "Name NVARCHAR(100), " +
                     "Password NVARCHAR(100) NOT NULL, " +
-                    "Glyph NVARCHAR(10), " + 
+                    "Glyph NVARCHAR(10), " +
                     "PRIMARY KEY(LocalPart,Domain));";
 
                 SqliteCommand createTable = new SqliteCommand(tableCommand, db);
@@ -122,7 +122,7 @@ namespace MailClientDatabase
                 await db.OpenAsync();
 
                 SqliteCommand selectCommand = new SqliteCommand
-                    ("SELECT *"  + " FROM " + table.ToString(), db);
+                    ("SELECT *" + " FROM " + table.ToString(), db);
 
                 SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
 
@@ -131,7 +131,7 @@ namespace MailClientDatabase
                     List<string> entries = new List<string>();
 
                     for (int i = 0; i < query.FieldCount; i++)
-                    { 
+                    {
                         entries.Add(query.GetString(i));
                     }
                     data.Add(entries);
@@ -156,7 +156,7 @@ namespace MailClientDatabase
                     ("SELECT *" +
                     " FROM Accounts" +
                     " WHERE LocalPart = " + localPart +
-                    " AND Domain = " + domain + 
+                    " AND Domain = " + domain +
                     " AND Password = " + pwd, db);
 
                 SqliteDataReader query = await selectCommand.ExecuteReaderAsync();

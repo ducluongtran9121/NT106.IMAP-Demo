@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{61B2A4C4-9540-4982-9A7B-5B0178B6A297}</ProjectGuid>
+    <ProjectGuid>{C713640E-1382-4C4A-8AE9-419039F46A02}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MailClientDatabase</RootNamespace>
-    <AssemblyName>MailClientDatabase</AssemblyName>
+    <RootNamespace>MailClientIMAP</RootNamespace>
+    <AssemblyName>MailClientIMAP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
@@ -120,14 +120,13 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Database.cs" />
+    <Compile Include="Command.cs" />
+    <Compile Include="CommandBase.cs" />
+    <Compile Include="ImapClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Properties\MailClientDatabase.rd.xml" />
+    <EmbeddedResource Include="Properties\MailClientIMAP.rd.xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite">
-      <Version>5.0.6</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.12</Version>
     </PackageReference>

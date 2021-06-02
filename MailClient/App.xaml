@@ -1,0 +1,43 @@
+﻿<Application
+    x:Class="MailClient.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MailClient">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Other merged dictionaries here -->
+            </ResourceDictionary.MergedDictionaries>
+            <!-- Other app resources here -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="SystemBackgroundDefaultBrush" Color="#EEEFEE"/>
+                    <SolidColorBrush x:Key="SystemBackgroundHighBrush" Color="#F2F2F2"/>
+                    <SolidColorBrush x:Key="SystemBackgroundLowBrush" Color="#E6E6E6"/>
+                    <SolidColorBrush x:Key="ControlHoverDefaultBrush" Color="#E6E6E6"/>
+                    <SolidColorBrush x:Key="ControlBorderDefaultBrush" Color="#ECECEC"/>
+                    <SolidColorBrush x:Key="SeparatorDefaultBrush" Color="#E6E6E6"/>
+                    <Color x:Key="SideNavigationTintColor">#FFFFFF</Color>
+                    <Color x:Key="SideNavigationFallbackColor">#F3F3F3</Color>
+                    <x:Double x:Key="SideNavigationTintOpacity">0.85</x:Double>
+                    <x:Double x:Key="SideNavigaionTintLuminosityOpacity">0.85</x:Double>
+                    <x:Boolean x:Key="UseFallBackColor">False</x:Boolean>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="SystemBackgroundDefaultBrush" Color="#212121"/>
+                    <SolidColorBrush x:Key="SystemBackgroundHighBrush" Color="#272727"/>
+                    <SolidColorBrush x:Key="SystemBackgroundLowBrush" Color="#191919"/>
+                    <SolidColorBrush x:Key="ControlHoverDefaultBrush" Color="#2E2E2E"/>
+                    <SolidColorBrush x:Key="ControlBorderDefaultBrush" Color="#272727"/>
+                    <SolidColorBrush x:Key="SeparatorDefaultBrush" Color="#2E2E2E"/>
+                    <Color x:Key="SideNavigationTintColor">#282828</Color>
+                    <Color x:Key="SideNavigationFallbackColor">#282828</Color>
+                    <x:Double x:Key="SideNavigationTintOpacity">0.85</x:Double>
+                    <x:Double x:Key="SideNavigaionTintLuminosityOpacity">0.85</x:Double>
+                    <x:Boolean x:Key="UseFallBackColor">False</x:Boolean>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
