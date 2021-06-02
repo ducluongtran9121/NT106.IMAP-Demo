@@ -31,7 +31,7 @@ namespace MailClient.Helpers
                     }
                 }
 
-                return MailClient.App.GetEnum<ElementTheme>(App.Current.RequestedTheme.ToString());
+                return App.GetEnum<ElementTheme>(App.Current.RequestedTheme.ToString());
             }
         }
 
@@ -69,7 +69,7 @@ namespace MailClient.Helpers
 
             if (savedTheme != null)
             {
-                RootTheme = MailClient.App.GetEnum<ElementTheme>(savedTheme);
+                RootTheme = App.GetEnum<ElementTheme>(savedTheme);
             }
 
             // Registering to color changes, thus we notice when user changes theme system wide
@@ -92,24 +92,26 @@ namespace MailClient.Helpers
 
         public static bool IsDarkTheme()
         {
-            if (RootTheme == ElementTheme.Default)
-            {
-                return Application.Current.RequestedTheme == ApplicationTheme.Dark;
-            }
-            return RootTheme == ElementTheme.Dark;
+            return RootTheme == ElementTheme.Default
+                ? Application.Current.RequestedTheme == ApplicationTheme.Dark
+                : RootTheme == ElementTheme.Dark;
         }
 
         public static void UpdateSystemCaptionButtonColors()
         {
             ApplicationViewTitleBar titleBar = ApplicationView.GetForCurrentView().TitleBar;
 
-            if (ThemeHelper.IsDarkTheme())
+            if (IsDarkTheme())
             {
                 titleBar.ButtonForegroundColor = Colors.White;
+                titleBar.ButtonHoverBackgroundColor = Color.FromArgb(255, 46, 46, 46);
+                titleBar.ButtonHoverForegroundColor = Colors.White;
             }
             else
             {
                 titleBar.ButtonForegroundColor = Colors.Black;
+                titleBar.ButtonHoverBackgroundColor = Color.FromArgb(255, 230, 230, 230);
+                titleBar.ButtonHoverForegroundColor = Colors.Black;
             }
         }
     }
