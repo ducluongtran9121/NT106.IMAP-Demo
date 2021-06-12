@@ -94,6 +94,7 @@ namespace MailServer
                 ImapSession session = new ImapSession();
                 string msg = "";
                 string resposed = session.GetResposed();
+                
                 sw.WriteLine(resposed);
                 sw.Flush();
                 // kiểm tra client đang kết nối
@@ -108,6 +109,7 @@ namespace MailServer
                         resposed = session.GetResposed(msg);
                         sw.WriteLine(resposed);
                         sw.Flush();
+                        if (resposed.Split(' ')[1] == "BYE") break;
                     }
                     catch (IOException ex)
                     {
@@ -122,11 +124,13 @@ namespace MailServer
                     Console.WriteLine(resposed);
                 }
                 Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
-                clientconnectionList.Remove(client);
                 // giải phóng stream và TCPclient connect
-                sr.Close();
-                sw.Close();
                 client.Close();
+                sr.Dispose();
+                sr.Close();
+                sw.Dispose();
+                sw.Close(); 
+                clientconnectionList.Remove(client);
             }
             catch (Exception ex)
             {
