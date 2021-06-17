@@ -36,8 +36,9 @@ namespace MailServer.Imap
         }
 
         // any state
-        static public string ReturnLogoutResponse(string tag)
+        static public string ReturnLogoutResponse(string tag,ref string state)
         {
+            state = "Logout";
             return "* BYE IMAP4rev1 Server logging out\n\r" + tag + " OK LOGOUT completed";
         }
 

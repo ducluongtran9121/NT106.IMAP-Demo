@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using MailServer;
 
 namespace MailServer.Imap
 {
@@ -15,14 +16,23 @@ namespace MailServer.Imap
         private string userSession = "";
         private string userMailBox = "";
 
-        // trả về response ứng với từng lệnh trong session
-        public string GetResposed()
+        // trả về trạng thái của session
+        public string GetState()
         {
-            return this.respose;
+            return this.state;
+        }
+        // trả về response ứng với từng lệnh trong session
+        public byte[] GetEncrytionResponse(string commandLine)
+        {
+            string keyAES = "12345678123456781234567812345678";
+            string ivAES = "1122334455667788";
+            this.respose = GetResposed(commandLine);
+            return AESCryptography.EncryptWithAES(this.respose, keyAES, ivAES);
         }
 
         public string GetResposed(string commandLine)
         {
+            if (commandLine == "") return this.respose;
             string[] commands = commandLine.Split();
             if (commands.Length == 1)
             {
@@ -109,7 +119,7 @@ namespace MailServer.Imap
                     break;
 
                 case "logout":
-                    this.respose = Response.ReturnLogoutResponse(this.tag);
+                    this.respose = Response.ReturnLogoutResponse(this.tag,ref this.state);
                     break;
 
                 case "starttls":
@@ -164,7 +174,7 @@ namespace MailServer.Imap
                     break;
 
                 case "logout":
-                    this.respose = Response.ReturnLogoutResponse(this.tag);
+                    this.respose = Response.ReturnLogoutResponse(this.tag,ref this.state);
                     break;
 
                 case "starttls":
@@ -236,7 +246,7 @@ namespace MailServer.Imap
                     break;
 
                 case "logout":
-                    this.respose = Response.ReturnLogoutResponse(this.tag);
+                    this.respose = Response.ReturnLogoutResponse(this.tag, ref this.state);
                     break;
 
                 case "starttls":

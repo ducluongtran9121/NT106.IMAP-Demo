@@ -93,7 +93,7 @@ namespace MailServer
                 // tạo sessionImap
                 ImapSession session = new ImapSession();
                 string msg = "";
-                string resposed = session.GetResposed();
+                string resposed = session.GetResposed("");
                 
                 sw.WriteLine(resposed);
                 sw.Flush();
@@ -109,7 +109,7 @@ namespace MailServer
                         resposed = session.GetResposed(msg);
                         sw.WriteLine(resposed);
                         sw.Flush();
-                        if (resposed.Split(' ')[1] == "BYE") break;
+                        if (session.GetState() == "Logout") break;
                     }
                     catch (IOException ex)
                     {
