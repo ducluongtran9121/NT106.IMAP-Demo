@@ -28,12 +28,14 @@ namespace MailServer.Imap
             }
         }
 
-        public static List<string> LoadUIDMail(uint index)
+        public static int LoadUIDMail(uint index)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<string>($"select uid from MailInfo where \"_rowid_\"='{index}'", new DynamicParameters());
-                return query.ToList();
+                var query = cnn.Query<int>($"select uid from MailInfo where \"_rowid_\"='{index}'", new DynamicParameters());
+                List<int> list = query.ToList();
+                if (list.Count() == 0) return -1;
+                return list[0];
             }
         }
 

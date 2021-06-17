@@ -112,9 +112,9 @@ namespace MailServer.Imap
             uint mailNum;
             if (!UInt32.TryParse(arguments[0], out mailNum)) return ReturnParseErrorResponse(tag, "FETCH");
             // truy vấn UID của fetch number
-            List<string> MailUID = SqliteData.LoadUIDMail(mailNum);
+            int MailUID = SqliteData.LoadUIDMail(mailNum);
             // trả về lỗi nếu không tồn tại fetch number
-            if (MailUID.Count == 0) return ReturnParseErrorResponse(tag, "FETCH");
+            if (MailUID == -1) return ReturnParseErrorResponse(tag, "FETCH");
 
             string respose = "";
             // kiểm tra đối số của fetch
@@ -124,7 +124,7 @@ namespace MailServer.Imap
             string path = Response.GetProjectDir() + $"\\Imap\\ImapMailBox\\{userSession}\\{userMailBox.ToLower()}";
 
             // đọc mail được lưu trong mail box
-            MailMessage message = GetMail(path + $"\\email_{MailUID[0]}.eml");
+            MailMessage message = GetMail(path + $"\\email_{MailUID}.eml");
             if (arguments[1].ToLower() == "body[header]")
             {
                 respose += $"From: {message.From}\n\r";
