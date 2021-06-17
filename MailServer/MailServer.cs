@@ -115,6 +115,10 @@ namespace MailServer
                     catch (IOException ex)
                     {
                         Console.WriteLine(ex.InnerException.GetType());
+                        sr.Dispose();
+                        sr.Close();
+                        sw.Dispose();
+                        sw.Close();
                         // thông báo timeout cho client
                         sw.WriteLine("* BYE connection timed out");
                         sw.Flush();
@@ -126,6 +130,7 @@ namespace MailServer
                 }
                 Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
                 // giải phóng stream và TCPclient connect
+                client.Dispose();
                 client.Close();
                 sr.Dispose();
                 sr.Close();
@@ -136,6 +141,7 @@ namespace MailServer
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+                client.Dispose();
                 client.Close();
                 clientconnectionList.Remove(client);
                 Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
