@@ -54,7 +54,7 @@ namespace MailServer.Imap
             if (arguments == null || arguments.Length < 2) return Response.ReturnParseErrorResponse(tag, "LOGIN");
 
             // kiểm tra tên tài khoảng và mật khẩu trong ImapDB
-            List<User> userInfo = SqliteData.LoadUserInfo(arguments[0].Split('@')[0], arguments[1]);
+            List<User> userInfo = SqliteQuery.LoadUserInfo(arguments[0].Split('@')[0], arguments[1]);
             //báo lỗi nếu user không tồn tại
             if (userInfo.Count == 0) return tag + " NO LOGIN failed";
             state = "auth";
@@ -68,7 +68,7 @@ namespace MailServer.Imap
             // kiểm tra đối số của lênh select
             if (arguments == null) return ReturnParseErrorResponse(tag, "SELECT");
             //truy xuất thông tin về mailbox từ ImapDB
-            List<MailBox> mailBoxInfo = SqliteData.LoadMailBoxInfo(userSession, arguments[0]);
+            List<MailBox> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, arguments[0]);
             //báo lỗi nếu mailbox không tồn tại
             if (mailBoxInfo.Count == 0) return tag + " NO Mailbox does not exist";
 
@@ -112,7 +112,7 @@ namespace MailServer.Imap
             uint mailNum;
             if (!UInt32.TryParse(arguments[0], out mailNum)) return ReturnParseErrorResponse(tag, "FETCH");
             // truy vấn UID của fetch number
-            int MailUID = SqliteData.LoadUIDMail(mailNum);
+            int MailUID = SqliteQuery.LoadUIDMail(mailNum);
             // trả về lỗi nếu không tồn tại fetch number
             if (MailUID == -1) return ReturnParseErrorResponse(tag, "FETCH");
 

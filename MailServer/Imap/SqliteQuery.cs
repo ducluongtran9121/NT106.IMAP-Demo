@@ -8,7 +8,7 @@ using System.Text;
 
 namespace MailServer.Imap
 {
-    internal static class SqliteData
+    internal static class SqliteQuery
     {
         public static List<MailBox> LoadMailBoxInfo(string userSession, string userMailBox)
         {
