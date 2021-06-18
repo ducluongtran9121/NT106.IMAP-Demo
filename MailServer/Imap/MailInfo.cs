@@ -14,5 +14,6 @@ namespace MailServer.Imap
         public string answered { get; set; }
         public string flagged { get; set; }
         public string draft { get; set; }
+        public string deleted { get; set; }
     }
 }
