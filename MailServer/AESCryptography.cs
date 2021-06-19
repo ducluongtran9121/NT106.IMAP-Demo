@@ -9,7 +9,7 @@ namespace MailServer
     class AESCryptography
     {
         // mã hóa (AES)
-        static public byte[] EncryptWithAES(string msg,string keyAES, string ivAES)
+        static public byte[] EncryptWithAES(string msg, string keyAES, string ivAES)
         {
             byte[] Key = Encoding.UTF8.GetBytes(keyAES);
             byte[] IV = Encoding.UTF8.GetBytes(ivAES);
@@ -23,6 +23,7 @@ namespace MailServer
             }
             return encResponse;
         }
+
         static private byte[] EncryptStringToBytes_Aes(string plainText, byte[] Key, byte[] IV)
         {
             // Check arguments.
@@ -63,7 +64,21 @@ namespace MailServer
             return encrypted;
         }
         // giải mã (AES)
-        string DecryptStringFromBytes_Aes(byte[] cipherText, byte[] Key, byte[] IV)
+        static public string DecryptWithAES(byte[] cipher, string keyAES, string ivAES)
+        {
+            byte[] Key = Encoding.UTF8.GetBytes(keyAES);
+            byte[] IV = Encoding.UTF8.GetBytes(ivAES);
+            string decryptedMess;
+            using (Aes myAes = Aes.Create())
+            {
+                // Decrypt the bytes to a string.
+                myAes.Key = Key;
+                myAes.IV = IV;
+                decryptedMess = DecryptStringFromBytes_Aes(cipher, myAes.Key, myAes.IV);
+            }
+            return decryptedMess;
+        }
+        static string DecryptStringFromBytes_Aes(byte[] cipherText, byte[] Key, byte[] IV)
         {
             // Check arguments.
             if (cipherText == null || cipherText.Length <= 0)
@@ -107,3 +122,4 @@ namespace MailServer
         }
     }
 }
+

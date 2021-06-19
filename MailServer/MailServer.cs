@@ -108,7 +108,13 @@ namespace MailServer
                         if (msg == "") continue; // bỏ qua nếu chuỗi trống
                         // trả lời lại các lệnh của client trong session hiện tại
                         resposed = session.GetResposed(msg);
-                        sw.WriteLine(resposed);
+                        byte[] encResponse = session.GetEncrytionResponse(msg);
+                        byte[] numSendBytes = session.GetEncrytionResponse(encResponse.Length.ToString());
+                        string sendNumBytes = Encoding.ASCII.GetString(numSendBytes);
+                        sw.WriteLine(sendNumBytes);
+                        sw.Flush();
+                        string sendResponse = Encoding.ASCII.GetString(encResponse);
+                        sw.WriteLine(sendResponse);
                         sw.Flush();
                         if (session.GetState() == "Logout") break;
                     }

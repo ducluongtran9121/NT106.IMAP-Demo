@@ -32,19 +32,37 @@ namespace MailServer.Imap
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<int>($"select uid from MailInfo where \"_rowid_\"='{index}'", new DynamicParameters());
+                var query = cnn.Query<int>($"select uid from MailInfo where uid ='{index}'", new DynamicParameters());
                 List<int> list = query.ToList();
                 if (list.Count() == 0) return -1;
                 return list[0];
             }
         }
-
+        //\"_rowid_\"
         public static List<MailInfo> LoadMailInfo()
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
                 var query = cnn.Query<MailInfo>($"select * from MailInfo", new DynamicParameters());
                 return query.ToList();
+            }
+        }
+
+        public static List<int> LoadDeletedMail()
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query = cnn.Query<int>($"select uid from MailInfo where deleted = 1", new DynamicParameters());
+                List<int> list = query.ToList();
+                return list;
+            }
+        }    
+
+        public static void DeleteMail()
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                cnn.Execute($"delete from MailInfo where deleted = 1", new DynamicParameters());
             }
         }
     }

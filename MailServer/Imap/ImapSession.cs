@@ -30,6 +30,13 @@ namespace MailServer.Imap
             return AESCryptography.EncryptWithAES(this.respose, keyAES, ivAES);
         }
 
+        public string GetDecrytionResponse(byte[] ciphertext)
+        {
+            string keyAES = "12345678123456781234567812345678";
+            string ivAES = "1122334455667788";
+            return AESCryptography.DecryptWithAES(ciphertext, keyAES, ivAES);
+        }
+
         public string GetResposed(string commandLine)
         {
             if (commandLine == "") return this.respose;
@@ -293,8 +300,8 @@ namespace MailServer.Imap
                     break;
 
                 case "expunge":
+                    this.respose = Response.ReturnExpungeResponse(this.tag);
                     break;
-
                 case "search":
                     break;
 

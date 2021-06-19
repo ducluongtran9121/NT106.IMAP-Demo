@@ -78,12 +78,13 @@ namespace MailServer.Imap
             userMailBox = arguments[0];
             // gán thông tin trả về vào response
             string respose = "";
-            respose += $"* { mailBoxInfo[0].exists} EXISTS\n\r";
+            respose += $"* {mailBoxInfo[0].exists} EXISTS\n\r";
             respose += $"* {mailBoxInfo[0].recent} RECENT\n\r";
             respose += $"* OK [UNSEEN {mailBoxInfo[0].firstunseen}] Message {mailBoxInfo[0].firstunseen} is first unseen\n\r";
             respose += $"* OK [UIDVALIDITY {mailBoxInfo[0].uidvalidity}] UIDs valid\n\r";
             respose += $"* OK [UIDNEXT {mailBoxInfo[0].uidnext}] Predicted next UID\n\r";
-            respose += @"* OK [PERMANENTFLAGS (\Seen \Answered \Flagged \Deleted \Draft] ." + "\n\r";
+            respose += @"* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)" + "\n\r";
+            respose += @"* OK [PERMANENTFLAGS ()] " + "\n\r";
             respose += tag + " OK [READ-WRITE] SELECT completed";
 
             return respose;
@@ -138,6 +139,22 @@ namespace MailServer.Imap
             return respose;
         }
 
+        public static string ReturnExpungeResponse(string tag)
+        {
+            List<int> deletedMail = SqliteQuery.LoadDeletedMail();
+            if (deletedMail.Count == 0) return tag + " NO Deleted mail does not exist";
+            string response = "";
+            int count = 0;
+            for(int i = 0; i<deletedMail.Count; ++i)
+            {
+                int index = deletedMail[i] - count;
+                response += "* " + index + " EXPUNGE\n\r";
+                count++;
+            }
+            SqliteQuery.DeleteMail();
+            response += tag + " OK EXPUNGE completed\n\r";
+            return response;
+        }
         private static bool IsListPermanentFlags(string[] arguments)
         {
             //kiểm tra danh sách flag nhập vào
