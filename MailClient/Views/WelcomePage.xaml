@@ -31,97 +31,97 @@
                 <RowDefinition x:Name="Row3" Height="Auto" />
             </Grid.RowDefinitions>
             <Grid
-            x:Name="IconContainer"
-            Grid.Row="0"
-            Grid.Column="1"
-            VerticalAlignment="Center">
+                x:Name="IconContainer"
+                Grid.Row="0"
+                Grid.Column="1"
+                VerticalAlignment="Center">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <controls:AnimatedVisualPlayer
-                x:Name="IconAnimated"
-                Height="250"
-                VerticalAlignment="Center"
-                Stretch="Uniform">
+                    x:Name="IconAnimated"
+                    Height="250"
+                    VerticalAlignment="Center"
+                    Stretch="Uniform">
                     <lottie:LottieVisualSource UriSource="ms-appx:///Assets/Lottie/Welcome1.json" />
                 </controls:AnimatedVisualPlayer>
                 <TextBlock
-                Grid.Row="1"
-                Margin="0,-15,0,0"
-                HorizontalAlignment="Center"
-                FontSize="40"
-                FontWeight="SemiBold"
-                Text="MailClient" />
+                    Grid.Row="1"
+                    Margin="0,-15,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="40"
+                    FontWeight="SemiBold"
+                    Text="MailClient" />
             </Grid>
 
             <!--  Sign in  -->
             <StackPanel
-            x:Name="SigninContainer"
-            Grid.Row="1"
-            Grid.Column="1"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            Spacing="15">
-                <TextBlock
-                x:Name="Title1"
+                x:Name="SigninContainer"
+                Grid.Row="1"
+                Grid.Column="1"
                 HorizontalAlignment="Center"
-                FontSize="35"
-                FontWeight="SemiBold"
-                Text="An IMAP Mail Client Application"
-                TextAlignment="Center"
-                TextWrapping="WrapWholeWords" />
+                VerticalAlignment="Top"
+                Spacing="15">
+                <TextBlock
+                    x:Name="Title1"
+                    HorizontalAlignment="Center"
+                    FontSize="35"
+                    FontWeight="SemiBold"
+                    Text="An IMAP Mail Client Application"
+                    TextAlignment="Center"
+                    TextWrapping="WrapWholeWords" />
                 <Grid x:Name="Space" MinHeight="10" />
                 <TextBlock
-                x:Name="Title2"
-                HorizontalAlignment="Center"
-                FontSize="25"
-                FontWeight="SemiBold"
-                Text="Sign in to MailClient 💌" />
+                    x:Name="Title2"
+                    HorizontalAlignment="Center"
+                    FontSize="25"
+                    FontWeight="SemiBold"
+                    Text="Sign in to MailClient 💌" />
                 <controls:ProgressBar
-                x:Name="Processbar"
-                Background="Transparent"
-                Foreground="{ThemeResource SystemCustomAccentBrush}" />
+                    x:Name="Processbar"
+                    Background="Transparent"
+                    Foreground="{ThemeResource SystemCustomAccentBrush}" />
                 <StackPanel
-                Padding="20"
-                Background="{ThemeResource SystemBackgroundHighBrush}"
-                BorderBrush="{ThemeResource ControlBorderDefaultBrush}"
-                BorderThickness="{ThemeResource ControlBorderDefaulThickness}"
-                CornerRadius="4"
-                Spacing="20">
+                    Padding="20"
+                    Background="{ThemeResource SystemBackgroundHighBrush}"
+                    BorderBrush="{ThemeResource ControlBorderDefaultBrush}"
+                    BorderThickness="{ThemeResource ControlBorderDefaulThickness}"
+                    CornerRadius="4"
+                    Spacing="20">
                     <StackPanel Spacing="5">
                         <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="Username:" />
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Username:" />
                         <TextBox
-                        x:Name="UsernameTextbox"
-                        VerticalAlignment="Center"
-                        FontSize="18"
-                        KeyDown="Textbox_KeyDown"
-                        Style="{ThemeResource HighBrushTextBoxStyle}" />
+                            x:Name="UsernameTextbox"
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            KeyDown="Textbox_KeyDown"
+                            Style="{ThemeResource HighBrushTextBoxStyle}" />
                     </StackPanel>
                     <StackPanel Spacing="5">
                         <TextBlock
-                        VerticalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="Password:" />
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold"
+                            Text="Password:" />
                         <PasswordBox
-                        x:Name="PasswordPbox"
-                        
-                        VerticalAlignment="Center"
-                        FontSize="18"
-                        Style="{ThemeResource DefaultPasswordBoxStyle}" />
+                            x:Name="PasswordPbox"
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            KeyDown="Textbox_KeyDown"
+                            Style="{ThemeResource DefaultPasswordBoxStyle}" />
                     </StackPanel>
                     <TextBlock x:Name="SigninStatusTextblock" Visibility="Collapsed" />
                     <Button
-                    x:Name="SigninButton"
-                    HorizontalAlignment="Stretch"
-                    Click="SigninButton_Click"
-                    Content="Sign in"
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Style="{ThemeResource ButtonAccentStyle}" />
+                        x:Name="SigninButton"
+                        HorizontalAlignment="Stretch"
+                        Click="SigninButton_Click"
+                        Content="Sign in"
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Style="{ThemeResource ButtonAccentStyle}" />
                 </StackPanel>
                 <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Text="New to MailClient?" />
@@ -129,31 +129,31 @@
                 </StackPanel>
             </StackPanel>
             <controlstk:Loading
-            x:Name="LoadingControl"
-            Grid.Row="0"
-            Grid.RowSpan="3"
-            Grid.Column="0"
-            Grid.ColumnSpan="3">
+                x:Name="LoadingControl"
+                Grid.Row="0"
+                Grid.RowSpan="3"
+                Grid.Column="0"
+                Grid.ColumnSpan="3">
                 <controlstk:Loading.Background>
                     <AcrylicBrush
-                    BackgroundSource="Backdrop"
-                    FallbackColor="{ThemeResource SideNavigationFallbackColor}"
-                    TintColor="{ThemeResource SideNavigationTintColor}"
-                    TintLuminosityOpacity="0.5"
-                    TintOpacity="0.1" />
+                        BackgroundSource="Backdrop"
+                        FallbackColor="{ThemeResource SideNavigationFallbackColor}"
+                        TintColor="{ThemeResource SideNavigationTintColor}"
+                        TintLuminosityOpacity="0.5"
+                        TintOpacity="0.1" />
                 </controlstk:Loading.Background>
                 <ContentControl>
                     <StackPanel>
                         <controls:ProgressBar
-                        Width="300"
-                        VerticalAlignment="Center"
-                        Foreground="{ThemeResource SystemCustomAccentBrush}"
-                        IsIndeterminate="True" />
+                            Width="300"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource SystemCustomAccentBrush}"
+                            IsIndeterminate="True" />
                         <TextBlock
-                        HorizontalAlignment="Center"
-                        FontSize="30"
-                        FontWeight="SemiBold"
-                        Text="Please wait..." />
+                            HorizontalAlignment="Center"
+                            FontSize="30"
+                            FontWeight="SemiBold"
+                            Text="Please wait..." />
                     </StackPanel>
                 </ContentControl>
             </controlstk:Loading>

@@ -98,10 +98,9 @@ namespace MailClient.Views
                     AccountHelper.CurrentAccount =
                         new DataModels.Mail.Account { Address = UsernameTextbox.Text, Name = "Huỳnh Thái Thi", Glyph = "\xED56" };
 
-                    //SettingsHelper.IsFirstTimeLogin = false;
+                    SettingsHelper.IsFirstTimeLogin = true;
 
                     var account = AccountHelper.CurrentAccount;
-                    DatabaseHelper.CurrentDatabaseName = $"{account.Address}.db";
 
                     await DatabaseHelper.InitializeAccountDatabaseAsync(DatabaseHelper.CurrentDatabaseName);
                     await DatabaseHelper.InsertDataAsync(DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName,
