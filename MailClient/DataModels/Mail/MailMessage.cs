@@ -120,6 +120,15 @@ namespace MailClient.DataModels.Mail
             GetInfoFromHeader(header);
         }
 
+        public MailMessage(string[] row)
+        {
+            From = row[1];
+            To = new ObservableCollection<string>(row[2].Split(';'));
+            Subject = row[3];
+            Body = row[5];
+            BodyPreview = row[5].Replace('\n', ' ').Substring(0, body.Length >= 80 ? 80 : body.Length);
+        }
+
         public static bool IsValidAddress(string address)
         {
             return new Regex(MailRegexPattern).IsMatch(address);

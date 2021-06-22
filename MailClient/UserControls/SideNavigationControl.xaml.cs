@@ -1,5 +1,6 @@
 ﻿using MailClient.DataModels.Mail;
 using MailClient.DataModels.NavigationControlItems;
+using MailClient.Dialogs;
 using System;
 using System.Collections.ObjectModel;
 using Windows.UI.Core;
@@ -99,10 +100,11 @@ namespace MailClient.UserControls
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
 
-        private void NavigationView_ItemInvoked(muxc.NavigationView sender, muxc.NavigationViewItemInvokedEventArgs args)
+        private async void NavigationView_ItemInvoked(muxc.NavigationView sender, muxc.NavigationViewItemInvokedEventArgs args)
         {
             if (args.IsSettingsInvoked)
             {
+                await (new SettingsDialog()).ShowAsync();
                 return;
             }
 

@@ -1,5 +1,4 @@
 ﻿using MailClient.Common;
-using System.Collections.ObjectModel;
 
 namespace MailClient.DataModels.Mail
 {
@@ -29,7 +28,15 @@ namespace MailClient.DataModels.Mail
             set => SetProperty(ref glyph, value);
         }
 
-        public ObservableCollection<MailBox> MailBoxes { get; set; } = new();
+        private MailBox currentMailBox = new();
+
+        public MailBox CurrentMailBox
+        {
+            get => currentMailBox;
+            set => SetProperty(ref currentMailBox, value);
+        }
+
+        public ObservableDictionary<string, MailBox> MailBoxes { get; set; } = new();
 
         public Account()
         {

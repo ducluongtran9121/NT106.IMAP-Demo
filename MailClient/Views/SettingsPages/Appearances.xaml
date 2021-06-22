@@ -1,0 +1,29 @@
+﻿<Page
+    x:Class="MailClient.Views.SettingsPages.Appearances"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:MailClient.Views.SettingsPages"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+    <Grid>
+        <StackPanel Spacing="20">
+            <TextBlock
+                FontSize="30"
+                FontWeight="SemiBold"
+                Text="Appearances ✨" />
+            <StackPanel Spacing="5">
+                <TextBlock Text="Themes:" />
+                <ComboBox
+                    x:Name="ThemeChooser"
+                    MinWidth="200"
+                    SelectionChanged="ThemeChooser_SelectionChanged">
+                    <ComboBoxItem Content="Windows Default" />
+                    <ComboBoxItem Content="Light" />
+                    <ComboBoxItem Content="Dark" />
+                </ComboBox>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>

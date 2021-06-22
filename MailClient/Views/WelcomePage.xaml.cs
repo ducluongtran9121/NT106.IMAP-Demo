@@ -1,6 +1,7 @@
 ﻿using MailClient.Helpers;
 using MailClient.IMAP;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
@@ -13,7 +14,7 @@ namespace MailClient.Views
 {
     public sealed partial class WelcomePage : Page
     {
-        private const string MailRegexPattern = @"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)";
+        private const string MailAddressPattern = @"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)";
 
         public WelcomePage()
         {
@@ -56,7 +57,15 @@ namespace MailClient.Views
             if (UsernameTextbox.Text == string.Empty || PasswordPbox.Password == string.Empty)
             {
                 SigninStatusTextblock.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 95, 95));
-                SigninStatusTextblock.Text = "Please do not empty Username or Password 😡";
+                SigninStatusTextblock.Text = "Please do not empty Username or Password! 😡";
+                SetEnabledControl(true);
+                return;
+            }
+
+            if (!Regex.IsMatch(UsernameTextbox.Text, MailAddressPattern))
+            {
+                SigninStatusTextblock.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 95, 95));
+                SigninStatusTextblock.Text = "Please use a valid address! 😡";
                 SetEnabledControl(true);
                 return;
             }

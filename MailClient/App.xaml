@@ -63,8 +63,64 @@
                             <!--  Combobox  -->
                             <SolidColorBrush x:Key="ComboBoxItemBackground" Color="#EDEDED" />
                             <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="SystemCustomAccentBrush" />
+                            <Thickness x:Key="ComboBoxBorderThemeThickness">0</Thickness>
                         </ResourceDictionary>
-                        <ResourceDictionary x:Key="Dark" />
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="SystemCustomAccentBrush" Color="#89ABE3" />
+                            <SolidColorBrush x:Key="SystemBackgroundHighBrush" Color="#272727" />
+                            <SolidColorBrush x:Key="SystemBackgroundDefaultBrush" Color="#212121" />
+                            <SolidColorBrush x:Key="SystemBackgroundLowBrush" Color="#191919" />
+                            <SolidColorBrush x:Key="ControlBackgroundAccentBrush" Color="#89ABE3" />
+                            <SolidColorBrush x:Key="ControlBackgroundHighBrush" Color="#272727" />
+                            <SolidColorBrush x:Key="ControlBackgroundDefaultBrush" Color="#212121" />
+                            <SolidColorBrush x:Key="ControlBackgroundLowBrush" Color="#191919" />
+                            <SolidColorBrush x:Key="ControlForegroundAccentBrush" Color="#FFFFFF" />
+                            <SolidColorBrush x:Key="ControlBackgroundHoverDefaultBrush" Color="#2E2E2E" />
+                            <SolidColorBrush x:Key="ControlBackgroundHoverLowBrush" Color="#191919" />
+                            <SolidColorBrush x:Key="ControlBackgroundHoverAccentBrush" Color="#83A7E2" />
+                            <SolidColorBrush x:Key="ControlForegroundHoverAccentBrush" Color="#FFFFFF" />
+                            <SolidColorBrush x:Key="ControlBackgroundPressedAccentBrush" Color="#6E99DD" />
+                            <SolidColorBrush x:Key="ControlForegroundPressedAccentBrush" Color="#FFFFFF" />
+                            <SolidColorBrush x:Key="ControlBorderDefaultBrush" Color="#292929" />
+                            <SolidColorBrush x:Key="ControlBorderLowBrush" Color="#212121" />
+                            <SolidColorBrush x:Key="SeparatorDefaultBrush" Color="#E6E6E6" />
+
+                            <!--  Color  -->
+                            <Color x:Key="SystemCustomAccentColor">#89ABE3</Color>
+
+                            <!--  Other  -->
+                            <Thickness x:Key="ControlBorderDefaulThickness">1 0.5 0.5 2</Thickness>
+
+                            <!--  Override theme  -->
+                            <!--  Navigationview  -->
+                            <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="SystemCustomAccentBrush" />
+                            <Color x:Key="SideNavigationTintColor">#000000</Color>
+                            <Color x:Key="SideNavigationFallbackColor">#000000</Color>
+                            <x:String x:Key="SideNavigationTintOpacity">0.85</x:String>
+                            <x:String x:Key="SideNavigaionTintLuminosityOpacity">0.85</x:String>
+                            <x:Boolean x:Key="UseFallBackColor">False</x:Boolean>
+
+                            <!--  Listview: MailNavigation  -->
+                            <StaticResource x:Key="ListViewItemBackgroundSelected" ResourceKey="SystemCustomAccentBrush" />
+                            <StaticResource x:Key="ListViewItemBackgroundSelectedPointerOver" ResourceKey="ControlBackgroundHoverAccentBrush" />
+                            <StaticResource x:Key="ListViewItemBackgroundSelectedPressed" ResourceKey="ControlBackgroundPressedAccentBrush" />
+
+                            <!--  Textbox  -->
+                            <LinearGradientBrush x:Key="TextControlElevationBorderFocusedBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,2">
+                                <LinearGradientBrush.RelativeTransform>
+                                    <ScaleTransform CenterY="0.5" ScaleY="-1" />
+                                </LinearGradientBrush.RelativeTransform>
+                                <LinearGradientBrush.GradientStops>
+                                    <GradientStop Offset="1.0" Color="{ThemeResource SystemCustomAccentColor}" />
+                                    <GradientStop Offset="1.0" Color="{StaticResource ControlStrokeColorDefault}" />
+                                </LinearGradientBrush.GradientStops>
+                            </LinearGradientBrush>
+
+                            <!--  Combobox  -->
+                            <SolidColorBrush x:Key="ComboBoxItemBackground" Color="#2D2D2D" />
+                            <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="SystemCustomAccentBrush" />
+                            <Thickness x:Key="ComboBoxBorderThemeThickness">0</Thickness>
+                        </ResourceDictionary>
                     </ResourceDictionary.ThemeDictionaries>
                 </ResourceDictionary>
             </controls:XamlControlsResources.MergedDictionaries>

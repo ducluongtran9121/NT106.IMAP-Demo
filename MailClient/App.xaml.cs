@@ -1,5 +1,6 @@
 ﻿using MailClient.Helpers;
 using System;
+using System.Reflection;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
@@ -61,6 +62,8 @@ namespace MailClient
                     // configuring the new page by passing required information as a navigation
                     // parameter
 
+                    ThemeHelper.Initialize();
+
                     // If database don't have any account, show welcome page
                     if (!SettingsHelper.IsFirstTimeLogin)
                     {
@@ -74,6 +77,15 @@ namespace MailClient
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+        }
+
+        public static TEnum GetEnum<TEnum>(string text) where TEnum : struct
+        {
+            if (!typeof(TEnum).GetTypeInfo().IsEnum)
+            {
+                throw new InvalidOperationException("Generic parameter 'TEnum' must be an enum.");
+            }
+            return (TEnum)Enum.Parse(typeof(TEnum), text);
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace MailClient.Helpers
             get
             {
                 ObservableCollection<string> mailboxNames = new();
-                foreach (MailBox mailBox in CurrentAccount.MailBoxes)
+                foreach (MailBox mailBox in CurrentAccount.MailBoxes.Values)
                 {
                     mailboxNames.Add(mailBox.Name);
                 }
@@ -26,10 +26,10 @@ namespace MailClient.Helpers
         {
             get
             {
-                if (CurrentAccount.MailBoxes.Count == 0)
+                if (CurrentAccount.MailBoxes.Values.Count == 0)
                     return null;
 
-                return CurrentAccount.MailBoxes[0].Messages;
+                return CurrentAccount.CurrentMailBox.Messages;
             }
         }
     }

@@ -43,10 +43,10 @@ namespace MailClient.Helpers
                 SqliteCommand createTable = new(tableCommand, db);
 
                 _ = await createTable.ExecuteReaderAsync();
-
-                db.Close();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
         }
 
         public static async Task InitializeAccountDatabaseAsync(string databaseName)
@@ -172,7 +172,7 @@ namespace MailClient.Helpers
             catch (Exception) { }
         }
 
-        public async static Task<List<string>> SelectColumnDataAsync(string databaseName, string tableName, string column)
+        public async static Task<string[]> SelectColumnDataAsync(string databaseName, string tableName, string column)
         {
             try
             {
@@ -195,7 +195,7 @@ namespace MailClient.Helpers
 
                 db.Close();
 
-                return entries;
+                return entries.ToArray();
             }
             catch (Exception)
             {
@@ -203,13 +203,13 @@ namespace MailClient.Helpers
             }
         }
 
-        public static async Task<List<List<string>>> GetColumnsDataAsync(string databaseName, string tableName, string[] columnNames)
+        public static async Task<List<string[]>> GetColumnsDataAsync(string databaseName, string tableName, string[] columnNames)
         {
             try
             {
                 if (columnNames.Length == 0) return null;
 
-                List<List<string>> data = new();
+                List<string[]> data = new();
 
                 string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
                 using SqliteConnection db = new($"Filename={dbpath}");
@@ -229,7 +229,7 @@ namespace MailClient.Helpers
                     {
                         entries.Add(query.GetString(i));
                     }
-                    data.Add(entries);
+                    data.Add(entries.ToArray());
                 }
 
                 db.Close();
@@ -242,11 +242,11 @@ namespace MailClient.Helpers
             }
         }
 
-        public async static Task<List<List<string>>> GetTableDataAsync(string databaseName, string tableName)
+        public async static Task<List<string[]>> GetTableDataAsync(string databaseName, string tableName)
         {
             try
             {
-                List<List<string>> data = new();
+                List<string[]> data = new();
 
                 string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
                 using SqliteConnection db = new($"Filename={dbpath}");
@@ -265,7 +265,7 @@ namespace MailClient.Helpers
                     {
                         entries.Add(query.GetString(i));
                     }
-                    data.Add(entries);
+                    data.Add(entries.ToArray());
                 }
 
                 db.Close();
@@ -278,11 +278,11 @@ namespace MailClient.Helpers
             }
         }
 
-        public async static Task<bool> CheckDataAsync(string databaseName, string tableName, Tuple<string, string>[] data)
+        public async static Task<bool> CheckDataAsync(string databaseName, string tableName, (string, string)[] conditions)
         {
             try
             {
-                if (data.Length == 0) return false;
+                if (conditions.Length == 0) return false;
 
                 string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
                 using SqliteConnection db = new($"Filename={dbpath}");
@@ -291,11 +291,11 @@ namespace MailClient.Helpers
 
                 // Create command
                 string commandText = "SELECT *" + $" FROM {tableName}";
-                commandText += $" WHERE {data[0].Item1} = @Entry0";
+                commandText += $" WHERE {conditions[0].Item1} = @Entry0";
 
-                for (int i = 1; i < data.Length; i++)
+                for (int i = 1; i < conditions.Length; i++)
                 {
-                    commandText += $" AND {data[i].Item1} = @Entry{i}";
+                    commandText += $" AND {conditions[i].Item1} = @Entry{i}";
                 }
 
                 commandText += ";";
@@ -303,9 +303,9 @@ namespace MailClient.Helpers
                 // Use parameterized query to prevent SQL injection attacks
                 SqliteCommand command = new(commandText, db);
 
-                for (int i = 0; i < data.Length; i++)
+                for (int i = 0; i < conditions.Length; i++)
                 {
-                    command.Parameters.AddWithValue($"@Entry{i}", data[i].Item2);
+                    command.Parameters.AddWithValue($"@Entry{i}", conditions[i].Item2);
                 }
 
                 SqliteDataReader query = await command.ExecuteReaderAsync();
@@ -320,11 +320,11 @@ namespace MailClient.Helpers
             }
         }
 
-        public static async Task<bool> CheckDataAsync(string databaseName, string tableName, string[] columns, Tuple<string, string>[] data)
+        public static async Task<bool> CheckDataAsync(string databaseName, string tableName, string[] columns, (string, string)[] conditions)
         {
             try
             {
-                if (data.Length == 0 || columns.Length == 0) return false;
+                if (conditions.Length == 0 || columns.Length == 0) return false;
 
                 string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
                 using SqliteConnection db = new($"Filename={dbpath}");
@@ -333,11 +333,11 @@ namespace MailClient.Helpers
 
                 string commandText = "SELECT " + string.Join(", ", columns);
                 commandText = commandText.Remove(commandText.Length - 2) + $" FROM {tableName}";
-                commandText += $" WHERE {data[0].Item1} = $Entry0";
+                commandText += $" WHERE {conditions[0].Item1} = $Entry0";
 
-                for (int i = 1; i < data.Length; i++)
+                for (int i = 1; i < conditions.Length; i++)
                 {
-                    commandText += $" AND {data[i].Item1} = $@Entry{i}";
+                    commandText += $" AND {conditions[i].Item1} = $@Entry{i}";
                 }
 
                 commandText += ";";
@@ -345,9 +345,9 @@ namespace MailClient.Helpers
                 // Use parameterized query to prevent SQL injection attacks
                 SqliteCommand command = new(commandText, db);
 
-                for (int i = 0; i < data.Length; i++)
+                for (int i = 0; i < conditions.Length; i++)
                 {
-                    command.Parameters.AddWithValue($"@Entry{i}", data[i].Item2);
+                    command.Parameters.AddWithValue($"@Entry{i}", conditions[i].Item2);
                 }
 
                 SqliteDataReader query = await command.ExecuteReaderAsync();
@@ -362,11 +362,11 @@ namespace MailClient.Helpers
             }
         }
 
-        public static async Task<List<string>> GetDataAsync(string databaseName, string tableName, Tuple<string, string>[] data)
+        public static async Task<string[]> GetDataAsync(string databaseName, string tableName, (string, string)[] conditions)
         {
             try
             {
-                if (data.Length == 0) return null;
+                if (conditions.Length == 0) return null;
 
                 List<string> entries = new();
 
@@ -377,11 +377,11 @@ namespace MailClient.Helpers
 
                 string commandText = "SELECT *" +
                         $" FROM {tableName}";
-                commandText += $" WHERE {data[0].Item1} = @Entry0";
+                commandText += $" WHERE {conditions[0].Item1} = @Entry0";
 
-                for (int i = 1; i < data.Length; i++)
+                for (int i = 1; i < conditions.Length; i++)
                 {
-                    commandText += $" AND {data[i].Item1} = @Entry{i}";
+                    commandText += $" AND {conditions[i].Item1} = @Entry{i}";
                 }
 
                 commandText += ";";
@@ -389,9 +389,9 @@ namespace MailClient.Helpers
                 // Use parameterized query to prevent SQL injection attacks
                 SqliteCommand command = new(commandText, db);
 
-                for (int i = 0; i < data.Length; i++)
+                for (int i = 0; i < conditions.Length; i++)
                 {
-                    command.Parameters.AddWithValue($"@Entry{i}", data[i].Item2);
+                    command.Parameters.AddWithValue($"@Entry{i}", conditions[i].Item2);
                 }
                 SqliteDataReader query = await command.ExecuteReaderAsync();
 
@@ -405,7 +405,7 @@ namespace MailClient.Helpers
 
                 db.Close();
 
-                return entries;
+                return entries.ToArray();
             }
             catch (Exception)
             {
@@ -413,7 +413,7 @@ namespace MailClient.Helpers
             }
         }
 
-        public static async Task<string[]> SelectDataAsync(string databaseName, string tableName, string[] columns, Tuple<string, string>[] conditions)
+        public static async Task<string[]> SelectDataAsync(string databaseName, string tableName, string[] columns, (string, string)[] conditions)
         {
             try
             {
@@ -464,7 +464,7 @@ namespace MailClient.Helpers
             }
         }
 
-        public static async Task DeleteRowsAsync(string databaseName, string tableName, Tuple<string, string>[] conditions)
+        public static async Task DeleteRowsAsync(string databaseName, string tableName, (string, string)[] conditions)
         {
             try
             {
@@ -499,6 +499,33 @@ namespace MailClient.Helpers
                 db.Close();
             }
             catch (Exception) { }
+        }
+
+        public async static Task<int> CountRows(string databaseName, string tableName)
+        {
+            try
+            {
+                string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
+                using SqliteConnection db = new($"Filename={dbpath}");
+
+                await db.OpenAsync();
+
+                // Create command
+                SqliteCommand command = new($"SELECT COUNT(*) FROM {tableName};", db);
+                SqliteDataReader query = await command.ExecuteReaderAsync();
+
+                if (query.FieldCount != 0)
+                {
+                    _ = await query.ReadAsync();
+                    return query.GetInt32(0);
+                }
+
+                return 0;
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
         }
     }
 }

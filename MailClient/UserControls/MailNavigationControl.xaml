@@ -25,6 +25,13 @@
                     <StaticResource x:Key="ComboBoxBackground" ResourceKey="ControlBackgroundDefaultBrush" />
                     <Thickness x:Key="ComboBoxBorderThemeThickness">0</Thickness>
                 </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <!--  Fix ugly color of Comboboxdropdown  -->
+                    <!--  Combobox  -->
+                    <SolidColorBrush x:Key="ComboBoxItemBackground" Color="#2D2D2D" />
+                    <StaticResource x:Key="ComboBoxBackground" ResourceKey="ControlBackgroundDefaultBrush" />
+                    <Thickness x:Key="ComboBoxBorderThemeThickness">0</Thickness>
+                </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
             <DataTemplate x:Key="MailMessageTemplate" x:DataType="mail:MailMessage">
                 <StackPanel Margin="6">
@@ -393,6 +400,7 @@
         </Grid.RowDefinitions>
         <StackPanel Spacing="5">
             <controls:ProgressBar
+                x:Name="LoadingBar"
                 Background="Transparent"
                 Foreground="{ThemeResource SystemCustomAccentBrush}"
                 IsIndeterminate="True" />

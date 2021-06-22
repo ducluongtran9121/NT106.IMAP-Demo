@@ -73,7 +73,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <uc:MailNavigationControl x:Name="MailNavigation" />
+                <uc:MailNavigationControl x:Name="MailNavigation" OnMailMessageSelected="MailNavigation_OnMailMessageSelected" />
                 <toolkitcontrols:GridSplitter
                     Grid.Column="1"
                     Width="12"
@@ -84,7 +84,6 @@
                     ResizeBehavior="PreviousAndNext"
                     ResizeDirection="Auto" />
                 <Frame x:Name="ContentFrame" Grid.Column="2">
-                    <TextBox />
                     <Frame.ContentTransitions>
                         <TransitionCollection>
                             <NavigationThemeTransition />
