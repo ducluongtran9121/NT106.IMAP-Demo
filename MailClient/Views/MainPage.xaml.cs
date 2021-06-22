@@ -31,7 +31,7 @@ namespace MailClient.Views
             Window.Current.SetTitleBar(AppTitleBar);
 
             // If this page is loaded from Welcome page, LayoutMetricsChanged event in this page
-            // isn't triggerged
+            // isn't triggered
             // Set padding ContentContainer
             ContentContainer.Padding = new Thickness(24, NavigationHelper.TitlebarHeight + 12, 24, 12);
 
@@ -74,6 +74,9 @@ namespace MailClient.Views
             // Set default account to the first account
             AccountHelper.CurrentAccount = AccountHelper.Accounts[0];
 
+            // Set default database to the fisrt account
+            DatabaseHelper.CurrentDatabaseName = $"{AccountHelper.CurrentAccount.Address}.db";
+
             LoadingControl.IsLoading = false;
         }
 
@@ -95,11 +98,12 @@ namespace MailClient.Views
 
             if (!client.IsLoggedIn)
             {
-                string[] selected = await DatabaseHelper.SelectDataAsync(AccountHelper.CurrentAccount.Address, "Inbox", new string[] { "Password" },
-                    new Tuple<string, string>[]
-                    {
-                        new Tuple<string, string>("Address", AccountHelper.CurrentAccount.Address)
-                    });
+                string[] selected = await DatabaseHelper.SelectDataAsync(
+                    DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName, new string[] { "Password" },
+                        new Tuple<string, string>[]
+                        {
+                            new Tuple<string, string>("Address", AccountHelper.CurrentAccount.Address)
+                        });
                 if (!await client.LoginAsync(AccountHelper.CurrentAccount.Address, selected[0]))
                     return;
             }
@@ -137,7 +141,7 @@ namespace MailClient.Views
             }
 
             int j = 0;
-            
+
             foreach (MailMessage i in messages)
             {
                 if (!mess.Any(x => x.From == i.From && x.Subject == i.Subject))
