@@ -110,10 +110,12 @@ namespace MailServer
                         resposed = session.GetResposed(msg);
                         byte[] encResponse = session.GetEncrytionResponse(msg);
                         byte[] numSendBytes = session.GetEncrytionResponse(encResponse.Length.ToString());
-                        string sendNumBytes = Encoding.ASCII.GetString(numSendBytes);
+                        // gửi đi trước thông tin mã hóa chứa độ dài của thông điệp mã hóa cần gửi
+                        string sendNumBytes = Encoding.UTF8.GetString(numSendBytes);
                         sw.WriteLine(sendNumBytes);
                         sw.Flush();
-                        string sendResponse = Encoding.ASCII.GetString(encResponse);
+                        // gửi thông điệp dưới dạng mã hóa
+                        string sendResponse = Encoding.UTF8.GetString(encResponse);
                         sw.WriteLine(sendResponse);
                         sw.Flush();
                         if (session.GetState() == "Logout") break;
