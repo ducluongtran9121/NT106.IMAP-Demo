@@ -1,19 +1,19 @@
 ﻿using MailClient.Common;
-using System;
-
 
 namespace MailClient.DataModels.NavigationControlItems
 {
-    public class NavigationItem: BindableBase, INavigationControlItem
+    public class NavigationItem : BindableBase, INavigationControlItem
     {
-        private string content = string.Empty;
-        public string Content
+        private string text = string.Empty;
+
+        public string Text
         {
-            get => content;
-            set => SetProperty(ref content, value);
+            get => text;
+            set => SetProperty(ref text, value);
         }
 
         private string glyph = string.Empty;
+
         public string Glyph
         {
             get => glyph;
@@ -21,6 +21,7 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private string tag = string.Empty;
+
         public string Tag
         {
             get => tag;
@@ -28,6 +29,7 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private bool selectOnInvoked;
+
         public bool SelectOnInvoked
         {
             get => selectOnInvoked;
@@ -35,26 +37,27 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private NavigationControlItemType itemType;
+
         public NavigationControlItemType ItemType
         {
             get => itemType;
             set => SetProperty(ref itemType, value);
         }
 
-        public int CompareTo(INavigationControlItem other) => Content.CompareTo(other.Tag);
+        public int CompareTo(INavigationControlItem other) => Text.CompareTo(other.Tag);
 
         public NavigationItem()
         {
-            Content = string.Empty;
+            Text = string.Empty;
             Glyph = string.Empty;
             Tag = string.Empty;
             SelectOnInvoked = true;
             ItemType = NavigationControlItemType.NavItem;
         }
 
-        public NavigationItem(string content, string glyph, string tag, bool selectOnInvoked)
+        public NavigationItem(string text, string glyph, string tag, bool selectOnInvoked)
         {
-            Content = content;
+            Text = text;
             Glyph = glyph;
             Tag = tag;
             SelectOnInvoked = selectOnInvoked;

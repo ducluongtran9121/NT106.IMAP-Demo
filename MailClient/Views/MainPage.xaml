@@ -2,35 +2,41 @@
     x:Class="MailClient.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     xmlns:local="using:MailClient"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:uc="using:MailClient.UserControls"
-    xmlns:helper="using:MailClient.Helpers"
-    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     Background="{ThemeResource SystemBackgroundDefaultBrush}"
-    NavigationCacheMode="Required">
+    IsTabStop="True"
+    Loaded="Page_Loaded"
+    Loading="Page_Loading"
+    mc:Ignorable="d">
     <Page.Resources>
         <ResourceDictionary>
-            <Style TargetType="controls:GridSplitter">
-                <Setter Property="IsTabStop" Value="True"></Setter>
-                <Setter Property="UseSystemFocusVisuals" Value="True"></Setter>
-                <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
-                <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
-                <Setter Property="IsFocusEngagementEnabled" Value="True"></Setter>
-                <Setter Property="Width" Value="8"></Setter>
-                <Setter Property="MinWidth" Value="8"></Setter>
-                <Setter Property="MinHeight" Value="8"></Setter>
-                <Setter Property="Background" Value="{ThemeResource SystemControlHighlightChromeHighBrush}"></Setter>
+            <Style TargetType="toolkitcontrols:GridSplitter">
+                <Setter Property="IsTabStop" Value="True" />
+                <Setter Property="UseSystemFocusVisuals" Value="True" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="IsFocusEngagementEnabled" Value="True" />
+                <Setter Property="Width" Value="8" />
+                <Setter Property="MinWidth" Value="8" />
+                <Setter Property="MinHeight" Value="8" />
+                <Setter Property="Background" Value="{ThemeResource SystemControlHighlightChromeHighBrush}" />
                 <Setter Property="GripperForeground" Value="Transparent" />
-                <Setter Property="ResizeBehavior" Value="BasedOnAlignment"/>
-                <Setter Property="ResizeDirection" Value="Columns"/>
-                <Setter Property="CursorBehavior" Value="ChangeOnSplitterHover"/>
+                <Setter Property="ResizeBehavior" Value="BasedOnAlignment" />
+                <Setter Property="ResizeDirection" Value="Columns" />
+                <Setter Property="CursorBehavior" Value="ChangeOnSplitterHover" />
                 <Setter Property="Template">
                     <Setter.Value>
-                        <ControlTemplate TargetType="controls:GridSplitter">
+                        <ControlTemplate TargetType="toolkitcontrols:GridSplitter">
                             <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                                <ContentPresenter
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Stretch"
+                                    Content="{TemplateBinding Element}" />
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="GridSplitterStates">
                                         <VisualState x:Name="Normal" />
@@ -46,73 +52,85 @@
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
-                                <ContentPresenter Content="{TemplateBinding Element}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
                             </Grid>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
-            <Storyboard x:Name="TitleBarStoryBoard">
-                <DoubleAnimation Storyboard.TargetName="TitlebarTransform" Storyboard.TargetProperty="X" Duration="0:0:0.25">
-                    <DoubleAnimation.EasingFunction>
-                        <CircleEase EasingMode="EaseInOut"/>
-                    </DoubleAnimation.EasingFunction>
-                </DoubleAnimation>
-            </Storyboard>
         </ResourceDictionary>
     </Page.Resources>
     <Grid>
-        <uc:SideNavigation
-            x:Name="SideNavigationControl"
-            Background="{ThemeResource SystemBackgroundDefaultBrush}"
-            OnNavigatePage="SideNavigationControl_OnNavigatePage"
-            PaneClosing="SideNavigationControl_PaneClosing"
-            PaneOpening="SideNavigationControl_PaneOpening"
-            DisplayModeChanged="SideNavigationControl_DisplayModeChanged">
-            <Grid
-                x:Name="ContentContainer">
+        <uc:SideNavigationControl
+            x:Name="SideNavigation"
+            DisplayModeChanged="SideNavigation_DisplayModeChanged"
+            PaneClosing="SideNavigation_PaneClosing"
+            PaneOpening="SideNavigation_PaneOpening">
+            <Grid x:Name="ContentContainer" Background="{ThemeResource SystemBackgroundDefaultBrush}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition
-                        MinWidth="250"
-                        MaxWidth="500"
-                        Width="*"/>
-                    <ColumnDefinition 
-                        Width="Auto"/>
-                    <ColumnDefinition
-                        Width="*"/>
+                        Width="*"
+                        MinWidth="300"
+                        MaxWidth="500" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <uc:MailNavigation
-                    OnMailItemSelected="MailNavigation_OnMailItemSelected"/>
-                <controls:GridSplitter
-                    Background="Transparent"
-                    GripperCursor="Default"
-                    HorizontalAlignment="Left"
+                <uc:MailNavigationControl x:Name="MailNavigation" />
+                <toolkitcontrols:GridSplitter
                     Grid.Column="1"
-                    ResizeDirection="Auto"
-                    ResizeBehavior="PreviousAndNext"
+                    Width="12"
+                    HorizontalAlignment="Left"
+                    Background="Transparent"
                     CursorBehavior="ChangeOnSplitterHover"
-                    Width="12"/>
-                <Frame
-                    Grid.Column="2"
-                    x:Name="ContentFrame">
+                    GripperCursor="Default"
+                    ResizeBehavior="PreviousAndNext"
+                    ResizeDirection="Auto" />
+                <Frame x:Name="ContentFrame" Grid.Column="2">
+                    <TextBox />
                     <Frame.ContentTransitions>
                         <TransitionCollection>
-                            <NavigationThemeTransition/>
+                            <NavigationThemeTransition />
                         </TransitionCollection>
                     </Frame.ContentTransitions>
                 </Frame>
             </Grid>
-        </uc:SideNavigation>
-
+        </uc:SideNavigationControl>
+        <toolkitcontrols:Loading
+            x:Name="LoadingControl"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            IsLoading="True">
+            <toolkitcontrols:Loading.Background>
+                <AcrylicBrush
+                    BackgroundSource="Backdrop"
+                    FallbackColor="{ThemeResource SideNavigationFallbackColor}"
+                    TintColor="{ThemeResource SideNavigationTintColor}"
+                    TintLuminosityOpacity="0.5"
+                    TintOpacity="0.1" />
+            </toolkitcontrols:Loading.Background>
+            <ContentControl>
+                <StackPanel>
+                    <controls:ProgressBar
+                        Width="300"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource SystemCustomAccentBrush}"
+                        IsIndeterminate="True" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="30"
+                        FontWeight="SemiBold"
+                        Text="Please wait..." />
+                </StackPanel>
+            </ContentControl>
+        </toolkitcontrols:Loading>
         <Grid
             x:Name="AppTitleBar"
-            Background="Transparent"
-            VerticalAlignment="Top">
+            VerticalAlignment="Top"
+            Background="Transparent">
             <TextBlock
                 x:Name="AppTitle"
-                Margin="0 9.5 0 0"
-                Text="{x:Bind helper:TitleBarHelper.WindowTitle}"
-                FontWeight="SemiBold"/>
+                Margin="0,14,0,0"
+                FontWeight="SemiBold"
+                Text="Mail Client" />
         </Grid>
     </Grid>
 </Page>

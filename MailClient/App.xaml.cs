@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
@@ -28,7 +27,6 @@ namespace MailClient
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
-
         public App()
         {
             this.InitializeComponent();
@@ -40,8 +38,11 @@ namespace MailClient
         /// will be used such as when the application is launched to open a specific file.
         /// </summary>
         /// <param name="e">Details about the launch request and process.</param>
-        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
+            // Create core database (Account Database) if not exist 
+            await DatabaseHelper.InitalizeAsync();
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -66,29 +67,24 @@ namespace MailClient
             {
                 if (rootFrame.Content == null)
                 {
-                    ThemeHelper.Initialize();
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
-                    rootFrame.Navigate(typeof(Views.MainPage), e.Arguments);
+
+                    // If database don't have any account, show welcome page
+                    if (!SettingsHelper.IsFirstTimeLogin)
+                    {
+                        _ = rootFrame.Navigate(typeof(Views.WelcomePage), e.Arguments);
+                    }
+                    else
+                    {
+                        _ = rootFrame.Navigate(typeof(Views.MainPage), e.Arguments);
+                    }
+                    
                 }
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
-        }
-
-        public static void NavigateToPage(Type page)
-        {
-            (Window.Current.Content as Frame).Navigate(page);
-        }
-
-        public static TEnum GetEnum<TEnum>(string text) where TEnum : struct
-        {
-            if (!typeof(TEnum).GetTypeInfo().IsEnum)
-            {
-                throw new InvalidOperationException("Generic parameter 'TEnum' must be an enum.");
-            }
-            return (TEnum)Enum.Parse(typeof(TEnum), text);
         }
 
         /// <summary>

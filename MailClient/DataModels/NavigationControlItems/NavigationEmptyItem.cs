@@ -4,7 +4,7 @@ namespace MailClient.DataModels.NavigationControlItems
 {
     public class NavigationEmptyItem : INavigationControlItem
     {
-        public string Content { get; set; }
+        public string Text { get; set; }
 
         public string Glyph { get; set; }
 
@@ -14,11 +14,11 @@ namespace MailClient.DataModels.NavigationControlItems
 
         public NavigationControlItemType ItemType { get; set; }
 
-        public int CompareTo(INavigationControlItem other) => Content.CompareTo(other.Tag);
+        public int CompareTo(INavigationControlItem other) => Text.CompareTo(other.Tag);
 
         public NavigationEmptyItem()
         {
-            Content = string.Empty;
+            Text = string.Empty;
             Glyph = string.Empty;
             Tag = string.Empty;
             SelectOnInvoked = false;

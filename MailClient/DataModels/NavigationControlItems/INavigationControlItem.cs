@@ -2,9 +2,9 @@
 
 namespace MailClient.DataModels.NavigationControlItems
 {
-    public interface INavigationControlItem
+    public interface INavigationControlItem : IComparable<INavigationControlItem>
     {
-        public string Content { get; set; }
+        public string Text { get; set; }
 
         public string Glyph { get; set; }
 
@@ -22,5 +22,4 @@ namespace MailClient.DataModels.NavigationControlItems
         NavEmpty,
         NavAccount
     }
-
 }

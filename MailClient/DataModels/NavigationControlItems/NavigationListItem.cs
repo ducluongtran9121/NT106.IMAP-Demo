@@ -1,20 +1,20 @@
 ﻿using MailClient.Common;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace MailClient.DataModels.NavigationControlItems
 {
     public class NavigationListItem : BindableBase, INavigationControlItem
     {
-        private string content = string.Empty;
-        public string Content
+        private string text = string.Empty;
+
+        public string Text
         {
-            get => content;
-            set => SetProperty(ref content, value);
+            get => text;
+            set => SetProperty(ref text, value);
         }
 
         private string glyph = string.Empty;
+
         public string Glyph
         {
             get => glyph;
@@ -22,6 +22,7 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private string tag;
+
         public string Tag
         {
             get => tag;
@@ -29,6 +30,7 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private bool selectOnInvoked;
+
         public bool SelectOnInvoked
         {
             get => selectOnInvoked;
@@ -38,17 +40,18 @@ namespace MailClient.DataModels.NavigationControlItems
         public ObservableCollection<INavigationControlItem> Child;
 
         private NavigationControlItemType itemType;
+
         public NavigationControlItemType ItemType
         {
             get => itemType;
             set => SetProperty(ref itemType, value);
         }
 
-        public int CompareTo(INavigationControlItem other) => Content.CompareTo(other.Tag);
+        public int CompareTo(INavigationControlItem other) => Text.CompareTo(other.Tag);
 
         public NavigationListItem()
         {
-            Content = string.Empty;
+            Text = string.Empty;
             Glyph = string.Empty;
             Tag = string.Empty;
             SelectOnInvoked = false;
@@ -57,7 +60,7 @@ namespace MailClient.DataModels.NavigationControlItems
 
         public NavigationListItem(string content, string glyph, string tag, bool selectOnInvoked, ObservableCollection<INavigationControlItem> child)
         {
-            Content = content;
+            Text = content;
             Glyph = glyph;
             Tag = tag;
             SelectOnInvoked = selectOnInvoked;

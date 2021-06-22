@@ -1,18 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-
 
 namespace MailClient.UserControls.BasicControls
 {
@@ -23,6 +10,7 @@ namespace MailClient.UserControls.BasicControls
             get => (string)GetValue(glyph);
             set => SetValue(glyph, value);
         }
+
         public static readonly DependencyProperty glyph =
             DependencyProperty.Register("Glyph", typeof(string), typeof(UserControl), new PropertyMetadata(string.Empty));
 
@@ -31,6 +19,7 @@ namespace MailClient.UserControls.BasicControls
             get => (string)GetValue(text);
             set => SetValue(text, value);
         }
+
         public static readonly DependencyProperty text =
             DependencyProperty.Register("Text", typeof(string), typeof(UserControl), new PropertyMetadata(string.Empty));
 

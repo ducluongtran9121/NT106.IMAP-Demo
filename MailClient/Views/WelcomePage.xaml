@@ -1,0 +1,186 @@
+﻿<Page
+    x:Class="MailClient.Views.WelcomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controlstk="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{ThemeResource SystemBackgroundDefaultBrush}"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ResourceDictionaries/CustomTextboxStyle.xaml" />
+                <ResourceDictionary Source="/ResourceDictionaries/CustomButtonStyle.xaml" />
+                <ResourceDictionary Source="/ResourceDictionaries/CustomPasswordBoxStyle.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="Column1" Width="Auto" />
+            <ColumnDefinition x:Name="Column2" Width="*" />
+            <ColumnDefinition x:Name="Column3" Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="Row1" Height="0.4*" />
+            <RowDefinition x:Name="Row2" Height="0.6*" />
+            <RowDefinition x:Name="Row3" Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid
+            x:Name="IconContainer"
+            Grid.Row="0"
+            Grid.Column="1"
+            VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <controls:AnimatedVisualPlayer
+                x:Name="IconAnimated"
+                Height="250"
+                VerticalAlignment="Center"
+                Stretch="Uniform">
+                <lottie:LottieVisualSource UriSource="ms-appx:///Assets/Lottie/Welcome1.json" />
+            </controls:AnimatedVisualPlayer>
+            <TextBlock
+                Grid.Row="1"
+                Margin="0,-15,0,0"
+                HorizontalAlignment="Center"
+                FontSize="40"
+                FontWeight="SemiBold"
+                Text="MailClient" />
+        </Grid>
+
+        <!--  Sign in  -->
+        <StackPanel
+            x:Name="SigninContainer"
+            Grid.Row="1"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Spacing="15">
+            <TextBlock
+                x:Name="Title1"
+                HorizontalAlignment="Center"
+                FontSize="35"
+                FontWeight="SemiBold"
+                Text="An IMAP Mail Client Application"
+                TextAlignment="Center"
+                TextWrapping="WrapWholeWords" />
+            <Grid x:Name="Space" MinHeight="10" />
+            <TextBlock
+                x:Name="Title2"
+                HorizontalAlignment="Center"
+                FontSize="25"
+                FontWeight="SemiBold"
+                Text="Sign in to MailClient 💌" />
+            <controls:ProgressBar
+                x:Name="Processbar"
+                Background="Transparent"
+                Foreground="{ThemeResource SystemCustomAccentBrush}" />
+            <StackPanel
+                Padding="20"
+                Background="{ThemeResource SystemBackgroundHighBrush}"
+                BorderBrush="{ThemeResource ControlBorderDefaultBrush}"
+                BorderThickness="{ThemeResource ControlBorderDefaulThickness}"
+                CornerRadius="4"
+                Spacing="20">
+                <StackPanel Spacing="5">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Username:" />
+                    <TextBox
+                        x:Name="UsernameTextbox"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        Style="{ThemeResource HighBrushTextBoxStyle}" />
+                </StackPanel>
+                <StackPanel Spacing="5">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="Password:" />
+                    <PasswordBox
+                        x:Name="PasswordPbox"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        Style="{ThemeResource DefaultPasswordBoxStyle}" />
+                </StackPanel>
+                <TextBlock x:Name="SigninStatusTextblock" Visibility="Collapsed" />
+                <Button
+                    x:Name="SigninButton"
+                    HorizontalAlignment="Stretch"
+                    Click="SigninButton_Click"
+                    Content="Sign in"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Style="{ThemeResource ButtonAccentStyle}" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center" Text="New to MailClient?" />
+                <HyperlinkButton Content="Create an account." />
+            </StackPanel>
+        </StackPanel>
+        <controlstk:Loading
+            x:Name="LoadingControl"
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            Grid.Column="0"
+            Grid.ColumnSpan="3">
+            <controlstk:Loading.Background>
+                <AcrylicBrush
+                    BackgroundSource="Backdrop"
+                    FallbackColor="{ThemeResource SideNavigationFallbackColor}"
+                    TintColor="{ThemeResource SideNavigationTintColor}"
+                    TintLuminosityOpacity="0.5"
+                    TintOpacity="0.1" />
+            </controlstk:Loading.Background>
+            <ContentControl>
+                <StackPanel>
+                    <controls:ProgressBar
+                        Width="300"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource SystemCustomAccentBrush}"
+                        IsIndeterminate="True" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="30"
+                        FontWeight="SemiBold"
+                        Text="Please wait..." />
+                </StackPanel>
+            </ContentControl>
+        </controlstk:Loading>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="700" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="IconContainer.(Grid.Row)" Value="1" />
+                        <Setter Target="IconContainer.(Grid.Column)" Value="0" />
+                        <Setter Target="IconContainer.VerticalAlignment" Value="Center" />
+                        <Setter Target="SigninContainer.(Grid.Row)" Value="1" />
+                        <Setter Target="SigninContainer.(Grid.Column)" Value="2" />
+                        <Setter Target="SigninContainer.VerticalAlignment" Value="Center" />
+                        <Setter Target="SigninContainer.HorizontalAlignment" Value="Left" />
+                        <Setter Target="IconAnimated.Stretch" Value="UniformToFill" />
+                        <Setter Target="Title1.HorizontalAlignment" Value="Left" />
+                        <Setter Target="Title1.TextAlignment" Value="Left" />
+                        <Setter Target="Title2.HorizontalAlignment" Value="Left" />
+                        <Setter Target="Row1.Height" Value="Auto" />
+                        <Setter Target="Row2.Height" Value="*" />
+                        <Setter Target="Row3.Height" Value="Auto" />
+                        <Setter Target="Column1.Width" Value="*" />
+                        <Setter Target="Column2.Width" Value="Auto" />
+                        <Setter Target="Column3.Width" Value="*" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</Page>

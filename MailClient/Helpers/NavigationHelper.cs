@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
+﻿using Windows.ApplicationModel.Core;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
 
 namespace MailClient.Helpers
 {
     public static class NavigationHelper
     {
-
-        private const string IsLeftModeKey = "NavigationIsOnLeftMode";
+        private const string IsLeftModeKey = "IsNavigationOnLeftMode";
 
         public static bool IsLeftMode
         {
             get
             {
-                var valueFromSettings = ApplicationData.Current.LocalSettings.Values[IsLeftModeKey];
+                object valueFromSettings = ApplicationData.Current.LocalSettings.Values[IsLeftModeKey];
                 if (valueFromSettings == null)
                 {
                     ApplicationData.Current.LocalSettings.Values[IsLeftModeKey] = true;
@@ -36,6 +29,26 @@ namespace MailClient.Helpers
             }
         }
 
+        public static double TitlebarHeight = 0;
+
+        private const string SelectedAccountIndexKey = "SelectedAccountIndex";
+
+        public static int SelectedAccountIndex
+        {
+            get
+            {
+                object valueFromSettings = ApplicationData.Current.LocalSettings.Values[SelectedAccountIndexKey];
+                if (valueFromSettings == null)
+                {
+                    ApplicationData.Current.LocalSettings.Values[SelectedAccountIndexKey] = 0;
+                    valueFromSettings = 0;
+                }
+                return (int)valueFromSettings;
+            }
+
+            set => ApplicationData.Current.LocalSettings.Values[SelectedAccountIndexKey] = value;
+        }
+
         public static void UpdateTitleBar(bool isLeftMode)
         {
             CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = isLeftMode;
@@ -44,18 +57,15 @@ namespace MailClient.Helpers
 
             if (isLeftMode)
             {
-                MailClient.Views.MainPage.NaivgationControl.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Auto;
-                titleBar.ButtonBackgroundColor = Colors.Transparent;
-                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+                Views.MainPage.Current.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Auto;
             }
             else
             {
-                MailClient.Views.MainPage.NaivgationControl.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top;
-                var userSettings = new UISettings();
-                titleBar.ButtonBackgroundColor = userSettings.GetColorValue(UIColorType.Accent);
-                titleBar.ButtonInactiveBackgroundColor = userSettings.GetColorValue(UIColorType.Accent);
+                Views.MainPage.Current.PaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top;
             }
-        }
 
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+        }
     }
 }

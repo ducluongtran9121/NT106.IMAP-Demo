@@ -4,15 +4,14 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
-  IgnorableNamespaces="uap mp desktop4">
+  IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="9e2dfa06-59be-4154-ad86-cc921599019c"
+    Name="79f27c41-c0f3-44bf-ab26-8d1511ae820e"
     Publisher="CN=hoang"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="9e2dfa06-59be-4154-ad86-cc921599019c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="79f27c41-c0f3-44bf-ab26-8d1511ae820e" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>MailClient</DisplayName>
@@ -31,8 +30,7 @@
   <Applications>
     <Application Id="App"
       Executable="$targetnametoken$.exe"
-      EntryPoint="MailClient.App"
-      desktop4:SupportsMultipleInstances="true">
+      EntryPoint="MailClient.App">
       <uap:VisualElements
         DisplayName="MailClient"
         Square150x150Logo="Assets\Square150x150Logo.png"

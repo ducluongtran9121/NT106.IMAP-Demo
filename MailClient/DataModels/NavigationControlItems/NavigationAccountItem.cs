@@ -1,18 +1,19 @@
 ﻿using MailClient.Common;
-using System;
 
 namespace MailClient.DataModels.NavigationControlItems
 {
     public class NavigationAccountItem : BindableBase, INavigationControlItem
     {
-        private string content = string.Empty;
-        public string Content
+        private string text = string.Empty;
+
+        public string Text
         {
-            get => content;
-            set => SetProperty(ref content, value);
+            get => text;
+            set => SetProperty(ref text, value);
         }
 
         private string glyph = string.Empty;
+
         public string Glyph
         {
             get => glyph;
@@ -20,6 +21,7 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private string address;
+
         public string Address
         {
             get => address;
@@ -27,6 +29,7 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private string tag;
+
         public string Tag
         {
             get => tag;
@@ -34,6 +37,7 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private bool selectOnInvoked;
+
         public bool SelectOnInvoked
         {
             get => selectOnInvoked;
@@ -41,17 +45,18 @@ namespace MailClient.DataModels.NavigationControlItems
         }
 
         private NavigationControlItemType itemType;
+
         public NavigationControlItemType ItemType
         {
             get => itemType;
             set => SetProperty(ref itemType, value);
         }
 
-        public int CompareTo(INavigationControlItem other) => Content.CompareTo(other.Tag);
+        public int CompareTo(INavigationControlItem other) => Text.CompareTo(other.Tag);
 
         public NavigationAccountItem()
         {
-            Content = string.Empty;
+            Text = string.Empty;
             Address = string.Empty;
             Glyph = string.Empty;
             Tag = string.Empty;
@@ -59,9 +64,9 @@ namespace MailClient.DataModels.NavigationControlItems
             ItemType = NavigationControlItemType.NavAccount;
         }
 
-        public NavigationAccountItem(string content, string address, string glyph, string tag, bool selectOnInvoked)
+        public NavigationAccountItem(string text, string address, string glyph, string tag, bool selectOnInvoked)
         {
-            Content = content;
+            Text = text;
             Address = address;
             Glyph = glyph;
             Tag = tag;
