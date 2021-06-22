@@ -31,7 +31,7 @@ namespace MailClient.Views
             Window.Current.SetTitleBar(AppTitleBar);
 
             // If this page is loaded from Welcome page, LayoutMetricsChanged event in this page
-            // doesn't triggered
+            // isn't triggerged
             // Set padding ContentContainer
             ContentContainer.Padding = new Thickness(24, NavigationHelper.TitlebarHeight + 12, 24, 12);
 
@@ -68,10 +68,10 @@ namespace MailClient.Views
                 });
             }
 
-            // Pass accounts to SideNavigation control
+            // Pass accounts data to SideNavigation control
             SideNavigation.SetAccountItems(AccountHelper.Accounts.ToArray());
 
-            // Set default account to first account
+            // Set default account to the first account
             AccountHelper.CurrentAccount = AccountHelper.Accounts[0];
 
             LoadingControl.IsLoading = false;

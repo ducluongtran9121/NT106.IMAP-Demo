@@ -15,8 +15,6 @@ namespace MailClient.Views
     {
         private const string MailRegexPattern = @"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)";
 
-        private bool Logged = false;
-
         public WelcomePage()
         {
             this.InitializeComponent();
@@ -39,6 +37,14 @@ namespace MailClient.Views
             SigninButton.IsEnabled = value;
             UsernameTextbox.IsEnabled = value;
             PasswordPbox.IsEnabled = value;
+        }
+
+        private void Textbox_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                SigninButton_Click(null, null);
+            }
         }
 
         private async void SigninButton_Click(object sender, RoutedEventArgs e)
@@ -91,6 +97,8 @@ namespace MailClient.Views
                     // Logged in, create this account database, and add logged account into account database
                     AccountHelper.CurrentAccount =
                         new DataModels.Mail.Account { Address = UsernameTextbox.Text, Name = "Huỳnh Thái Thi", Glyph = "\xED56" };
+
+                    //SettingsHelper.IsFirstTimeLogin = false;
 
                     var account = AccountHelper.CurrentAccount;
                     DatabaseHelper.CurrentDatabaseName = $"{account.Address}.db";
