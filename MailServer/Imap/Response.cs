@@ -39,12 +39,12 @@ namespace MailServer.Imap
         static public string ReturnLogoutResponse(string tag,ref string state)
         {
             state = "Logout";
-            return "* BYE IMAP4rev1 Server logging out\n\r" + tag + " OK LOGOUT completed";
+            return "* BYE IMAP4rev1 Server logging out\r\n" + tag + " OK LOGOUT completed";
         }
 
         static public string ReturnCapabilityResponse(string tag)
         {
-            return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN\n\r" + tag + " OK CAPABILITY completed";
+            return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN\r\n" + tag + " OK CAPABILITY completed";
         }
 
         // not authenticate state
@@ -78,13 +78,13 @@ namespace MailServer.Imap
             userMailBox = arguments[0];
             // gán thông tin trả về vào response
             string respose = "";
-            respose += $"* {mailBoxInfo[0].exists} EXISTS\n\r";
-            respose += $"* {mailBoxInfo[0].recent} RECENT\n\r";
-            respose += $"* OK [UNSEEN {mailBoxInfo[0].firstunseen}] Message {mailBoxInfo[0].firstunseen} is first unseen\n\r";
-            respose += $"* OK [UIDVALIDITY {mailBoxInfo[0].uidvalidity}] UIDs valid\n\r";
-            respose += $"* OK [UIDNEXT {mailBoxInfo[0].uidnext}] Predicted next UID\n\r";
-            respose += @"* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)" + "\n\r";
-            respose += @"* OK [PERMANENTFLAGS ()] " + "\n\r";
+            respose += $"* {mailBoxInfo[0].exists} EXISTS\r\n";
+            respose += $"* {mailBoxInfo[0].recent} RECENT\r\n";
+            respose += $"* OK [UNSEEN {mailBoxInfo[0].firstunseen}] Message {mailBoxInfo[0].firstunseen} is first unseen\r\n";
+            respose += $"* OK [UIDVALIDITY {mailBoxInfo[0].uidvalidity}] UIDs valid\r\n";
+            respose += $"* OK [UIDNEXT {mailBoxInfo[0].uidnext}] Predicted next UID\r\n";
+            respose += @"* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)" + "\r\n";
+            respose += @"* OK [PERMANENTFLAGS ()] " + "\r\n";
             respose += tag + " OK [READ-WRITE] SELECT completed";
 
             return respose;
@@ -128,12 +128,12 @@ namespace MailServer.Imap
             MailMessage message = GetMail(path + $"\\email_{MailUID}.eml");
             if (arguments[1].ToLower() == "body[header]")
             {
-                respose += $"From: {message.From}\n\r";
-                respose += $"To: {message.To}\n\r";
-                respose += $"Subject: {message.Subject}\n\r";
+                respose += $"From: {message.From}\r\n";
+                respose += $"To: {message.To}\r\n";
+                respose += $"Subject: {message.Subject}\r\n";
             }
             if (arguments[1].ToLower() == "body[text]") respose += message.Body;
-            respose = $"* {arguments[0]} FETCH({arguments[1]} " + "{" + respose.Length + "} \n\r" + respose + ")\n\r";
+            respose = $"* {arguments[0]} FETCH({arguments[1]} " + "{" + respose.Length + "} \r\n" + respose + ")\r\n";
             respose += tag + " OK FETCH completed";
 
             return respose;
@@ -148,11 +148,11 @@ namespace MailServer.Imap
             for(int i = 0; i<deletedMail.Count; ++i)
             {
                 int index = deletedMail[i] - count;
-                response += "* " + index + " EXPUNGE\n\r";
+                response += "* " + index + " EXPUNGE\r\n";
                 count++;
             }
             SqliteQuery.DeleteMail();
-            response += tag + " OK EXPUNGE completed\n\r";
+            response += tag + " OK EXPUNGE completed\r\n";
             return response;
         }
         private static bool IsListPermanentFlags(string[] arguments)
