@@ -28,6 +28,5 @@
   <Library Name="MailClient.IMAP">
 
   	<!-- add directives for your library here -->
-
   </Library>
 </Directives>

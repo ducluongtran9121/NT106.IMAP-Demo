@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MailClient.DataModels.NavigationControlItems
+﻿namespace MailClient.DataModels.NavigationControlItems
 {
     public class NavigationEmptyItem : INavigationControlItem
     {

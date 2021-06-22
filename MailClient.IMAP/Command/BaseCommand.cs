@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace MailClient.IMAP.Commands
+﻿namespace MailClient.IMAP.Commands
 {
     public class BaseCommand
     {

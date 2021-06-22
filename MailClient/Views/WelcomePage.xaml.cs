@@ -101,6 +101,7 @@ namespace MailClient.Views
                     SettingsHelper.IsFirstTimeLogin = true;
 
                     var account = AccountHelper.CurrentAccount;
+                    DatabaseHelper.CurrentDatabaseName = $"{AccountHelper.CurrentAccount.Address}.db";
 
                     await DatabaseHelper.InitializeAccountDatabaseAsync(DatabaseHelper.CurrentDatabaseName);
                     await DatabaseHelper.InsertDataAsync(DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName,

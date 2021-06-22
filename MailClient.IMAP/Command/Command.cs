@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MailClient.IMAP.Commands
+﻿namespace MailClient.IMAP.Commands
 {
     public static class Command
     {

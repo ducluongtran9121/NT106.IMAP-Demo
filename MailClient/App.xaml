@@ -63,7 +63,6 @@
                             <!--  Combobox  -->
                             <SolidColorBrush x:Key="ComboBoxItemBackground" Color="#EDEDED" />
                             <StaticResource x:Key="ComboBoxItemPillFillBrush" ResourceKey="SystemCustomAccentBrush" />
-
                         </ResourceDictionary>
                         <ResourceDictionary x:Key="Dark" />
                     </ResourceDictionary.ThemeDictionaries>

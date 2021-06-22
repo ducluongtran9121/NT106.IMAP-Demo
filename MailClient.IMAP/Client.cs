@@ -18,14 +18,15 @@ namespace MailClient.IMAP
         private bool _disposed = false;
 
         // Instantiate a SafeHandle instance.
-        private SafeHandle _safeHandle = new SafeFileHandle(IntPtr.Zero, true);
-
         private readonly string _serverRespose = "* OK IMAP4rev1 Service Ready";
 
         private readonly string _okPatern = @"(a\d{4})\sOK\s.+\scompleted";
 
         private readonly string _noPatern = @"(a\d{4})\sNO\s.+";
 
+        private readonly SafeHandle _safeHandle = new SafeFileHandle(IntPtr.Zero, true);
+
+        // Temp ip
         private IPEndPoint EndPoint { get; set; } = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1578);
 
         private TcpClient TcpClient { get; set; }
@@ -57,7 +58,6 @@ namespace MailClient.IMAP
             Pool = new SemaphoreSlim(0, 1);
             Cancellation = new CancellationTokenSource();
         }
-
 
         public async Task<bool> InitiallizeConnectionAsync()
         {

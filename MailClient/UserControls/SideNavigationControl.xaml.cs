@@ -1,6 +1,5 @@
-﻿using MailClient.DataModels.NavigationControlItems;
-using MailClient.DataModels.Mail;
-using MailClient.Helpers;
+﻿using MailClient.DataModels.Mail;
+using MailClient.DataModels.NavigationControlItems;
 using System;
 using System.Collections.ObjectModel;
 using Windows.UI.Core;
@@ -29,7 +28,6 @@ namespace MailClient.UserControls
 
             Loaded += (s, e) => (SettingsItem as muxc.NavigationViewItem).SelectsOnInvoked = false;
         }
-
 
         private void InitializeItem()
         {
