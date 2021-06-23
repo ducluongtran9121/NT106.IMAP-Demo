@@ -94,8 +94,8 @@
                             <!--  Override theme  -->
                             <!--  Navigationview  -->
                             <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="SystemCustomAccentBrush" />
-                            <Color x:Key="SideNavigationTintColor">#000000</Color>
-                            <Color x:Key="SideNavigationFallbackColor">#000000</Color>
+                            <Color x:Key="SideNavigationTintColor">#212121</Color>
+                            <Color x:Key="SideNavigationFallbackColor">#212121</Color>
                             <x:String x:Key="SideNavigationTintOpacity">0.85</x:String>
                             <x:String x:Key="SideNavigaionTintLuminosityOpacity">0.85</x:String>
                             <x:Boolean x:Key="UseFallBackColor">False</x:Boolean>
