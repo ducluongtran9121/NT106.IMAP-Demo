@@ -168,9 +168,9 @@ namespace MailClient.Views
         {
             var mess = AccountHelper.CurrentAccount.MailBoxes["Inbox"].Messages;
 
-            foreach (MailMessage i in mess)
+            foreach (MailMessage i in mess.ToArray())
             {
-                if (!messages.Any(x => x.From == i.From && x.Subject == i.Subject))
+                if (!messages.Any(x => x.Equals(i)))
                 {
                     _ = mess.Remove(i);
                     await DatabaseHelper.DeleteRowsAsync(DatabaseHelper.CurrentDatabaseName, "Inbox",
@@ -181,7 +181,7 @@ namespace MailClient.Views
             int j = 0;
             foreach (MailMessage i in messages)
             {
-                if (!mess.Any(x => x.From == i.From && x.Subject == i.Subject))
+                if (!mess.Any(x => x.Equals(i)))
                 {
                     mess.Add(i);
                     // Temp save to database, will be fixed

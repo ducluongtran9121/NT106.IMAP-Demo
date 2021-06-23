@@ -1,11 +1,10 @@
 ﻿using MailClient.DataModels.Mail;
 using MailClient.Helpers;
 using System;
-using System.Linq;
 using System.Collections.ObjectModel;
+using System.Linq;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace MailClient.UserControls
 {
@@ -22,15 +21,22 @@ namespace MailClient.UserControls
         public MailNavigationControl()
         {
             this.InitializeComponent();
-
-            Loaded += MailNavigationControl_Loaded;
         }
 
         private void MailNavigationControl_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             MailMessageItems = new(AccountHelper.CurretMailBoxMessages);
 
-            SearchBox_TextChanged(null, null);
+            MainListView.ItemsSource = FilteredMailMessageItems;
+
+            MailMessageItems.CollectionChanged += MailMessageItems_CollectionChanged;
+
+            UpdateListviewItem(null, null);
+        }
+
+        private void MailMessageItems_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            UpdateListviewItem(null, null);
         }
 
         public bool IsLoadingBarRun
@@ -48,26 +54,23 @@ namespace MailClient.UserControls
             }
         }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private async void UpdateListviewItem(object sender, TextChangedEventArgs e)
         {
-            if (MainListView.ItemsSource != FilteredMailMessageItems)
-                MainListView.ItemsSource = FilteredMailMessageItems;
-
-            if (MainListView.ItemsSource == FilteredMailMessageItems)
+            await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 var filtered = MailMessageItems.Where(x => Filter(x, SearchBox.Text)).ToArray();
                 foreach (MailMessage i in FilteredMailMessageItems.ToArray())
                 {
-                    if (!filtered.Any(x => i.From == x.From && i.Subject == x.Subject))
-                        FilteredMailMessageItems.Remove(i);
+                    if (!filtered.Any(x => x.Equals(i)))
+                        _ = FilteredMailMessageItems.Remove(i);
                 }
 
                 for (int i = 0; i < filtered.Length; i++)
                 {
-                    if (!FilteredMailMessageItems.Any(x => filtered[i].From == x.From && filtered[i].Subject == x.Subject))
+                    if (!FilteredMailMessageItems.Any(x => x.Equals(filtered[i])))
                         FilteredMailMessageItems.Insert(i > FilteredMailMessageItems.Count ? FilteredMailMessageItems.Count : i, filtered[i]);
                 }
-            }
+            });
         }
 
         private bool Filter(MailMessage mailMessage, string value)

@@ -1,10 +1,11 @@
 ﻿using MailClient.Common;
+using System;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 
 namespace MailClient.DataModels.Mail
 {
-    public class MailMessage : BindableBase
+    public class MailMessage : BindableBase, IEquatable<MailMessage>
     {
         private const string MailRegexPattern = @"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)";
 
@@ -160,6 +161,15 @@ namespace MailClient.DataModels.Mail
             if (To != null)
                 return string.Join(';', To);
             return string.Empty;
+        }
+
+        // Temp
+        public bool Equals(MailMessage other)
+        {
+            if (other == null)
+                return false;
+
+            return From == other.From && To == other.To && Body == other.Body;
         }
     }
 }
