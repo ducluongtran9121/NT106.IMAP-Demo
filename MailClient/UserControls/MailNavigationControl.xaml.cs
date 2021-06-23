@@ -12,11 +12,27 @@ namespace MailClient.UserControls
     {
         private ObservableCollection<MailMessage> MailMessageItems;
 
-        private ObservableCollection<MailMessage> FilteredMailMessageItems = new();
+        private ObservableCollection<MailMessage> FilteredMailMessageItems { get; set; } = new();
+
+        private MailMessage CurrentMailMessageItem { get; set; }
 
         public delegate void EvenHandler(object sender, EventArgs e);
 
         public event EventHandler OnMailMessageSelected;
+
+        public bool IsLoadingBarRun
+        {
+            get => LoadingBar.IsIndeterminate;
+
+            set => LoadingBar.IsIndeterminate = value;
+        }
+
+        public ListViewSelectionMode SelectionMode
+        {
+            get => MainListView.SelectionMode;
+
+            set => MainListView.SelectionMode = value;
+        }
 
         public MailNavigationControl()
         {
@@ -39,19 +55,35 @@ namespace MailClient.UserControls
             UpdateListviewItem(null, null);
         }
 
-        public bool IsLoadingBarRun
+        private void MultiSelectButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            get => LoadingBar.IsIndeterminate;
+            if (MainListView.SelectionMode == ListViewSelectionMode.Single)
+            {
+                CurrentMailMessageItem = (MailMessage)MainListView.SelectedItem;
 
-            set => LoadingBar.IsIndeterminate = value;
+                MainListView.SelectionMode = ListViewSelectionMode.Multiple;
+
+                MainListView.SelectedItem = CurrentMailMessageItem;
+            }
+            else
+            {
+                MainListView.SelectionMode = ListViewSelectionMode.Single;
+
+                MainListView.SelectedItem = CurrentMailMessageItem;
+            }
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (sender is ListView listView && listView.SelectedIndex != -1)
+            if (sender is not ListView listView)
+                return;
+
+            if (listView.SelectionMode == ListViewSelectionMode.Single && listView.SelectedIndex != -1)
             {
-                OnMailMessageSelected(AccountHelper.CurretMailBoxMessages[listView.SelectedIndex], null);
+                CurrentMailMessageItem = AccountHelper.CurretMailBoxMessages[listView.SelectedIndex];
             }
+
+            OnMailMessageSelected(CurrentMailMessageItem, null);
         }
 
         private async void UpdateListviewItem(object sender, TextChangedEventArgs e)

@@ -244,6 +244,17 @@ namespace MailClient.Views
         {
             if (sender == null)
                 return;
+
+            ContentFrame.BackStack.Clear();
+
+            if (MailNavigation.SelectionMode == ListViewSelectionMode.Multiple)
+            {
+                ContentFrame.Visibility = Visibility.Collapsed;
+                ContentFrame.Content = null;
+                return;
+            }
+
+            ContentFrame.Visibility = Visibility.Visible;
             ContentFrame.Navigate(typeof(Pages.MailViewerPage), sender);
         }
     }

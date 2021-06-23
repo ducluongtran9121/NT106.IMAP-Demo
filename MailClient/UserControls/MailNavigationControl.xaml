@@ -426,6 +426,8 @@
                         Glyph="&#xE895;"
                         ToolTipService.ToolTip="Sync current mailbox" />
                     <bc:ButtonWithTextAndGlyph
+                        x:Name="MultiSelectButton"
+                        Click="MultiSelectButton_Click"
                         FontSize="18"
                         Glyph="&#xE762;"
                         ToolTipService.ToolTip="Enter selection mode" />
@@ -473,7 +475,8 @@
                 Background="{ThemeResource ControlBackgroundHighBrush}"
                 CornerRadius="4"
                 ItemTemplate="{StaticResource MailMessageTemplate}"
-                SelectionChanged="ListView_SelectionChanged" />
+                SelectionChanged="ListView_SelectionChanged"
+                SelectionMode="Single" />
         </Grid>
     </Grid>
 </UserControl>
