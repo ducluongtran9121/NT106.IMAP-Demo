@@ -122,7 +122,7 @@ namespace MailServer.Imap
                     break;
 
                 case "noop":
-                    NoopCommand();
+                    this.respose = Response.ReturnNoopCommand(this.tag);
                     break;
 
                 case "logout":
@@ -177,7 +177,7 @@ namespace MailServer.Imap
                     break;
 
                 case "noop":
-                    NoopCommand();
+                    this.respose = Response.ReturnNoopCommand(this.tag);
                     break;
 
                 case "logout":
@@ -249,7 +249,7 @@ namespace MailServer.Imap
                     break;
 
                 case "noop":
-                    NoopCommand();
+                    this.respose = Response.ReturnNoopCommand(this.tag);
                     break;
 
                 case "logout":
@@ -324,9 +324,5 @@ namespace MailServer.Imap
             }
         }
 
-        private void NoopCommand()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -47,6 +47,11 @@ namespace MailServer.Imap
             return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN\r\n" + tag + " OK CAPABILITY completed";
         }
 
+        static public string ReturnNoopCommand(string tag)
+        {
+            return tag + " OK NOOP completed";
+        }
+
         // not authenticate state
         static public string ReturnLoginResponse(string tag, string[] arguments, ref string state, ref string userSession)
         {
