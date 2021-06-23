@@ -408,6 +408,7 @@
                 x:Name="SearchBox"
                 IsSpellCheckEnabled="False"
                 PlaceholderText="Search something..."
+                TextChanged="SearchBox_TextChanged"
                 ToolTipService.ToolTip="Search your mailbox" />
             <RelativePanel>
                 <ComboBox
@@ -467,10 +468,10 @@
             BorderThickness="{ThemeResource ControlBorderDefaulThickness}"
             CornerRadius="4">
             <ListView
+                x:Name="MainListView"
                 Background="{ThemeResource ControlBackgroundHighBrush}"
                 CornerRadius="4"
                 ItemTemplate="{StaticResource MailMessageTemplate}"
-                ItemsSource="{x:Bind helper:AccountHelper.CurretMailBoxMessages}"
                 SelectionChanged="ListView_SelectionChanged" />
         </Grid>
     </Grid>
