@@ -93,13 +93,13 @@ namespace MailClient.UserControls
                 var filtered = MailMessageItems.Where(x => Filter(x, SearchBox.Text)).ToArray();
                 foreach (MailMessage i in FilteredMailMessageItems.ToArray())
                 {
-                    if (!filtered.Any(x => x.Equals(i)))
+                    if (!filtered.AsParallel().Any(x => x.Equals(i)))
                         _ = FilteredMailMessageItems.Remove(i);
                 }
 
                 for (int i = 0; i < filtered.Length; i++)
                 {
-                    if (!FilteredMailMessageItems.Any(x => x.Equals(filtered[i])))
+                    if (!FilteredMailMessageItems.AsParallel().Any(x => x.Equals(filtered[i])))
                         FilteredMailMessageItems.Insert(i > FilteredMailMessageItems.Count ? FilteredMailMessageItems.Count : i, filtered[i]);
                 }
             });
@@ -108,7 +108,7 @@ namespace MailClient.UserControls
         private bool Filter(MailMessage mailMessage, string value)
         {
             if (value == string.Empty) return true;
-            return mailMessage.Subject.Contains(value) || mailMessage.From.Contains(value) || mailMessage.GetToString().Contains(value);
+            return mailMessage.Subject.Contains(value) || mailMessage.From.Contains(value) || mailMessage.To.AsParallel().Any(x => x.Contains(value));
         }
     }
 }
