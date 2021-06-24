@@ -210,6 +210,7 @@ namespace MailServer.Imap
                     break;
 
                 case "list":
+                    this.respose = Response.ReturnListResponse(this.tag, this.agruments, this.userSession);
                     break;
 
                 case "lsub":

@@ -108,8 +108,50 @@ namespace MailServer.Imap
             mailMessage.Body = System.Text.Encoding.UTF8.GetString(emlFileMessage.TextBody.Body);
             return mailMessage;
         }
+        public static string ReturnListResponse(string tag, string[] arguments, string userSession)
+        {
+            string root = Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\";
+            MatchCollection maths = Regex.Matches(string.Join(' ', arguments), "\"(\\w+\\s)*[\\w*%]*\"");
+            Match math = Regex.Match(string.Join(' ', arguments).Replace('\"','\''), @"^\'((?:[^\/]*\\)*(?:[^\/]+)+)?\'\s\'((?:[^\\]*\/)*(?:[^\/]+)+)?\'");
+            if(!math.Success) return tag + " OK LIST completed";
+            string response = "";
+            string reference = math.Groups[1].Value;
+            string dir=root;
+            if (Regex.IsMatch(reference, @"^(./)?.*")) dir +=reference.Replace("./", "");
+            string mailboxname = math.Groups[2].Value;
+            //string dir = Directory.GetDirectories(root, reference)[0];
+            if (!Directory.Exists(dir) && mailboxname != "*") return tag+" OK LIST completed";
+            if ((reference + mailboxname) == root) return "* LIST (\\Noselect ) \"/\" \"\"" + tag + " OK LIST completed";
+            string[] dirList = Directory.GetDirectories(dir, mailboxname);
+            foreach(string mailboxDir in dirList)
+            {
+                response += "* LIST (";
+                string mailbox = mailboxDir.Replace(root, "");
+                List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
+                if(ListmailBoxInfo.Count==0) return tag + " OK LIST completed";
+                MailBox mailBoxInfo = ListmailBoxInfo[0];
+                if (mailBoxInfo.all == 1) response += "\\All ";
+                if (mailBoxInfo.archive == 1) response += "\\Archive ";
+                if (mailBoxInfo.drafts == 1) response += "\\Drafts ";
+                if (mailBoxInfo.flagged == 1) response += "\\Flagged ";
+                if (mailBoxInfo.haschildren == 1) response += "\\HasChildren ";
+                if (mailBoxInfo.hasnochildren == 1) response += "\\HasNoChildren ";
+                if (mailBoxInfo.important == 1) response += "\\Important ";
+                if (mailBoxInfo.inbox == 1) response += "\\Inbox ";
+                if (mailBoxInfo.junk == 1) response += "\\Junk ";
+                if (mailBoxInfo.marked == 1) response += "\\Marked ";
+                if (mailBoxInfo.nointeriors == 1) response += "\\NoInferiors ";
+                if (mailBoxInfo.noselect == 1) response += "\\Noselect ";
+                if (mailBoxInfo.sent == 1) response += "\\Sent ";
+                if (mailBoxInfo.subscribed == 1) response += "\\Subscribed ";
+                if (mailBoxInfo.trash == 1) response += "\\Trash ";
+                response += $") \"/\" \"{reference}{mailbox}\"\r\n";
+            }
+            return response + tag + " OK LIST completed";
+        }
 
         //selected state
+
         public static string ReturnFetchResponse(string tag, string[] arguments, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
         {
             // kiểm tra số đối số của lệnh fetch
@@ -127,7 +169,7 @@ namespace MailServer.Imap
             if (arguments[1].ToLower() != "body[header]" && arguments[1].ToLower() != "body[text]") return ReturnParseErrorResponse(tag, "FETCH");
 
             // ...\MailServer\Imap\MailBoxImap\....
-            string path = Response.GetProjectDir() + $"\\Imap\\ImapMailBox\\{userSession}\\{userMailBox.ToLower()}";
+            string path = Response.GetProjectDir() + $"\\Imap\\ImapMailBox\\{userSession}\\{userMailBox.ToUpper()}";
 
             // đọc mail được lưu trong mail box
             MailMessage message = GetMail(path + $"\\email_{MailUID}.eml");
