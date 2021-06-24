@@ -44,7 +44,7 @@ namespace MailServer.Imap
 
         static public string ReturnCapabilityResponse(string tag)
         {
-            return "* CAPABILITY IMAP4rev1 STARTTLS AUTH=LOGIN AUTH=PLAIN\r\n" + tag + " OK CAPABILITY completed";
+            return "* CAPABILITY IMAP4rev1 NAMESPACE AUTH=LOGIN AUTH=PLAIN STARTTLS ACL UNSELECT UIDPLUS QUOTA BINARY\r\n" + tag + " OK CAPABILITY completed";
         }
 
         static public string ReturnNoopCommand(string tag)
@@ -94,7 +94,7 @@ namespace MailServer.Imap
             respose += $"* OK [UIDVALIDITY {mailBoxInfo[0].uidvalidity}] UIDs valid\r\n";
             respose += $"* OK [UIDNEXT {mailBoxInfo[0].uidnext}] Predicted next UID\r\n";
             respose += @"* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)" + "\r\n";
-            respose += @"* OK [PERMANENTFLAGS ()] " + "\r\n";
+            respose += @"* OK [PERMANENTFLAGS (\Answered \Flagged \Deleted \Seen \Draft)] " + "\r\n";
             respose += tag + " OK [READ-WRITE] SELECT completed";
 
             return respose;
@@ -162,11 +162,31 @@ namespace MailServer.Imap
                 if (mailBoxInfo.nointeriors == 1) response += "\\NoInferiors ";
                 if (mailBoxInfo.noselect == 1) response += "\\Noselect ";
                 if (mailBoxInfo.sent == 1) response += "\\Sent ";
-                if (mailBoxInfo.subscribed == 1) response += "\\Subscribed ";
+                //if (mailBoxInfo.subscribed == 1) response += "\\Subscribed ";
                 if (mailBoxInfo.trash == 1) response += "\\Trash ";
                 response += $") \"/\" \"{reference}{mailbox}\"\r\n";
             }
             return response + tag + " OK LIST completed";
+        }
+        static public string ReturnSubcribeResponse(string tag,string argument,string userSession)
+        {
+            var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
+            // kiểm tra đối số lệnh subcribe
+            if (!math.Success) return Response.ReturnParseErrorResponse(tag, "SUBSCRIBE");
+            string mailbox = math.Groups[1].Value.Replace("\"", "");
+            int success = SqliteQuery.UpdateMailBoxSubcribed(userSession, mailbox,1);
+            if (success == 1) return tag + " OK SUBSCRIBE completed";
+            return tag + " NO Mailbox does not exist";
+        }
+        static public string ReturnUnsubcribeResponse(string tag, string argument, string userSession)
+        {
+            var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
+            // kiểm tra đối số lệnh unsubcribe
+            if (!math.Success) return Response.ReturnParseErrorResponse(tag, "UNSUBSCRIBE");
+            string mailbox = math.Groups[1].Value.Replace("\"", "");
+            int success = SqliteQuery.UpdateMailBoxSubcribed(userSession, mailbox, 0);
+            if (success == 1) return tag + " OK UNSUBSCRIBE completed";
+            return tag + " NO Mailbox does not exist";
         }
 
         //selected state

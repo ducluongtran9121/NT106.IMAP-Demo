@@ -57,13 +57,13 @@ namespace MailServer.Imap
                 return list;
             }
         }    
-         public static int InsertMailBox(string userSession, string mailboxName)
-        {
+         public static int InsertMailBox(string userSession, string userMailBox)
+         {
             IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
             cnn.Open();
             try
             {
-                cnn.Execute($"insert into MailBox(user,uidvalidity,name) values ('{userSession}',{((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds()},'{mailboxName}')", new DynamicParameters());
+                cnn.Execute($"insert into MailBox(user,name,uidvalidity) values ('{userSession}','{userMailBox}',{DateTimeOffset.Now.ToUnixTimeSeconds()})", new DynamicParameters());
                 return 1;
             }
             catch(SQLiteException)
@@ -76,6 +76,24 @@ namespace MailServer.Imap
             }
                 
 
+         }
+        public static int UpdateMailBoxSubcribed(string userSession,string userMailBox,int subscribed)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailBox set subscribed={subscribed} where user = '{userSession}' and name = '{userMailBox}' )", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
         }
         public static void DeleteMail()
         {
