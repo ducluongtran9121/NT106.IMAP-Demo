@@ -15,7 +15,12 @@ namespace MailServer.Imap
         private string respose = "* OK IMAP4rev1 Service Ready";
         private string userSession = "";
         private string userMailBox = "";
-
+        private bool startTLS = false;
+        // trả về TLS
+        public bool GetStartTLS()
+        {
+            return this.startTLS;
+        }
         // trả về trạng thái của session
         public string GetState()
         {

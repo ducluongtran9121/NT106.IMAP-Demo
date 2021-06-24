@@ -6,6 +6,21 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Imap\ImapMailBox\test1\**" />
+	  <Compile Remove="Imap\ImapMailBox\test2\**" />
+	  <Compile Remove="Imap\ImapMailBox\test3\**" />
+	  <EmbeddedResource Remove="Imap\ImapMailBox\test1\**" />
+	  <EmbeddedResource Remove="Imap\ImapMailBox\test2\**" />
+	  <EmbeddedResource Remove="Imap\ImapMailBox\test3\**" />
+	  <EntityDeploy Remove="Imap\ImapMailBox\test1\**" />
+	  <EntityDeploy Remove="Imap\ImapMailBox\test2\**" />
+	  <EntityDeploy Remove="Imap\ImapMailBox\test3\**" />
+	  <None Remove="Imap\ImapMailBox\test1\**" />
+	  <None Remove="Imap\ImapMailBox\test2\**" />
+	  <None Remove="Imap\ImapMailBox\test3\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove="ImapDB.db" />
 	</ItemGroup>
 
@@ -19,11 +34,5 @@
 		<PackageReference Include="Dapper" Version="2.0.90" />
 		<PackageReference Include="MsgReader" Version="4.0.1" />
 		<PackageReference Include="System.Data.SQLite" Version="1.0.113.7" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Imap\ImapMailBox\test1\inbox\" />
-	  <Folder Include="Imap\ImapMailBox\test2\inbox\" />
-	  <Folder Include="Imap\ImapMailBox\test3\inbox\" />
 	</ItemGroup>
 </Project>

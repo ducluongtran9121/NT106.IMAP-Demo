@@ -59,7 +59,7 @@ namespace MailServer.Imap
             if (arguments == null || arguments.Length < 2) return Response.ReturnParseErrorResponse(tag, "LOGIN");
 
             // kiểm tra tên tài khoảng và mật khẩu trong ImapDB
-            List<User> userInfo = SqliteQuery.LoadUserInfo(arguments[0].Split('@')[0], arguments[1]);
+            List<User> userInfo = SqliteQuery.LoadUserInfo(arguments[0].Replace("\"","").Split('@')[0], arguments[1].Replace("\"", ""));
             //báo lỗi nếu user không tồn tại
             if (userInfo.Count == 0) return tag + " NO LOGIN failed";
             state = "auth";
@@ -119,12 +119,21 @@ namespace MailServer.Imap
             string dir=root;
             if (Regex.IsMatch(reference, @"^(./)?.*")) dir +=reference.Replace("./", "");
             string mailboxname = math.Groups[2].Value;
+            if (dir == root && mailboxname=="") return "* LIST (\\Noselect ) \"/\" \"\"\r\n" + tag + " OK LIST completed";
             //string dir = Directory.GetDirectories(root, reference)[0];
-            if (!Directory.Exists(dir) && mailboxname != "*") return tag+" OK LIST completed";
-            if ((reference + mailboxname) == root) return "* LIST (\\Noselect ) \"/\" \"\"" + tag + " OK LIST completed";
+            if (!Directory.Exists(dir+mailboxname) && mailboxname != "*" && mailboxname != "%") return tag+" OK LIST completed";
+            int temp = 0;
+            if (mailboxname == "%")
+            {
+                temp = 1;
+                mailboxname = "*";
+            } 
+                
+            
             string[] dirList = Directory.GetDirectories(dir, mailboxname);
             foreach(string mailboxDir in dirList)
             {
+                if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
                 response += "* LIST (";
                 string mailbox = mailboxDir.Replace(root, "");
                 List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
