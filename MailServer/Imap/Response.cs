@@ -44,7 +44,7 @@ namespace MailServer.Imap
 
         static public string ReturnCapabilityResponse(string tag)
         {
-            return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN\r\n" + tag + " OK CAPABILITY completed";
+            return "* CAPABILITY IMAP4rev1 STARTTLS AUTH=LOGIN AUTH=PLAIN\r\n" + tag + " OK CAPABILITY completed";
         }
 
         static public string ReturnNoopCommand(string tag)
@@ -53,13 +53,17 @@ namespace MailServer.Imap
         }
 
         // not authenticate state
-        static public string ReturnLoginResponse(string tag, string[] arguments, ref string state, ref string userSession)
+        static public string ReturnLoginResponse(string tag, string argument, ref string state, ref string userSession)
         {
+            var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+)) (\"(?:[^\"]*)\"|(?:[^\\s]+))");
             // kiểm tra đối số của lênh login
-            if (arguments == null || arguments.Length < 2) return Response.ReturnParseErrorResponse(tag, "LOGIN");
-
+            if (!math.Success) return Response.ReturnParseErrorResponse(tag, "LOGIN");
+            // lấy username từ group
+            string username = math.Groups[1].Value.Replace("\"", "");
+            // lấy password từ group
+            string password = math.Groups[2].Value.Replace("\"", "");
             // kiểm tra tên tài khoảng và mật khẩu trong ImapDB
-            List<User> userInfo = SqliteQuery.LoadUserInfo(arguments[0].Replace("\"","").Split('@')[0], arguments[1].Replace("\"", ""));
+            List<User> userInfo = SqliteQuery.LoadUserInfo(username.Split('@')[0],password);
             //báo lỗi nếu user không tồn tại
             if (userInfo.Count == 0) return tag + " NO LOGIN failed";
             state = "auth";
@@ -68,19 +72,20 @@ namespace MailServer.Imap
         }
 
         //authenticate state
-        static public string ReturnSelectedResponse(string tag, string[] arguments, ref string state, string userSession, ref string userMailBox)
+        static public string ReturnSelectedResponse(string tag, string argument, ref string state, string userSession, ref string userMailBox)
         {
-            // kiểm tra đối số của lênh select
-            if (arguments == null) return ReturnParseErrorResponse(tag, "SELECT");
+            var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
+            // kiểm tra đối số lệnh select
+            if(!math.Success) return Response.ReturnParseErrorResponse(tag, "SELECT");
+            string mailbox = math.Groups[1].Value.Replace("\"","");
             //truy xuất thông tin về mailbox từ ImapDB
-            List<MailBox> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, arguments[0]);
+            List<MailBox> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
             //báo lỗi nếu mailbox không tồn tại
             if (mailBoxInfo.Count == 0) return tag + " NO Mailbox does not exist";
-
             // thay đổi trạng thái sang selected state
             state = "selected";
             // gán usermailbox cho session
-            userMailBox = arguments[0];
+            userMailBox = mailbox;
             // gán thông tin trả về vào response
             string respose = "";
             respose += $"* {mailBoxInfo[0].exists} EXISTS\r\n";
@@ -108,32 +113,37 @@ namespace MailServer.Imap
             mailMessage.Body = System.Text.Encoding.UTF8.GetString(emlFileMessage.TextBody.Body);
             return mailMessage;
         }
-        public static string ReturnListResponse(string tag, string[] arguments, string userSession)
+        public static string ReturnListResponse(string tag, string argument, string userSession)
         {
-            string root = Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\";
-            MatchCollection maths = Regex.Matches(string.Join(' ', arguments), "\"(\\w+\\s)*[\\w*%]*\"");
-            Match math = Regex.Match(string.Join(' ', arguments).Replace('\"','\''), @"^\'((?:[^\/]*\\)*(?:[^\/]+)+)?\'\s\'((?:[^\\]*\/)*(?:[^\/]+)+)?\'");
-            if(!math.Success) return tag + " OK LIST completed";
             string response = "";
-            string reference = math.Groups[1].Value;
+            string root = Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\";
+            var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+)) (\"(?:[^\"]*)\"|(?:[^\\s]+))");
+            if(!math.Success) return Response.ReturnParseErrorResponse(tag, "LIST");
+            // lấy reference từ group
+            string reference = math.Groups[1].Value.Replace("\"","");
             string dir=root;
             if (Regex.IsMatch(reference, @"^(./)?.*")) dir +=reference.Replace("./", "");
-            string mailboxname = math.Groups[2].Value;
-            if (dir == root && mailboxname=="") return "* LIST (\\Noselect ) \"/\" \"\"\r\n" + tag + " OK LIST completed";
-            //string dir = Directory.GetDirectories(root, reference)[0];
-            if (!Directory.Exists(dir+mailboxname) && mailboxname != "*" && mailboxname != "%") return tag+" OK LIST completed";
+            // lấy mailboxName từ group
+            string mailboxName = math.Groups[2].Value.Replace("\"","");
+            // reference = root và mailboxName =""
+            if (dir == root && mailboxName=="") return "* LIST (\\Noselect ) \"/\" \"\"\r\n" + tag + " OK LIST completed";
+            // kiểm tra đường dẫn
+            // kiểm tra mailboxName bằng "*","%"
+            if (!Directory.Exists(dir+mailboxName) && mailboxName != "*" && mailboxName != "%") return tag+" OK LIST completed";
             int temp = 0;
-            if (mailboxname == "%")
+            if (mailboxName == "%")
             {
                 temp = 1;
-                mailboxname = "*";
+                mailboxName = "*";
             } 
                 
             
-            string[] dirList = Directory.GetDirectories(dir, mailboxname);
+            string[] dirList = Directory.GetDirectories(dir, mailboxName);
             foreach(string mailboxDir in dirList)
             {
+                // nếu mailboxName bằng "%" kiểm tra folder không có subfolder
                 if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
+                // tạo response
                 response += "* LIST (";
                 string mailbox = mailboxDir.Replace(root, "");
                 List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
@@ -161,8 +171,9 @@ namespace MailServer.Imap
 
         //selected state
 
-        public static string ReturnFetchResponse(string tag, string[] arguments, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
+        public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
         {
+            string[] arguments = argument.Split(' ');
             // kiểm tra số đối số của lệnh fetch
             if (arguments == null || arguments.Length < 2) ReturnParseErrorResponse(tag, "FETCH");
             //kiểm tra fetch number
@@ -195,6 +206,22 @@ namespace MailServer.Imap
             return respose;
         }
 
+        public static string ReturnCreateResponse(string tag, string argument, string userSession)
+        {
+            var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
+            if(!math.Success) return Response.ReturnParseErrorResponse(tag, "SELECT");
+            string mailboxName = math.Groups[1].Value.Replace("\"", "");
+            int success = SqliteQuery.InsertMailBox(userSession, mailboxName);
+            if (success == 1)
+            {
+                if (!Directory.Exists(Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\{mailboxName}"))
+                    Directory.CreateDirectory(Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\{mailboxName}");
+                return tag + " OK CREATE completed";
+            }
+            return tag + " NO Mailbox already exists";
+
+
+        }
         public static string ReturnExpungeResponse(string tag)
         {
             List<int> deletedMail = SqliteQuery.LoadDeletedMail();

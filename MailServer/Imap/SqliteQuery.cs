@@ -57,7 +57,26 @@ namespace MailServer.Imap
                 return list;
             }
         }    
+         public static int InsertMailBox(string userSession, string mailboxName)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"insert into MailBox(user,uidvalidity,name) values ('{userSession}',{((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds()},'{mailboxName}')", new DynamicParameters());
+                return 1;
+            }
+            catch(SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+                
 
+        }
         public static void DeleteMail()
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))

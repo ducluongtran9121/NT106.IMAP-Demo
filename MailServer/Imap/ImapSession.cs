@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using MailServer;
+using System.Text.RegularExpressions;
 
 namespace MailServer.Imap
 {
@@ -11,6 +12,7 @@ namespace MailServer.Imap
         private string state = "noAuth";
         private string tag = "";
         private string command = "";
+        private string agrument;
         private string[] agruments;
         private string respose = "* OK IMAP4rev1 Service Ready";
         private string userSession = "";
@@ -44,36 +46,28 @@ namespace MailServer.Imap
 
         public string GetResposed(string commandLine)
         {
+            Match math;
+            // kiểm tra lệnh rỗng
             if (commandLine == "") return this.respose;
-            string[] commands = commandLine.Split();
-            if (commands.Length == 1)
-            {
-                this.tag = commands[0];
-                this.command = "";
-                this.agruments = null;
-                ProcessCommand();
-                return this.respose;
-            }
-            if (commands.Length == 2)
-            {
-                this.tag = commands[0];
-                this.command = commands[1];
-                this.agruments = null;
-                ProcessCommand();
-                return this.respose;
-            }
-            return GetResposed(commands);
-        }
-
-        public string GetResposed(string[] commands)
-        {
-            this.tag = commands[0];
-            this.command = commands[1];
-            agruments = new string[commands.Length - 2];
-            Array.Copy(commands, 2, agruments, 0, commands.Length - 2);
+            // tách tag với phần còn lại("tag" "remain")
+            math = Regex.Match(commandLine, @"^(\S+) ?(.*)");
+            // tag bắt đầu với khoảng trắng (invald tag)
+            if (!math.Success) return this.respose = Response.ReturnMissingTagResponse();
+            this.tag = math.Groups[1].Value;
+            // kiểm tra lệnh null
+            if(math.Groups[2].Value=="") return this.respose = Response.ReturnParseErrorResponse(this.tag);
+            // tách lệnh với phần còn lại ("command" "remain")
+            math = Regex.Match(math.Groups[2].Value, @"^(\S+) ?(.*)");
+            // command bắt đầu với khoảng trắng
+            if(!math.Success) return this.respose = Response.ReturnParseErrorResponse(this.tag);
+            this.command = math.Groups[1].Value;
+            this.agrument = math.Groups[2].Value;
+            this.agruments = math.Groups[2].Value.Split();
+            // xử lý lệnh
             ProcessCommand();
             return this.respose;
         }
+
 
         public void ResetSession()
         {
@@ -87,16 +81,6 @@ namespace MailServer.Imap
         //xử lý theo trạng thái
         private void ProcessCommand()
         {
-            if (this.tag == "")
-            {
-                this.respose = Response.ReturnMissingTagResponse();
-                return;
-            }
-            if (this.command == "")
-            {
-                this.respose = Response.ReturnParseErrorResponse(this.tag);
-                return;
-            }
             switch (this.state)
             {
                 case "noAuth":
@@ -141,7 +125,7 @@ namespace MailServer.Imap
                     break;
 
                 case "login":
-                    this.respose = Response.ReturnLoginResponse(this.tag, this.agruments, ref this.state, ref this.userSession);
+                    this.respose = Response.ReturnLoginResponse(this.tag, this.agrument, ref this.state, ref this.userSession);
                     break;
 
                 case "select":
@@ -196,13 +180,14 @@ namespace MailServer.Imap
                     break;
 
                 case "select":
-                    this.respose = Response.ReturnSelectedResponse(this.tag, this.agruments, ref this.state, this.userSession, ref this.userMailBox);
+                    this.respose = Response.ReturnSelectedResponse(this.tag, this.agrument, ref this.state, this.userSession, ref this.userMailBox);
                     break;
 
                 case "examine":
                     break;
 
                 case "create":
+                    this.respose = Response.ReturnCreateResponse(this.tag, this.agrument, this.userSession);
                     break;
 
                 case "delete":
@@ -215,7 +200,7 @@ namespace MailServer.Imap
                     break;
 
                 case "list":
-                    this.respose = Response.ReturnListResponse(this.tag, this.agruments, this.userSession);
+                    this.respose = Response.ReturnListResponse(this.tag, this.agrument, this.userSession);
                     break;
 
                 case "lsub":
@@ -269,7 +254,7 @@ namespace MailServer.Imap
                     break;
 
                 case "select":
-                    this.respose = Response.ReturnSelectedResponse(this.tag, this.agruments, ref this.state, this.userSession, ref this.userMailBox);
+                    this.respose = Response.ReturnSelectedResponse(this.tag, this.agrument, ref this.state, this.userSession, ref this.userMailBox);
                     break;
 
                 case "examine":
@@ -312,7 +297,7 @@ namespace MailServer.Imap
                     break;
 
                 case "fetch":
-                    this.respose = Response.ReturnFetchResponse(this.tag, this.agruments, this.userSession, this.userMailBox);
+                    this.respose = Response.ReturnFetchResponse(this.tag, this.agrument, this.userSession, this.userMailBox);
                     break;
 
                 case "store":
