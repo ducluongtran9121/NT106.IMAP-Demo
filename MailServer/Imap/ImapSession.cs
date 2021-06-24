@@ -206,6 +206,7 @@ namespace MailServer.Imap
                     break;
 
                 case "lsub":
+                    this.respose = Response.ReturnLsubResponse(this.tag, this.agrument, this.userSession);
                     break;
 
                 case "status":
@@ -280,6 +281,7 @@ namespace MailServer.Imap
                     break;
 
                 case "lsub":
+                    this.respose = Response.ReturnLsubResponse(this.tag, this.agrument, this.userSession);
                     break;
 
                 case "status":

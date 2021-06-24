@@ -188,6 +188,63 @@ namespace MailServer.Imap
             if (success == 1) return tag + " OK UNSUBSCRIBE completed";
             return tag + " NO Mailbox does not exist";
         }
+        static public string ReturnLsubResponse(string tag, string argument, string userSession)
+        {
+            string response = "";
+            string root = Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\";
+            var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+)) (\"(?:[^\"]*)\"|(?:[^\\s]+))");
+            if (!math.Success) return Response.ReturnParseErrorResponse(tag, "LIST");
+            // lấy reference từ group
+            string reference = math.Groups[1].Value.Replace("\"", "");
+            string dir = root;
+            if (Regex.IsMatch(reference, @"^(./)?.*")) dir += reference.Replace("./", "");
+            // lấy mailboxName từ group
+            string mailboxName = math.Groups[2].Value.Replace("\"", "");
+            // reference = root và mailboxName =""
+            if (dir == root && mailboxName == "") return "* LIST (\\Noselect ) \"/\" \"\"\r\n" + tag + " OK LIST completed";
+            // kiểm tra đường dẫn
+            // kiểm tra mailboxName bằng "*","%"
+            if (!Directory.Exists(dir + mailboxName) && mailboxName != "*" && mailboxName != "%") return tag + " OK LIST completed";
+            int temp = 0;
+            if (mailboxName == "%")
+            {
+                temp = 1;
+                mailboxName = "*";
+            }
+
+
+            string[] dirList = Directory.GetDirectories(dir, mailboxName);
+            foreach (string mailboxDir in dirList)
+            {
+                // nếu mailboxName bằng "%" kiểm tra folder không có subfolder
+                if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
+                
+                string mailbox = mailboxDir.Replace(root, "");
+                List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
+                if (ListmailBoxInfo.Count == 0) return tag + " OK LIST completed";
+                MailBox mailBoxInfo = ListmailBoxInfo[0];
+                // kiểm tra mailbox đã được subcribe chưa
+                if (mailBoxInfo.subscribed == 0) continue;
+                // tạo response
+                response += "* LSUB (";
+                if (mailBoxInfo.all == 1) response += "\\All ";
+                if (mailBoxInfo.archive == 1) response += "\\Archive ";
+                if (mailBoxInfo.drafts == 1) response += "\\Drafts ";
+                if (mailBoxInfo.flagged == 1) response += "\\Flagged ";
+                if (mailBoxInfo.haschildren == 1) response += "\\HasChildren ";
+                if (mailBoxInfo.hasnochildren == 1) response += "\\HasNoChildren ";
+                if (mailBoxInfo.important == 1) response += "\\Important ";
+                if (mailBoxInfo.inbox == 1) response += "\\Inbox ";
+                if (mailBoxInfo.junk == 1) response += "\\Junk ";
+                if (mailBoxInfo.marked == 1) response += "\\Marked ";
+                if (mailBoxInfo.nointeriors == 1) response += "\\NoInferiors ";
+                if (mailBoxInfo.noselect == 1) response += "\\Noselect ";
+                if (mailBoxInfo.sent == 1) response += "\\Sent ";
+                if (mailBoxInfo.trash == 1) response += "\\Trash ";
+                response += $") \"/\" \"{reference}{mailbox}\"\r\n";
+            }
+            return response + tag + " OK LSUB completed";
+        }
 
         //selected state
 
