@@ -83,7 +83,7 @@ namespace MailServer.Imap
             cnn.Open();
             try
             {
-                cnn.Execute($"update MailBox set subscribed={subscribed} where user = '{userSession}' and name = '{userMailBox}' )", new DynamicParameters());
+                cnn.Execute($"update MailBox set subscribed={subscribed} where user = '{userSession}' and name = '{userMailBox}'", new DynamicParameters());
                 return 1;
             }
             catch (SQLiteException)

@@ -305,12 +305,14 @@ namespace MailServer.Imap
                 }
                 FileInfo email = new FileInfo(emailPath);
                 response += "* " + (fromUIDCommand ? mailInfo.uid : mailInfo.rowid) + " FETCH (";
+                bool first = true;
                 foreach(string item in items)
                 {
+                    if (!first) response += " ";
                     switch(item.ToLower())
                     {
                         case "uid":
-                            response += $"UID {mailInfo.uid} ";
+                            response += $"UID {mailInfo.uid}";
                             break;
                         case "flags":
                             response += "FLAGS (" + (mailInfo.recent == 1 ? "\\Recent":"") 
@@ -319,10 +321,10 @@ namespace MailServer.Imap
                                 + (mailInfo.deleted == 1 ? "\\Deleted" : "")
                                 + (mailInfo.seen == 1 ? "\\Seen" : "")
                                 + (mailInfo.draft == 1 ? "\\Draft" : "")
-                                +") ";
+                                +")";
                             break;
                         case "rfc822.size":
-                            response += $"RFC822.SIZE {email.Length} ";
+                            response += $"RFC822.SIZE {email.Length}";
                             break;
                         case "body.peek[]":
                             response += "BODY[] {"+email.Length+"}\r\n";
@@ -331,11 +333,10 @@ namespace MailServer.Imap
                                 string temp = sr.ReadToEnd();
                                 response += temp;
                             }
-                            response += " ";
                             break;
                         case "internaldate":
                             dtDateTime = dtDateTime.AddSeconds(mailInfo.intertime).ToLocalTime();
-                            response += "INTERNALDATE \"" + dtDateTime.ToString("dd-MMM-yyyy HH:mm:ss zz") +"00\"";
+                            response += "INTERNALDATE \"" + dtDateTime.ToString("dd-MMM-yyyy HH:mm:ss zzz") +"\"";
                             break;
                         default:
                             break;
