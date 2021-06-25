@@ -50,6 +50,17 @@ namespace MailServer
             //try-catch lỗi server và khỏi động lại server
             try
             {
+                // disable for test
+                // Directory.CreateDirectory(Environment.CurrentDirectory + "ImapMailBox/");
+                // contruct for test
+                if (Directory.Exists(Environment.CurrentDirectory + "/ImapMailBox/")) Directory.Delete(Environment.CurrentDirectory + "/ImapMailBox/", true);
+                Directory.CreateDirectory(Environment.CurrentDirectory + "/ImapMailBox/thihuynh/INBOX/");
+                Directory.CreateDirectory(Environment.CurrentDirectory + "/ImapMailBox/thi2256/INBOX/");
+                Directory.CreateDirectory(Environment.CurrentDirectory + "/ImapMailBox/son2137/INBOX/");
+                Directory.CreateDirectory(Environment.CurrentDirectory + "/ImapMailBox/luong1815/INBOX/");
+                File.Copy(GetProjectDir() + "/Imap/ImapMailBox/thihuynh/INBOX/email_1.msg", Environment.CurrentDirectory + "/ImapMailBox/thihuynh/INBOX/email_1.msg");
+                File.Copy(GetProjectDir() + "/Imap/ImapMailBox/thihuynh/INBOX/email_2.eml", Environment.CurrentDirectory + "/ImapMailBox/thihuynh/INBOX/email_2.eml");
+                File.Copy(GetProjectDir() + "/Imap/ImapMailBox/thihuynh/INBOX/email_3.eml", Environment.CurrentDirectory + "/ImapMailBox/thihuynh/INBOX/email_3.eml");
                 while (true)
                 {
                     // đợi client connect
@@ -176,6 +187,12 @@ namespace MailServer
         {
             for (int i = 0; i < clientconnectionList.Count; i++) clientconnectionList[i].Close();
             listener.Stop();
+        }
+        private static string GetProjectDir()
+        {
+            // lấy directory của project
+            Regex regex = new Regex(@"\\MailServer\\bin\\(Debug|Release).*$");
+            return regex.Replace(Environment.CurrentDirectory, "\\MailServer");
         }
     }
 }

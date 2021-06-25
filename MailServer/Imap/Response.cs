@@ -325,18 +325,17 @@ namespace MailServer.Imap
                             response += $"RFC822.SIZE {email.Length} ";
                             break;
                         case "body.peek[]":
-                            response += $"BODY[] {email.Length}\r\n";
+                            response += "BODY[] {"+email.Length+"}\r\n";
                             using (StreamReader sr = new StreamReader(email.OpenRead()))
                             {
                                 string temp = sr.ReadToEnd();
                                 response += temp;
-                               
                             }
                             response += " ";
                             break;
                         case "internaldate":
                             dtDateTime = dtDateTime.AddSeconds(mailInfo.intertime).ToLocalTime();
-                            response += "INTERNALDATE \"" + dtDateTime.ToString("dd-MMM-yyyy HH:mm:ss ZZZZZ") +"\"";
+                            response += "INTERNALDATE \"" + dtDateTime.ToString("dd-MMM-yyyy HH:mm:ss zz") +"00\"";
                             break;
                         default:
                             break;
