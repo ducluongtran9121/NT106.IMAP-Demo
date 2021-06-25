@@ -13,7 +13,6 @@ namespace MailServer.Imap
         private string tag = "";
         private string command = "";
         private string agrument;
-        private string[] agruments;
         private string respose = "* OK IMAP4rev1 Service Ready";
         private string userSession = "";
         private string userMailBox = "";
@@ -62,7 +61,6 @@ namespace MailServer.Imap
             if(!math.Success) return this.respose = Response.ReturnParseErrorResponse(this.tag);
             this.command = math.Groups[1].Value;
             this.agrument = math.Groups[2].Value;
-            this.agruments = math.Groups[2].Value.Split();
             // xử lý lệnh
             ProcessCommand();
             return this.respose;
@@ -73,9 +71,10 @@ namespace MailServer.Imap
         {
             this.tag = "";
             this.command = "";
-            this.agruments = null;
+            this.agrument = "";
             this.state = "";
             this.respose = "";
+            this.startTLS = false;
         }
 
         //xử lý theo trạng thái
