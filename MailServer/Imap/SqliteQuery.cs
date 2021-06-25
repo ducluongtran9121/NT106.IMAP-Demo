@@ -113,7 +113,44 @@ namespace MailServer.Imap
             
         }
 
-        internal static List<MailInfo> LoadMailInfoWithRange(string userSession, string userMailBox, string left, string right, string range="uid")
+        public static int UpdateRecentFlag(string userSession, string userMailBox)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailBox set recent = 0 where user = '{userSession}' and name = '{userMailBox}'", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
+        public static int UpdateSeenFlag(string userSession, string userMailBox,string index, string range="uid")
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailBox set seen = 1 where user = '{userSession}' and name = '{userMailBox}' and {range} = {index}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
+
+        public static List<MailInfo> LoadMailInfoWithRange(string userSession, string userMailBox, string left, string right, string range="uid")
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
