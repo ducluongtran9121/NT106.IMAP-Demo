@@ -141,7 +141,7 @@ namespace MailServer
                     Console.WriteLine(resposed);
                 }
                 Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
-                // giải phóng stream và TCPclient connect
+                // giải phóng stream và TCPclient connection
                 client.Dispose();
                 client.Close();
                 sr.Dispose();

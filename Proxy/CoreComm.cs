@@ -76,7 +76,8 @@ namespace Proxy
             // Create connection between Proxy and Server
             P2SSocket.Connect(IPAddress.Parse(server.IP), server.Port);
             NetworkStream P2SStream = P2SSocket.GetStream();
-            
+
+            StreamReader srP2S = new StreamReader(P2SStream);
             StreamWriter swP2S = new StreamWriter(P2SStream);
             StreamReader srC2P = new StreamReader(C2PStream);
             StreamWriter swC2P = new StreamWriter(C2PStream);
@@ -87,16 +88,24 @@ namespace Proxy
             // Get IP and port or server
             string serverIP = ((IPEndPoint)P2SSocket.Client.RemoteEndPoint).Address.ToString();
             string serverPort = ((IPEndPoint)P2SSocket.Client.RemoteEndPoint).Port.ToString();
-            // Response from server
-            string response = "";
+            // Response: * OK IMAP4rev1 Service Ready
+            string response = srP2S.ReadLine();
+            swC2P.WriteLine(response);
+            swC2P.Flush();
             // Commands from client
             string msg = "";
-            // To check whether imap session started
-            bool isSession = false; 
             while (P2SSocket.Connected)
             { 
                 try
                 {
+                    // Read command from client
+                    msg = srC2P.ReadLine();
+                    // Sudden disconnection from client 
+                    if (msg == null) break;
+                    // Send Command to server
+                    swP2S.WriteLine(msg);
+                    swP2S.Flush();
+
                     var receiveBuffer = new byte[bufSize];
                     // Read response from server in bytes instead of sr.Readline
                     var count = P2SStream.Read(receiveBuffer, 0, bufSize);
@@ -105,19 +114,13 @@ namespace Proxy
                     swC2P.WriteLine(response.Trim());
                     swC2P.Flush();
 
+                    // Commands with only tag
+                    if (msg.Split(' ').Length == 1) continue;
                     // Client call logout command 
-                    if (isSession && (msg.Split(' ')[1]).ToLower() == "logout") break;
-                    
-                    // Read command from client
-                    msg = srC2P.ReadLine();
-                    // Sudden disconnection from client 
-                    if (msg == null) break; 
-                    // Send Command to server
-                    swP2S.WriteLine(msg);
-                    swP2S.Flush();
-                    isSession = true;
+                    if ((msg.Split(' ')[1]).ToLower() == "logout") break;
+                     
                 }
-                catch(Exception ex)
+                catch
                 {
                     // Close streams
                     swP2S.Dispose();
