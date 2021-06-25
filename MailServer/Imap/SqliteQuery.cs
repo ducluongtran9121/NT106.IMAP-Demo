@@ -102,5 +102,15 @@ namespace MailServer.Imap
                 cnn.Execute($"delete from MailInfo where deleted = 1", new DynamicParameters());
             }
         }
+
+        internal static List<long> LoadUIDSince(string userSession, string userMailBox, long unixTime)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query=cnn.Query<long>($"select uid from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime} order by uid", new DynamicParameters());
+                return query.ToList();
+            }
+            
+        }
     }
 }

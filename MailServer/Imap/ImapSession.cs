@@ -300,6 +300,7 @@ namespace MailServer.Imap
                     this.respose = Response.ReturnExpungeResponse(this.tag);
                     break;
                 case "search":
+                    
                     break;
 
                 case "fetch":
@@ -313,6 +314,7 @@ namespace MailServer.Imap
                     break;
 
                 case "uid":
+                    this.respose = Response.ReturnUIDCommand(this.tag, this.agrument, this.userSession, this.userMailBox);
                     break;
 
                 default:

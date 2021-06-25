@@ -193,7 +193,7 @@ namespace MailServer.Imap
             string response = "";
             string root = Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\";
             var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+)) (\"(?:[^\"]*)\"|(?:[^\\s]+))");
-            if (!math.Success) return Response.ReturnParseErrorResponse(tag, "LIST");
+            if (!math.Success) return Response.ReturnParseErrorResponse(tag, "LSUB");
             // lấy reference từ group
             string reference = math.Groups[1].Value.Replace("\"", "");
             string dir = root;
@@ -201,10 +201,10 @@ namespace MailServer.Imap
             // lấy mailboxName từ group
             string mailboxName = math.Groups[2].Value.Replace("\"", "");
             // reference = root và mailboxName =""
-            if (dir == root && mailboxName == "") return "* LIST (\\Noselect ) \"/\" \"\"\r\n" + tag + " OK LIST completed";
+            if (dir == root && mailboxName == "") return "* LSUB (\\Noselect ) \"/\" \"\"\r\n" + tag + " OK LSUB completed";
             // kiểm tra đường dẫn
             // kiểm tra mailboxName bằng "*","%"
-            if (!Directory.Exists(dir + mailboxName) && mailboxName != "*" && mailboxName != "%") return tag + " OK LIST completed";
+            if (!Directory.Exists(dir + mailboxName) && mailboxName != "*" && mailboxName != "%") return tag + " OK LSUB completed";
             int temp = 0;
             if (mailboxName == "%")
             {
@@ -221,7 +221,7 @@ namespace MailServer.Imap
                 
                 string mailbox = mailboxDir.Replace(root, "");
                 List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
-                if (ListmailBoxInfo.Count == 0) return tag + " OK LIST completed";
+                if (ListmailBoxInfo.Count == 0) return tag + " OK LSUB completed";
                 MailBox mailBoxInfo = ListmailBoxInfo[0];
                 // kiểm tra mailbox đã được subcribe chưa
                 if (mailBoxInfo.subscribed == 0) continue;
@@ -245,6 +245,8 @@ namespace MailServer.Imap
             }
             return response + tag + " OK LSUB completed";
         }
+
+
 
         //selected state
 
@@ -314,6 +316,24 @@ namespace MailServer.Imap
             SqliteQuery.DeleteMail();
             response += tag + " OK EXPUNGE completed\r\n";
             return response;
+        }
+
+        public static string ReturnUIDCommand(string tag, string agrument, string userSession, string userMailBox)
+        {
+            // cho search since
+            var math = Regex.Match(agrument, @"(?:[sS][eE][aA][rR][cC][hH])( .*)?");
+            if (!math.Success) return ReturnInvaildCommandResponse(tag);
+            math = Regex.Match(math.Groups[1].Value, @"(?:[sS][iI][nN][cC][eE])( .*)?");
+            if (!math.Success) return ReturnParseErrorResponse(tag, "SEARCH");
+            DateTime dateTime = Convert.ToDateTime(math.Groups[1].Value.Trim());
+            long unixTime = ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
+            List<long> ListUID = SqliteQuery.LoadUIDSince(userSession, userMailBox, unixTime);
+            if (ListUID.Count == 0) return tag + "OK SEARCH completed\r\n";
+            string respone = "* SEARCH";
+            foreach (long uid in ListUID) respone += $" {uid}";
+            respone += "\r\n"+ tag + " OK SEARCH completed";
+            // cho 
+            return respone;
         }
         private static bool IsListPermanentFlags(string[] arguments)
         {
