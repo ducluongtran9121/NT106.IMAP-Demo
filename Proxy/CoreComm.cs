@@ -123,6 +123,8 @@ namespace Proxy
                 catch
                 {
                     // Close streams
+                    srP2S.Dispose();
+                    srP2S.Close();
                     swP2S.Dispose();
                     swP2S.Close();
                     srC2P.Dispose();
@@ -138,6 +140,8 @@ namespace Proxy
             Console.WriteLine("Disconnect with server " + serverIP + " : " + serverPort);
             P2SSocket.Close();
             // Close streams
+            srP2S.Dispose();
+            srP2S.Close();
             swP2S.Dispose();
             swP2S.Close();
             srC2P.Dispose();
