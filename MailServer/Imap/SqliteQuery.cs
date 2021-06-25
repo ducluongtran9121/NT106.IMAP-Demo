@@ -103,14 +103,23 @@ namespace MailServer.Imap
             }
         }
 
-        internal static List<long> LoadUIDSince(string userSession, string userMailBox, long unixTime)
+        public static List<MailInfo> LoadMailInfoSinceInterTime(string userSession, string userMailBox, long unixTime)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query=cnn.Query<long>($"select uid from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime} order by uid", new DynamicParameters());
+                var query=cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime}", new DynamicParameters());
                 return query.ToList();
             }
             
+        }
+
+        internal static List<MailInfo> LoadMailInfoWithRange(string userSession, string userMailBox, string left, string right, string range="uid")
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query = cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and {range}>={left} and {range}<={right}", new DynamicParameters());
+                return query.ToList();
+            }
         }
     }
 }

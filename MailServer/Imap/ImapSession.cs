@@ -50,14 +50,14 @@ namespace MailServer.Imap
             // kiểm tra lệnh rỗng
             if (commandLine == "") return this.respose;
             // tách tag với phần còn lại("tag" "remain")
-            math = Regex.Match(commandLine, @"^(\S+) ?(.*)");
+            math = Regex.Match(commandLine, @"^(\S+)(?: (.*))?");
             // tag bắt đầu với khoảng trắng (invald tag)
             if (!math.Success) return this.respose = Response.ReturnMissingTagResponse();
             this.tag = math.Groups[1].Value;
             // kiểm tra lệnh null
             if(math.Groups[2].Value=="") return this.respose = Response.ReturnParseErrorResponse(this.tag);
             // tách lệnh với phần còn lại ("command" "remain")
-            math = Regex.Match(math.Groups[2].Value, @"^(\S+) ?(.*)");
+            math = Regex.Match(math.Groups[2].Value, @"^(\S+)(?: (.*))?");
             // command bắt đầu với khoảng trắng
             if(!math.Success) return this.respose = Response.ReturnParseErrorResponse(this.tag);
             this.command = math.Groups[1].Value;

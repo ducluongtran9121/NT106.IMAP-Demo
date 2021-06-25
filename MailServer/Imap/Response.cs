@@ -10,50 +10,50 @@ namespace MailServer.Imap
     internal static class Response
     {
         // syntax error
-        static public string ReturnInvaildCommandResponse(string tag)
+        public static string ReturnInvaildCommandResponse(string tag)
         {
             return tag + " BAD Invalid command";
         }
 
-        static public string ReturnBadStateResponse(string tag, string command)
+        public static string ReturnBadStateResponse(string tag, string command)
         {
             return tag + " BAD Bad state for " + command.ToUpper();
         }
 
-        static public string ReturnParseErrorResponse(string tag, string command)
+        public static string ReturnParseErrorResponse(string tag, string command)
         {
             return tag + " BAD " + command.ToUpper() + " parse error";
         }
 
-        static public string ReturnParseErrorResponse(string tag)
+        public static string ReturnParseErrorResponse(string tag)
         {
             return tag + " BAD parse error";
         }
 
-        static public string ReturnMissingTagResponse()
+        public static string ReturnMissingTagResponse()
         {
             return "* BAD missing tag";
         }
 
         // any state
-        static public string ReturnLogoutResponse(string tag,ref string state)
+        public static string ReturnLogoutResponse(string tag,ref string state)
         {
             state = "Logout";
             return "* BYE IMAP4rev1 Server logging out\r\n" + tag + " OK LOGOUT completed";
         }
 
-        static public string ReturnCapabilityResponse(string tag)
+        public static string ReturnCapabilityResponse(string tag)
         {
             return "* CAPABILITY IMAP4rev1 NAMESPACE AUTH=LOGIN AUTH=PLAIN STARTTLS ACL UNSELECT UIDPLUS QUOTA BINARY\r\n" + tag + " OK CAPABILITY completed";
         }
 
-        static public string ReturnNoopCommand(string tag)
+        public static string ReturnNoopCommand(string tag)
         {
             return tag + " OK NOOP completed";
         }
 
         // not authenticate state
-        static public string ReturnLoginResponse(string tag, string argument, ref string state, ref string userSession)
+        public static string ReturnLoginResponse(string tag, string argument, ref string state, ref string userSession)
         {
             var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+)) (\"(?:[^\"]*)\"|(?:[^\\s]+))");
             // kiểm tra đối số của lênh login
@@ -72,7 +72,7 @@ namespace MailServer.Imap
         }
 
         //authenticate state
-        static public string ReturnSelectedResponse(string tag, string argument, ref string state, string userSession, ref string userMailBox)
+        public static string ReturnSelectedResponse(string tag, string argument, ref string state, string userSession, ref string userMailBox)
         {
             var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
             // kiểm tra đối số lệnh select
@@ -168,7 +168,7 @@ namespace MailServer.Imap
             }
             return response + tag + " OK LIST completed";
         }
-        static public string ReturnSubcribeResponse(string tag,string argument,string userSession)
+        public static string ReturnSubcribeResponse(string tag,string argument,string userSession)
         {
             var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
             // kiểm tra đối số lệnh subcribe
@@ -178,7 +178,7 @@ namespace MailServer.Imap
             if (success == 1) return tag + " OK SUBSCRIBE completed";
             return tag + " NO Mailbox does not exist";
         }
-        static public string ReturnUnsubcribeResponse(string tag, string argument, string userSession)
+        public static string ReturnUnsubcribeResponse(string tag, string argument, string userSession)
         {
             var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
             // kiểm tra đối số lệnh unsubcribe
@@ -188,7 +188,7 @@ namespace MailServer.Imap
             if (success == 1) return tag + " OK UNSUBSCRIBE completed";
             return tag + " NO Mailbox does not exist";
         }
-        static public string ReturnLsubResponse(string tag, string argument, string userSession)
+        public static string ReturnLsubResponse(string tag, string argument, string userSession)
         {
             string response = "";
             string root = Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\";
@@ -250,41 +250,117 @@ namespace MailServer.Imap
 
         //selected state
 
-        public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox) //mới được có 2 cái header và text body thôi nha mấy cha
+        public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox,bool fromUIDCommand=false) //mới được có 2 cái header và text body thôi nha mấy cha
         {
-            string[] arguments = argument.Split(' ');
-            // kiểm tra số đối số của lệnh fetch
-            if (arguments == null || arguments.Length < 2) ReturnParseErrorResponse(tag, "FETCH");
-            //kiểm tra fetch number
-            uint mailNum;
-            if (!UInt32.TryParse(arguments[0], out mailNum)) return ReturnParseErrorResponse(tag, "FETCH");
-            // truy vấn UID của fetch number
-            int MailUID = SqliteQuery.LoadUIDMail(mailNum);
-            // trả về lỗi nếu không tồn tại fetch number
-            if (MailUID == -1) return ReturnParseErrorResponse(tag, "FETCH");
-
-            string respose = "";
-            // kiểm tra đối số của fetch
-            if (arguments[1].ToLower() != "body[header]" && arguments[1].ToLower() != "body[text]") return ReturnParseErrorResponse(tag, "FETCH");
-
-            // ...\MailServer\Imap\MailBoxImap\....
-            string path = Response.GetProjectDir() + $"\\Imap\\ImapMailBox\\{userSession}\\{userMailBox.ToUpper()}";
-
-            // đọc mail được lưu trong mail box
-            MailMessage message = GetMail(path + $"\\email_{MailUID}.eml");
-            if (arguments[1].ToLower() == "body[header]")
+            string response = "";
+            var math = Regex.Match(argument, @"^(\d+|(?:\d+|\*):(?:\d+|\*)) \(([^\(\)]*)\)");
+            if (!math.Success) return ReturnParseErrorResponse(tag, "FETCH");
+            string mailIndex = math.Groups[1].Value;
+            string right;
+            string left;
+            List<MailInfo> mailInfoList;
+            if (mailIndex.Contains(':'))
             {
-                respose += $"From: {message.From}\r\n";
-                respose += $"To: {message.To}\r\n";
-                respose += $"Subject: {message.Subject}\r\n";
+                string[] temp = mailIndex.Split(':',StringSplitOptions.RemoveEmptyEntries);
+                if (temp[0] == "*")
+                {
+                    if (fromUIDCommand) left = "uid";
+                    else left = "rowid";
+                }
+                else left = temp[0];
+                if (temp[1] == "*")
+                {
+                    if (fromUIDCommand) right = "uid";
+                    else right = "rowid";
+                }
+                else right = temp[1];
             }
-            if (arguments[1].ToLower() == "body[text]") respose += message.Body;
-            respose = $"* {arguments[0]} FETCH({arguments[1]} " + "{" + respose.Length + "} \r\n" + respose + ")\r\n";
-            respose += tag + " OK FETCH completed";
+            else
+            {
+                right = mailIndex;
+                left = right;
+            }
+            if (fromUIDCommand) mailInfoList = SqliteQuery.LoadMailInfoWithRange(userSession, userMailBox, left, right);
+            else mailInfoList = SqliteQuery.LoadMailInfoWithRange(userSession, userMailBox, left, right, "rowid");
 
-            return respose;
+            string[] items = math.Groups[2].Value.Split(' ');
+            string[] arguments = argument.Split(' ');
+
+            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+            string mailbBoxDir = Environment.CurrentDirectory + $"/ImapMailBox/{userSession}/{userMailBox}/";
+            string emailPath;
+            if(mailInfoList.Count==0) return tag + " OK FETCH completed";
+            foreach (MailInfo mailInfo in mailInfoList)
+            {
+                emailPath = mailbBoxDir + $"email_{mailInfo.uid}";
+                if(File.Exists(emailPath+".eml"))
+                {
+                    if (File.Exists(emailPath + ".msg")) emailPath += ".msg";
+                    else emailPath += ".eml";
+                }
+                else
+                {
+                    if (File.Exists(emailPath + ".msg")) emailPath += ".msg";
+                    else continue;
+                }
+                FileInfo email = new FileInfo(emailPath);
+                response += "* " + (fromUIDCommand ? mailInfo.uid : mailInfo.rowid) + " FETCH (";
+                foreach(string item in items)
+                {
+                    switch(item.ToLower())
+                    {
+                        case "uid":
+                            response += $"UID {mailInfo.uid} ";
+                            break;
+                        case "flags":
+                            response += "FLAGS (" + (mailInfo.recent == 1 ? "\\Recent":"") 
+                                + (mailInfo.answered == 1 ? "\\Answered" : "")
+                                + (mailInfo.flagged == 1 ? "\\Flagged" : "")
+                                + (mailInfo.deleted == 1 ? "\\Deleted" : "")
+                                + (mailInfo.seen == 1 ? "\\Seen" : "")
+                                + (mailInfo.draft == 1 ? "\\Draft" : "")
+                                +") ";
+                            break;
+                        case "rfc822.size":
+                            response += $"RFC822.SIZE {email.Length} ";
+                            break;
+                        case "body.peek[]":
+                            response += $"BODY[] {email.Length}\r\n";
+                            using (StreamReader sr = new StreamReader(email.OpenRead()))
+                            {
+                                string temp = sr.ReadToEnd();
+                                response += temp;
+                               
+                            }
+                            response += " ";
+                            break;
+                        case "internaldate":
+                            dtDateTime = dtDateTime.AddSeconds(mailInfo.intertime).ToLocalTime();
+                            response += "INTERNALDATE \"" + dtDateTime.ToString("dd-MMM-yyyy HH:mm:ss ZZZZZ") +"\"";
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                response += $")\r\n";
+            }
+            response += tag + " OK FETCH completed";
+            return response;
         }
-
+        public static string ReturnSearchResponse(string tag, string argument, string userSession,string userMailBox, bool fromUIDCommand=false)
+        {
+            var math = Regex.Match(argument, @"(?:[sS][iI][nN][cC][eE])( .*)?");
+            if (!math.Success) return ReturnParseErrorResponse(tag, "SEARCH");
+            DateTime dateTime = Convert.ToDateTime(math.Groups[1].Value.Trim());
+            long unixTime = ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
+            List<MailInfo> mailInfoList = SqliteQuery.LoadMailInfoSinceInterTime(userSession, userMailBox, unixTime);
+            if (mailInfoList.Count == 0) return tag + "OK SEARCH completed\r\n";
+            string respone = "* SEARCH";
+            if(fromUIDCommand) foreach (MailInfo mailInfo in mailInfoList) respone += $" {mailInfo.uid}";
+            else foreach (MailInfo mailInfo in mailInfoList) respone += $" {mailInfo.rowid}";
+            respone += "\r\n" + tag + " OK SEARCH completed";
+            return respone;
+        }
         public static string ReturnCreateResponse(string tag, string argument, string userSession)
         {
             var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+))");
@@ -298,8 +374,6 @@ namespace MailServer.Imap
                 return tag + " OK CREATE completed";
             }
             return tag + " NO Mailbox already exists";
-
-
         }
         public static string ReturnExpungeResponse(string tag)
         {
@@ -321,19 +395,19 @@ namespace MailServer.Imap
         public static string ReturnUIDCommand(string tag, string agrument, string userSession, string userMailBox)
         {
             // cho search since
-            var math = Regex.Match(agrument, @"(?:[sS][eE][aA][rR][cC][hH])( .*)?");
-            if (!math.Success) return ReturnInvaildCommandResponse(tag);
-            math = Regex.Match(math.Groups[1].Value, @"(?:[sS][iI][nN][cC][eE])( .*)?");
-            if (!math.Success) return ReturnParseErrorResponse(tag, "SEARCH");
-            DateTime dateTime = Convert.ToDateTime(math.Groups[1].Value.Trim());
-            long unixTime = ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
-            List<long> ListUID = SqliteQuery.LoadUIDSince(userSession, userMailBox, unixTime);
-            if (ListUID.Count == 0) return tag + "OK SEARCH completed\r\n";
-            string respone = "* SEARCH";
-            foreach (long uid in ListUID) respone += $" {uid}";
-            respone += "\r\n"+ tag + " OK SEARCH completed";
-            // cho 
-            return respone;
+            var math = Regex.Match(agrument, @"^(\S+)(?: (.*))?");
+            if (!math.Success) return ReturnParseErrorResponse(tag, "UID");
+            string command = math.Groups[1].Value;
+            string newArgument = math.Groups[2].Value;
+            switch (command.ToLower())
+            {
+                case "search":
+                    return Response.ReturnSearchResponse(tag, newArgument, userSession, userMailBox, true);
+                case "fetch":
+                    return Response.ReturnFetchResponse(tag, newArgument, userSession, userMailBox, true);
+                default:
+                    return ReturnInvaildCommandResponse(tag);
+            }
         }
         private static bool IsListPermanentFlags(string[] arguments)
         {

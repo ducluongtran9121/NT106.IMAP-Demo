@@ -6,14 +6,16 @@ namespace MailServer.Imap
 {
     internal class MailInfo
     {
+        public long rowid { get; set; }
         public string user { get; set; }
         public string mailboxname { get; set; }
-        public string uid { get; set; }
-        public string recent { get; set; }
-        public string seen { get; set; }
-        public string answered { get; set; }
-        public string flagged { get; set; }
-        public string draft { get; set; }
-        public string deleted { get; set; }
+        public long uid { get; set; }
+        public int recent { get; set; }
+        public int seen { get; set; }
+        public int answered { get; set; }
+        public int flagged { get; set; }
+        public int draft { get; set; }
+        public int deleted { get; set; }
+        public int intertime { get; set; }
     }
 }
