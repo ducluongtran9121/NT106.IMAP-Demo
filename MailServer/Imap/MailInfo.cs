@@ -7,7 +7,7 @@ namespace MailServer.Imap
     internal class MailInfo
     {
         public string user { get; set; }
-        public string mailbox_uid { get; set; }
+        public string mailboxname { get; set; }
         public string uid { get; set; }
         public string recent { get; set; }
         public string seen { get; set; }

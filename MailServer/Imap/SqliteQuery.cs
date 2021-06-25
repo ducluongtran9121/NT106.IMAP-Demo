@@ -14,7 +14,7 @@ namespace MailServer.Imap
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<MailBox>($"select * from MailBox where user = '{userSession}' and name = '{userMailBox.ToLower()}'", new DynamicParameters());
+                var query = cnn.Query<MailBox>($"select * from MailBox where user = '{userSession}' and name = '{userMailBox}'", new DynamicParameters());
                 return query.ToList();
             }
         }
@@ -57,13 +57,60 @@ namespace MailServer.Imap
                 return list;
             }
         }    
+         public static int InsertMailBox(string userSession, string userMailBox)
+         {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"insert into MailBox(user,name,uidvalidity) values ('{userSession}','{userMailBox}',{DateTimeOffset.Now.ToUnixTimeSeconds()})", new DynamicParameters());
+                return 1;
+            }
+            catch(SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+                
 
+         }
+        public static int UpdateMailBoxSubcribed(string userSession,string userMailBox,int subscribed)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailBox set subscribed={subscribed} where user = '{userSession}' and name = '{userMailBox}' )", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
         public static void DeleteMail()
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
                 cnn.Execute($"delete from MailInfo where deleted = 1", new DynamicParameters());
             }
+        }
+
+        internal static List<long> LoadUIDSince(string userSession, string userMailBox, long unixTime)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query=cnn.Query<long>($"select uid from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime} order by uid", new DynamicParameters());
+                return query.ToList();
+            }
+            
         }
     }
 }
