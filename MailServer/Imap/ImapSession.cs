@@ -313,7 +313,7 @@ namespace MailServer.Imap
                     break;
 
                 case "uid":
-                    this.respose = Response.ReturnUIDCommand(this.tag, this.agrument, this.userSession, this.userMailBox);
+                    this.respose = Response.ReturnUIDResponse(this.tag, this.agrument, this.userSession, this.userMailBox);
                     break;
 
                 default:

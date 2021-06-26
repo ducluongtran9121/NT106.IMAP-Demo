@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -150,22 +151,25 @@ namespace MailServer.Imap
                 List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
                 if(ListmailBoxInfo.Count==0) return tag + " OK LIST completed";
                 MailBox mailBoxInfo = ListmailBoxInfo[0];
-                if (mailBoxInfo.all == 1) response += "\\All ";
-                if (mailBoxInfo.archive == 1) response += "\\Archive ";
-                if (mailBoxInfo.drafts == 1) response += "\\Drafts ";
-                if (mailBoxInfo.flagged == 1) response += "\\Flagged ";
-                if (mailBoxInfo.haschildren == 1) response += "\\HasChildren ";
-                if (mailBoxInfo.hasnochildren == 1) response += "\\HasNoChildren ";
-                if (mailBoxInfo.important == 1) response += "\\Important ";
-                if (mailBoxInfo.inbox == 1) response += "\\Inbox ";
-                if (mailBoxInfo.junk == 1) response += "\\Junk ";
-                if (mailBoxInfo.marked == 1) response += "\\Marked ";
-                if (mailBoxInfo.nointeriors == 1) response += "\\NoInferiors ";
-                if (mailBoxInfo.noselect == 1) response += "\\Noselect ";
-                if (mailBoxInfo.sent == 1) response += "\\Sent ";
-                //if (mailBoxInfo.subscribed == 1) response += "\\Subscribed ";
-                if (mailBoxInfo.trash == 1) response += "\\Trash ";
-                response += $") \"/\" \"{reference}{mailbox}\"\r\n";
+                string[] tempArr =
+                {
+                    (mailBoxInfo.all == 1?"\\All":""),
+                    (mailBoxInfo.archive == 1?"\\Archive":""),
+                    (mailBoxInfo.drafts == 1?"\\Drafts":""),
+                    (mailBoxInfo.flagged == 1?"\\Flagged":""),
+                    (mailBoxInfo.haschildren == 1?"\\HasChildren":""),
+                    (mailBoxInfo.hasnochildren == 1?"\\HasNoChildren":""),
+                    (mailBoxInfo.important == 1?"\\Important":""),
+                    (mailBoxInfo.inbox == 1?"\\Inbox":""),
+                    (mailBoxInfo.junk == 1?"\\Junk":""),
+                    (mailBoxInfo.marked == 1?"\\Marked":""),
+                    (mailBoxInfo.nointeriors == 1?"\\NoInferiors":""),
+                    (mailBoxInfo.noselect == 1?"\\Noselect":""),
+                    (mailBoxInfo.sent == 1?"\\Sent":""),
+                    (mailBoxInfo.trash == 1?"\\Trash":""),
+                };
+                tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                response += "* LIST (" + string.Join(' ', tempArr) + $") \"/\" \"{reference}{mailbox}\"\r\n";
             }
             return response + tag + " OK LIST completed";
         }
@@ -227,22 +231,25 @@ namespace MailServer.Imap
                 // kiểm tra mailbox đã được subcribe chưa
                 if (mailBoxInfo.subscribed == 0) continue;
                 // tạo response
-                response += "* LSUB (";
-                if (mailBoxInfo.all == 1) response += "\\All ";
-                if (mailBoxInfo.archive == 1) response += "\\Archive ";
-                if (mailBoxInfo.drafts == 1) response += "\\Drafts ";
-                if (mailBoxInfo.flagged == 1) response += "\\Flagged ";
-                if (mailBoxInfo.haschildren == 1) response += "\\HasChildren ";
-                if (mailBoxInfo.hasnochildren == 1) response += "\\HasNoChildren ";
-                if (mailBoxInfo.important == 1) response += "\\Important ";
-                if (mailBoxInfo.inbox == 1) response += "\\Inbox ";
-                if (mailBoxInfo.junk == 1) response += "\\Junk ";
-                if (mailBoxInfo.marked == 1) response += "\\Marked ";
-                if (mailBoxInfo.nointeriors == 1) response += "\\NoInferiors ";
-                if (mailBoxInfo.noselect == 1) response += "\\Noselect ";
-                if (mailBoxInfo.sent == 1) response += "\\Sent ";
-                if (mailBoxInfo.trash == 1) response += "\\Trash ";
-                response += $") \"/\" \"{reference}{mailbox}\"\r\n";
+                string[] tempArr =
+                {
+                    (mailBoxInfo.all == 1?"\\All":""),
+                    (mailBoxInfo.archive == 1?"\\Archive":""),
+                    (mailBoxInfo.drafts == 1?"\\Drafts":""),
+                    (mailBoxInfo.flagged == 1?"\\Flagged":""),
+                    (mailBoxInfo.haschildren == 1?"\\HasChildren":""),
+                    (mailBoxInfo.hasnochildren == 1?"\\HasNoChildren":""),
+                    (mailBoxInfo.important == 1?"\\Important":""),
+                    (mailBoxInfo.inbox == 1?"\\Inbox":""),
+                    (mailBoxInfo.junk == 1?"\\Junk":""),
+                    (mailBoxInfo.marked == 1?"\\Marked":""),
+                    (mailBoxInfo.nointeriors == 1?"\\NoInferiors":""),
+                    (mailBoxInfo.noselect == 1?"\\Noselect":""),
+                    (mailBoxInfo.sent == 1?"\\Sent":""),
+                    (mailBoxInfo.trash == 1?"\\Trash":""),
+                };
+                tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                response += "* LSUB (" + string.Join(' ', tempArr) + $") \"/\" \"{reference}{mailbox}\"\r\n";
             }
             return response + tag + " OK LSUB completed";
         }
@@ -251,7 +258,7 @@ namespace MailServer.Imap
 
         //selected state
 
-        public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox,bool fromUIDCommand=false) //mới được có 2 cái header và text body thôi nha mấy cha
+        public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox,bool fromUIDCommand=false,bool slient=false) //mới được có 2 cái header và text body thôi nha mấy cha
         {
             string response = "";
             var math = Regex.Match(argument, @"^(\d+|(?:\d+|\*):(?:\d+|\*)) \(([^\(\)]*)\)");
@@ -317,13 +324,14 @@ namespace MailServer.Imap
                             response += $"UID {mailInfo.uid}";
                             break;
                         case "flags":
-                            response += "FLAGS (" + (mailInfo.recent == 1 ? "\\Recent":"") 
-                                + (mailInfo.answered == 1 ? "\\Answered" : "")
-                                + (mailInfo.flagged == 1 ? "\\Flagged" : "")
-                                + (mailInfo.deleted == 1 ? "\\Deleted" : "")
-                                + (mailInfo.seen == 1 ? "\\Seen" : "")
-                                + (mailInfo.draft == 1 ? "\\Draft" : "")
-                                +")";
+                            string[] tempArr = {(mailInfo.recent == 1 ? "\\Recent":""),
+                                            (mailInfo.answered == 1 ? "\\Answered" : ""),
+                                            (mailInfo.flagged == 1 ? "\\Flagged" : ""),
+                                            (mailInfo.deleted == 1 ? "\\Deleted" : ""),
+                                            (mailInfo.seen == 1 ? "\\Seen" : ""),
+                                            (mailInfo.draft == 1 ? "\\Draft" : "")};
+                            tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+                            response += "FLAGS ("+string.Join(' ',tempArr)+")";
                             break;
                         case "rfc822.size":
                             response += $"RFC822.SIZE {email.Length}";
@@ -347,8 +355,11 @@ namespace MailServer.Imap
                 response += $")\r\n";
             }
             int success;
-            if (fromUIDCommand) success = SqliteQuery.UpdateSeenFlagWithUID(userSession, userMailBox, left, right);
-            else success = SqliteQuery.UpdateSeenFlagWithIndex(userSession, userMailBox, left, right);
+            if(!slient)
+            {
+                if (fromUIDCommand) success = SqliteQuery.UpdateSeenFlagWithUID(userSession, userMailBox, left, right);
+                else success = SqliteQuery.UpdateSeenFlagWithIndex(userSession, userMailBox, left, right);
+            }    
             response += tag + " OK FETCH completed";
             return response;
         }
@@ -397,7 +408,7 @@ namespace MailServer.Imap
             return response;
         }
 
-        public static string ReturnUIDCommand(string tag, string agrument, string userSession, string userMailBox)
+        public static string ReturnUIDResponse(string tag, string agrument, string userSession, string userMailBox)
         {
             // cho search since
             var math = Regex.Match(agrument, @"^(\S+)(?: (.*))?");
@@ -410,10 +421,109 @@ namespace MailServer.Imap
                     return Response.ReturnSearchResponse(tag, newArgument, userSession, userMailBox, true);
                 case "fetch":
                     return Response.ReturnFetchResponse(tag, newArgument, userSession, userMailBox, true);
+                case "store":
+                    return Response.ReturnStoreResponse(tag, newArgument, userSession, userMailBox, true);
                 default:
                     return ReturnInvaildCommandResponse(tag);
             }
         }
+
+        private static string ReturnStoreResponse(string tag, string argument, string userSession, string userMailBox, bool fromUIDCommand)
+        {
+            var math = Regex.Match(argument, @"^(\d+|(?:\d+|\*):(?:\d+|\*)) ([^\s]+) \(([^\(\)]*)\)");
+            if (!math.Success) return ReturnParseErrorResponse(tag, "STORE");
+            string mailIndex = math.Groups[1].Value;
+            string item = math.Groups[2].Value;
+            string right;
+            string left;
+            if (mailIndex.Contains(':'))
+            {
+                string[] temp = mailIndex.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                if (temp[0] == "*")
+                {
+                    if (fromUIDCommand) left = "uid";
+                    else left = "rowid";
+                }
+                else left = temp[0];
+                if (temp[1] == "*")
+                {
+                    if (fromUIDCommand) right = "uid";
+                    else right = "rowid";
+                }
+                else right = temp[1];
+            }
+            else
+            {
+                right = mailIndex;
+                left = right;
+            }
+            string newArgument = mailIndex + " (FLAGS)";
+            if (math.Groups[3].Value=="") return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, true,true);
+            string[] flagsArr = math.Groups[3].Value.Split(' ');
+            Flags flags = new Flags();
+            int success;
+            flags.BuildFlagItem(flagsArr);
+            switch (item.ToLower())
+            {
+                case "flags":
+                    if (flags.seen != "1") flags.seen = "0";
+                    if (flags.answered != "1") flags.answered = "0";
+                    if (flags.flagged != "1") flags.flagged = "0";
+                    if (flags.deleted != "1") flags.deleted = "0";
+                    if (flags.draft != "1") flags.draft = "0";
+                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
+                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
+                case "flags.silent":
+                    if (flags.seen != "1") flags.seen = "0";
+                    if (flags.answered != "1") flags.answered = "0";
+                    if (flags.flagged != "1") flags.flagged = "0";
+                    if (flags.deleted != "1") flags.deleted = "0";
+                    if (flags.draft != "1") flags.draft = "0";
+                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
+                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand,true);
+                case "+flags":
+                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
+                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
+                case "+flags.silent":
+                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
+                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand, true);
+                case "-flags":
+                    if (flags.seen == "1") flags.seen = "0";
+                    if (flags.answered == "1") flags.answered = "0";
+                    if (flags.flagged == "1") flags.flagged = "0";
+                    if (flags.deleted == "1") flags.deleted = "0";
+                    if (flags.draft == "1") flags.draft = "0";
+                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
+                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
+                case "-flags.silent":
+                    if (flags.seen == "1") flags.seen = "0";
+                    if (flags.answered == "1") flags.answered = "0";
+                    if (flags.flagged == "1") flags.flagged = "0";
+                    if (flags.deleted == "1") flags.deleted = "0";
+                    if (flags.draft == "1") flags.draft = "0";
+                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
+                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand,true);
+                default:
+                    return ReturnParseErrorResponse(tag, "STORE");
+            }
+        }
+
+        private static string StoreFormatReturn(string tag, string argument, string userSession, string userMailBox, bool fromUIDCommand=false, bool silent=false)
+        {
+            string response = Response.ReturnFetchResponse(tag, argument, userSession, userMailBox, fromUIDCommand, silent);
+            var maths = Regex.Matches(response, @"\* [\d]+ FETCH \(FLAGS \(.*\)\)");
+            response = "";
+            for (int i = 0; i < maths.Count; i++) response += maths[i].Value+"\r\n";
+            response += tag + " OK STORE completed";
+            return response;
+        }
+
         private static bool IsListPermanentFlags(string[] arguments)
         {
             //kiểm tra danh sách flag nhập vào

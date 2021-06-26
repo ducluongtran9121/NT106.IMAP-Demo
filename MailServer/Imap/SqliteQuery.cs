@@ -172,6 +172,25 @@ namespace MailServer.Imap
                 cnn.Close();
             }
         }
+        public static int UpdateFlagsWithUID(string userSession, string userMailBox, string left, string right, Flags flags)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailInfo set seen = {flags.seen},answered = {flags.answered},flagged={flags.flagged},draft = {flags.draft},deleted = {flags.deleted} where user = '{userSession}' and mailboxname = '{userMailBox}' and uid>={left} and uid<={right}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
+
         public static int UpdateSeenFlagWithIndex(string userSession, string userMailBox, string left, string right)
         {
             IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
@@ -181,6 +200,26 @@ namespace MailServer.Imap
                 string tempVar1 = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,uid FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
                 string tempVar2 = $"({tempVar1} select uid from var where numrow>={left} and numrow<={right})";
                 cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and uid in {tempVar2}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
+        public static int UpdateFlagsWithIndex(string userSession, string userMailBox, string left, string right, Flags flags)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                string tempVar1 = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,uid FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
+                string tempVar2 = $"({tempVar1} select uid from var where numrow>={left} and numrow<={right})";
+                cnn.Execute($"update MailInfo set seen = {flags.seen},answered = {flags.answered},flagged={flags.flagged},draft = {flags.draft},deleted = {flags.deleted} where user = '{userSession}' and mailboxname = '{userMailBox}' and uid in {tempVar2}", new DynamicParameters());
                 return 1;
             }
             catch (SQLiteException)
