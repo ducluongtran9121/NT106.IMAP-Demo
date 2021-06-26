@@ -9,8 +9,9 @@ namespace MailServer.Imap
         public string user { get; set; }
         public string name { get; set; }
         public string uidvalidity { get; set; }
-        public long exists { get; set; }
+        public long mailexists { get; set; }
         public long recent { get; set; }
+        public long firstunseen { get; set; }
         public long uidnext { get; set; }
         public int all { get; set; }
         public int archive { get; set; }

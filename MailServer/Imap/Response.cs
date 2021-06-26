@@ -88,16 +88,16 @@ namespace MailServer.Imap
             userMailBox = mailbox;
             // gán thông tin trả về vào response
             string respose = "";
-            respose += $"* {mailBoxInfo[0].exists} EXISTS\r\n";
+            respose += $"* {mailBoxInfo[0].mailexists} EXISTS\r\n";
             respose += $"* {mailBoxInfo[0].recent} RECENT\r\n";
-            long firstunseen = SqliteQuery.LoadFirstUnSeen(userSession, userMailBox);
-            if (firstunseen>0) respose += $"* OK [UNSEEN {firstunseen}] Message {firstunseen} is first unseen\r\n";
+            if (mailBoxInfo[0].firstunseen >0) respose += $"* OK [UNSEEN {mailBoxInfo[0].firstunseen}] Message {mailBoxInfo[0].firstunseen} is first unseen\r\n";
             respose += $"* OK [UIDVALIDITY {mailBoxInfo[0].uidvalidity}] UIDs valid\r\n";
             respose += $"* OK [UIDNEXT {mailBoxInfo[0].uidnext}] Predicted next UID\r\n";
             respose += @"* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)" + "\r\n";
             respose += @"* OK [PERMANENTFLAGS (\Answered \Flagged \Deleted \Seen \Draft)] " + "\r\n";
             respose += tag + " OK [READ-WRITE] SELECT completed";
-            int success = SqliteQuery.UpdateRecentFlag(userSession, userMailBox);
+            int success;
+            if (mailBoxInfo[0].recent==0) success = SqliteQuery.UpdateRecentFlag(userSession, userMailBox); 
             return respose;
         }
 
@@ -281,8 +281,8 @@ namespace MailServer.Imap
                 right = mailIndex;
                 left = right;
             }
-            if (fromUIDCommand) mailInfoList = SqliteQuery.LoadMailInfoWithRange(userSession, userMailBox, left, right);
-            else mailInfoList = SqliteQuery.LoadMailInfoWithRange(userSession, userMailBox, left, right, "rowid");
+            if (fromUIDCommand) mailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, left, right);
+            else mailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox, left, right);
 
             string[] items = math.Groups[2].Value.Split(' ');
             string[] arguments = argument.Split(' ');
@@ -305,11 +305,12 @@ namespace MailServer.Imap
                     else continue;
                 }
                 FileInfo email = new FileInfo(emailPath);
-                response += "* " + (fromUIDCommand ? mailInfo.uid : mailInfo.rowid) + " FETCH (";
+                response += "* " + (fromUIDCommand ? mailInfo.uid : mailInfo.numrow) + " FETCH (";
                 bool first = true;
                 foreach(string item in items)
                 {
                     if (!first) response += " ";
+                    first = false;
                     switch(item.ToLower())
                     {
                         case "uid":
@@ -346,8 +347,8 @@ namespace MailServer.Imap
                 response += $")\r\n";
             }
             int success;
-            if(fromUIDCommand)success =SqliteQuery.UpdateSeenFlag(userSession, userMailBox, left, right);
-            else success = SqliteQuery.UpdateSeenFlag(userSession, userMailBox, left, right,"rowid");
+            if (fromUIDCommand) success = SqliteQuery.UpdateSeenFlagWithUID(userSession, userMailBox, left, right);
+            else success = SqliteQuery.UpdateSeenFlagWithIndex(userSession, userMailBox, left, right);
             response += tag + " OK FETCH completed";
             return response;
         }
@@ -361,7 +362,7 @@ namespace MailServer.Imap
             if (mailInfoList.Count == 0) return tag + "OK SEARCH completed\r\n";
             string respone = "* SEARCH";
             if(fromUIDCommand) foreach (MailInfo mailInfo in mailInfoList) respone += $" {mailInfo.uid}";
-            else foreach (MailInfo mailInfo in mailInfoList) respone += $" {mailInfo.rowid}";
+            else foreach (MailInfo mailInfo in mailInfoList) respone += $" {mailInfo.numrow}";
             respone += "\r\n" + tag + " OK SEARCH completed";
             return respone;
         }

@@ -72,11 +72,20 @@ namespace MailServer.Imap
             }
         }
       
-        public static List<MailInfo> LoadMailInfoWithRange(string userSession, string userMailBox, string left, string right, string range = "uid")
+        public static List<MailInfo> LoadMailInfoWithUID(string userSession, string userMailBox, string left, string right)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and {range}>={left} and {range}<={right}", new DynamicParameters());
+                var query = cnn.Query<MailInfo>($"select * from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and uid>={left} and uid<={right}", new DynamicParameters());
+                return query.ToList();
+            }
+        }
+        public static List<MailInfo> LoadMailInfoWithIndex(string userSession, string userMailBox, string left, string right)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                string tempVar = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,* FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
+                var query = cnn.Query<MailInfo>($"{tempVar} select * from var where numrow>={left} and numrow<={right}", new DynamicParameters());
                 return query.ToList();
             }
         }
@@ -84,7 +93,7 @@ namespace MailServer.Imap
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime}", new DynamicParameters());
+                var query = cnn.Query<MailInfo>($"select * from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime}", new DynamicParameters());
                 return query.ToList();
             }
 
@@ -145,13 +154,33 @@ namespace MailServer.Imap
                 cnn.Close();
             }
         }
-        public static int UpdateSeenFlag(string userSession, string userMailBox, string left, string right, string range = "uid")
+        public static int UpdateSeenFlagWithUID(string userSession, string userMailBox, string left, string right)
         {
             IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
             cnn.Open();
             try
             {
-                cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and {range}>={left} and {range}<={right}", new DynamicParameters());
+                cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and uid>={left} and uid<={right}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
+        public static int UpdateSeenFlagWithIndex(string userSession, string userMailBox, string left, string right)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                string tempVar1 = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,uid FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
+                string tempVar2 = $"({tempVar1} select uid from var where numrow>={left} and numrow<={right})";
+                cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and uid in {tempVar2}", new DynamicParameters());
                 return 1;
             }
             catch (SQLiteException)
