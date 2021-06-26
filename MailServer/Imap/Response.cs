@@ -145,8 +145,6 @@ namespace MailServer.Imap
             {
                 // nếu mailboxName bằng "%" kiểm tra folder không có subfolder
                 if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
-                // tạo response
-                response += "* LIST (";
                 string mailbox = mailboxDir.Replace(root, "");
                 List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
                 if(ListmailBoxInfo.Count==0) return tag + " OK LIST completed";
@@ -223,7 +221,6 @@ namespace MailServer.Imap
             {
                 // nếu mailboxName bằng "%" kiểm tra folder không có subfolder
                 if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
-                
                 string mailbox = mailboxDir.Replace(root, "");
                 List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
                 if (ListmailBoxInfo.Count == 0) return tag + " OK LSUB completed";
@@ -343,6 +340,7 @@ namespace MailServer.Imap
                                 string temp = sr.ReadToEnd();
                                 response += temp;
                             }
+                            slient = true;
                             break;
                         case "internaldate":
                             dtDateTime = dtDateTime.AddSeconds(mailInfo.intertime).ToLocalTime();
@@ -458,11 +456,14 @@ namespace MailServer.Imap
                 left = right;
             }
             string newArgument = mailIndex + " (FLAGS)";
-            if (math.Groups[3].Value=="") return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, true,true);
-            string[] flagsArr = math.Groups[3].Value.Split(' ');
             Flags flags = new Flags();
             int success;
-            flags.BuildFlagItem(flagsArr);
+            if (math.Groups[3].Value!="")
+            {
+                string[] flagsArr = math.Groups[3].Value.Split(' ');
+                if(!flags.BuildFlagItem(flagsArr)) return ReturnParseErrorResponse(tag, "STORE");
+            }
+
             switch (item.ToLower())
             {
                 case "flags":
@@ -487,10 +488,10 @@ namespace MailServer.Imap
                     if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
                     else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
-                case "+flags.silent":
+                case "+flags.slient":
                     if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
                     else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
-                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand, true);
+                    return tag + " OK STORE completed";
                 case "-flags":
                     if (flags.seen == "1") flags.seen = "0";
                     if (flags.answered == "1") flags.answered = "0";
@@ -500,7 +501,7 @@ namespace MailServer.Imap
                     if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
                     else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
-                case "-flags.silent":
+                case "-flags.slient":
                     if (flags.seen == "1") flags.seen = "0";
                     if (flags.answered == "1") flags.answered = "0";
                     if (flags.flagged == "1") flags.flagged = "0";
@@ -508,7 +509,7 @@ namespace MailServer.Imap
                     if (flags.draft == "1") flags.draft = "0";
                     if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
                     else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
-                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand,true);
+                    return tag + " OK STORE completed";
                 default:
                     return ReturnParseErrorResponse(tag, "STORE");
             }
@@ -524,42 +525,5 @@ namespace MailServer.Imap
             return response;
         }
 
-        private static bool IsListPermanentFlags(string[] arguments)
-        {
-            //kiểm tra danh sách flag nhập vào
-            if (!arguments[4].StartsWith('(')) return IsPermanentFlags(arguments[4]);
-            else
-            {
-                arguments[4].Replace("(", string.Empty);
-                arguments[arguments.Length - 1].Replace(")", string.Empty);
-                for (int i = 5; i < arguments.Length; i++)
-                    if (!IsPermanentFlags(arguments[i])) return false;
-                return true;
-            }
-        }
-
-        private static bool IsPermanentFlags(string flag)
-        {
-            // kiểm tra flag nhập vào
-            switch (flag.ToLower())
-            {
-                case "\\seen":
-                case "\\answered":
-                case "\\flagged":
-                case "\\deleted":
-                case "\\draft":
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
-        private static string GetProjectDir()
-        {
-            // lấy directory của project
-            Regex regex = new Regex(@"\\MailServer\\bin\\(Debug|Release).*$");
-            return regex.Replace(Environment.CurrentDirectory, "\\MailServer");
-        }
     }
 }
