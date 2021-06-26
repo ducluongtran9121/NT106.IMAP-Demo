@@ -38,7 +38,6 @@ namespace MailServer.Imap
                 return list[0];
             }
         }
-        //\"_rowid_\"
         public static List<MailInfo> LoadMailInfo()
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
@@ -56,8 +55,41 @@ namespace MailServer.Imap
                 List<int> list = query.ToList();
                 return list;
             }
-        }    
-         public static int InsertMailBox(string userSession, string userMailBox)
+        }
+        public static long LoadFirstUnSeen(string userSession, string userMailBox)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                try
+                {
+                    var query = cnn.Query<long>($"select min(rowid) from MailInfo where user = '{userSession}' and mailboxname = '{userMailBox}' and seen = 0", new DynamicParameters());
+                    return query.ToList()[0];
+                }
+                catch (DataException)
+                {
+                    return 0;
+                }
+            }
+        }
+      
+        public static List<MailInfo> LoadMailInfoWithRange(string userSession, string userMailBox, string left, string right, string range = "uid")
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query = cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and {range}>={left} and {range}<={right}", new DynamicParameters());
+                return query.ToList();
+            }
+        }
+        public static List<MailInfo> LoadMailInfoSinceInterTime(string userSession, string userMailBox, long unixTime)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query = cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime}", new DynamicParameters());
+                return query.ToList();
+            }
+
+        }
+        public static int InsertMailBox(string userSession, string userMailBox)
          {
             IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
             cnn.Open();
@@ -95,6 +127,42 @@ namespace MailServer.Imap
                 cnn.Close();
             }
         }
+        public static int UpdateRecentFlag(string userSession, string userMailBox)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailInfo set recent = 0 where user = '{userSession}' and mailboxname = '{userMailBox}'", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
+        public static int UpdateSeenFlag(string userSession, string userMailBox, string left, string right, string range = "uid")
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and {range}>={left} and {range}<={right}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
         public static void DeleteMail()
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
@@ -103,78 +171,10 @@ namespace MailServer.Imap
             }
         }
 
-        public static List<MailInfo> LoadMailInfoSinceInterTime(string userSession, string userMailBox, long unixTime)
-        {
-            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
-            {
-                var query=cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and intertime >= {unixTime}", new DynamicParameters());
-                return query.ToList();
-            }
-            
-        }
 
-        public static int UpdateRecentFlag(string userSession, string userMailBox)
-        {
-            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
-            cnn.Open();
-            try
-            {
-                cnn.Execute($"update MailBox set recent = 0 where user = '{userSession}' and mailboxname = '{userMailBox}'", new DynamicParameters());
-                return 1;
-            }
-            catch (SQLiteException)
-            {
-                return 0;
-            }
-            finally
-            {
-                cnn.Close();
-            }
-        }
-        public static int UpdateSeenFlag(string userSession, string userMailBox, string left, string right, string range="uid")
-        {
-            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
-            cnn.Open();
-            try
-            {
-                cnn.Execute($"update MailBox set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and {range}>={left} and {range}<={right}", new DynamicParameters());
-                return 1;
-            }
-            catch (SQLiteException)
-            {
-                return 0;
-            }
-            finally
-            {
-                cnn.Close();
-            }
-        }
 
-        public static int UpdateFirstUnSeen(string userSession, string userMailBox)
-        {
-            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
-            cnn.Open();
-            try
-            {
-                cnn.Execute($"update MailBox set firstunseen = (select min(rowid) from MailInfo where user = '{userSession}' and mailboxname = '{userMailBox}' and seen = 0) where user ='{userSession}' and name='{userMailBox}'", new DynamicParameters());
-                return 1;
-            }
-            catch (SQLiteException)
-            {
-                return 0;
-            }
-            finally
-            {
-                cnn.Close();
-            }
-        }
-        public static List<MailInfo> LoadMailInfoWithRange(string userSession, string userMailBox, string left, string right, string range="uid")
-        {
-            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
-            {
-                var query = cnn.Query<MailInfo>($"select rowid,* from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and {range}>={left} and {range}<={right}", new DynamicParameters());
-                return query.ToList();
-            }
-        }
+
+
+
     }
 }

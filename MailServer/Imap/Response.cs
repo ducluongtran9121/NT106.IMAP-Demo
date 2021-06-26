@@ -90,7 +90,8 @@ namespace MailServer.Imap
             string respose = "";
             respose += $"* {mailBoxInfo[0].exists} EXISTS\r\n";
             respose += $"* {mailBoxInfo[0].recent} RECENT\r\n";
-            if (mailBoxInfo[0].firstunseen>0) respose += $"* OK [UNSEEN {mailBoxInfo[0].firstunseen}] Message {mailBoxInfo[0].firstunseen} is first unseen\r\n";
+            long firstunseen = SqliteQuery.LoadFirstUnSeen(userSession, userMailBox);
+            if (firstunseen>0) respose += $"* OK [UNSEEN {firstunseen}] Message {firstunseen} is first unseen\r\n";
             respose += $"* OK [UIDVALIDITY {mailBoxInfo[0].uidvalidity}] UIDs valid\r\n";
             respose += $"* OK [UIDNEXT {mailBoxInfo[0].uidnext}] Predicted next UID\r\n";
             respose += @"* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)" + "\r\n";
