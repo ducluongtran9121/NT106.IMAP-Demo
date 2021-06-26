@@ -8,8 +8,8 @@ namespace Proxy
 {
     public class Dispatcher
     {
-        // set the TcpListener on port 8080
-        int port = 8080;
+        // set the TcpListener on port 1580
+        int port = 1580;
         TcpListener listener;
         // List of processors that is called as C-P-S session
         static List<CoreComm> processors = new List<CoreComm>();

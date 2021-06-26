@@ -15,7 +15,7 @@ namespace Proxy
         private static void Main(string[] args)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Start proxy on port 8080");
+            Console.WriteLine("Start proxy on port 1578");
             var coreComm = new CoreComm();
             var dispatcher = new Dispatcher();
             dispatcher.ListenForRequests();

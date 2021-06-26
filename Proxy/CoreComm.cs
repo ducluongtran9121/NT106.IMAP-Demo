@@ -59,13 +59,13 @@ namespace Proxy
             // Notify if no server exists
             string errMessage = "No Server ready!!\n\r";
             byte[] ErrMessage = Encoding.ASCII.GetBytes(errMessage);
-            if (servers.Count == 0)
-                C2PStream.Write(ErrMessage, 0, ErrMessage.Length);
-
+            if (servers.Count == 0) C2PStream.Write(ErrMessage, 0, ErrMessage.Length);
             else
+            {
                 // for debug only send the first in the list
                 Console.WriteLine("Redirect to server " + servers[0].IP + " : " + servers[0].Port);
-                SendRequestToServer(servers[0]);
+            }
+            SendRequestToServer(servers[0]);
 
         }
 
