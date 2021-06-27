@@ -64,7 +64,7 @@ namespace MailServer.Imap
             // lấy password từ group
             string password = math.Groups[2].Value.Replace("\"", "");
             // kiểm tra tên tài khoảng và mật khẩu trong ImapDB
-            List<User> userInfo = SqliteQuery.LoadUserInfo(username.Split('@')[0],password);
+            List<UserInfo> userInfo = SqliteQuery.LoadUserInfo(username.Split('@')[0],password);
             //báo lỗi nếu user không tồn tại
             if (userInfo.Count == 0) return tag + " NO LOGIN failed";
             state = "auth";
@@ -80,7 +80,7 @@ namespace MailServer.Imap
             if(!math.Success) return Response.ReturnParseErrorResponse(tag, "SELECT");
             string mailbox = math.Groups[1].Value.Replace("\"","");
             //truy xuất thông tin về mailbox từ ImapDB
-            List<MailBox> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
+            List<MailBoxInfo> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
             //báo lỗi nếu mailbox không tồn tại
             if (mailBoxInfo.Count == 0) return tag + " NO Mailbox does not exist";
             // thay đổi trạng thái sang selected state
@@ -98,7 +98,7 @@ namespace MailServer.Imap
             respose += @"* OK [PERMANENTFLAGS (\Answered \Flagged \Deleted \Seen \Draft)] " + "\r\n";
             respose += tag + " OK [READ-WRITE] SELECT completed";
             int success;
-            if (mailBoxInfo[0].recent==0) success = SqliteQuery.UpdateRecentFlag(userSession, userMailBox); 
+            if (mailBoxInfo[0].recent!=0) success = SqliteQuery.UpdateRecentFlag(userSession, userMailBox); 
             return respose;
         }
 
@@ -146,9 +146,9 @@ namespace MailServer.Imap
                 // nếu mailboxName bằng "%" kiểm tra folder không có subfolder
                 if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
                 string mailbox = mailboxDir.Replace(root, "");
-                List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
+                List<MailBoxInfo> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
                 if(ListmailBoxInfo.Count==0) return tag + $" OK {command} completed";
-                MailBox mailBoxInfo = ListmailBoxInfo[0];
+                MailBoxInfo mailBoxInfo = ListmailBoxInfo[0];
                 string[] tempArr =
                 {
                     (mailBoxInfo.all == 1?"\\All":""),
@@ -220,9 +220,9 @@ namespace MailServer.Imap
                 // nếu mailboxName bằng "%" kiểm tra folder không có subfolder
                 if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
                 string mailbox = mailboxDir.Replace(root, "");
-                List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
+                List<MailBoxInfo> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
                 if (ListmailBoxInfo.Count == 0) return tag + " OK LSUB completed";
-                MailBox mailBoxInfo = ListmailBoxInfo[0];
+                MailBoxInfo mailBoxInfo = ListmailBoxInfo[0];
                 // kiểm tra mailbox đã được subcribe chưa
                 if (mailBoxInfo.subscribed == 0) continue;
                 // tạo response
@@ -384,20 +384,59 @@ namespace MailServer.Imap
             }
             return tag + " NO Mailbox already exists";
         }
-        public static string ReturnExpungeResponse(string tag)
+        public static string ReturnExpungeResponse(string tag,string userSession,string userMailBox)
         {
-            List<int> deletedMail = SqliteQuery.LoadDeletedMail();
-            if (deletedMail.Count == 0) return tag + " NO Deleted mail does not exist";
+            List<MailInfo> mailBoxInfoList = SqliteQuery.LoadDeletedMail(userSession, userMailBox);
+            if (mailBoxInfoList.Count == 0) return tag + "OK EXPUNGE completed";
+            List<string> TrashMailbox = SqliteQuery.LoadTrashMailBoxName(userSession,userMailBox);
             string response = "";
-            int count = 0;
-            for(int i = 0; i<deletedMail.Count; ++i)
+            int success;
+            string[] mailPath = new string[mailBoxInfoList.Count];
+            string soursePath;
+            string desPath;
+            string root = Environment.CurrentDirectory + $"/ImapMailBox/{userSession}";
+            if(TrashMailbox.IndexOf(userMailBox)==-1)
             {
-                int index = deletedMail[i] - count;
-                response += "* " + index + " EXPUNGE\r\n";
-                count++;
+                foreach(string mailBox in TrashMailbox)
+                {
+                    List<MailBoxInfo> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailBox);
+                    if (mailBoxInfo.Count == 0) return "OK EXPUNGE completed";
+                    long baseUID = mailBoxInfo[0].uidnext;
+                    foreach (MailInfo mail in mailBoxInfoList)
+                    {
+                        soursePath = root + $"/{userMailBox}/email_{baseUID}";
+                        if(File.Exists(soursePath+".eml"))
+                        {
+                            if (File.Exists(soursePath + ".msg"))
+                            {
+                                soursePath += ".msg";
+                                desPath = root + $"/{userMailBox}/email_{baseUID}.msg";
+                            }
+                            else desPath = root + $"/{userMailBox}/email_{baseUID}.eml";
+                        }
+                        else
+                        {
+                            if (File.Exists(soursePath + ".msg"))
+                            {
+                                soursePath += ".msg";
+                                desPath = root + $"/{userMailBox}/email_{baseUID}.msg";
+                            }
+                            else return "OK EXPUNGE completed";
+                        }
+                        mailPath[mail.numrow-1] = soursePath;
+                        File.Copy(soursePath, desPath);
+                        mail.uid = baseUID++;
+                        success = SqliteQuery.InsertMailIntoMailBox(userSession, mailBox, mail);
+                    }    
+                }    
             }
-            SqliteQuery.DeleteMail();
-            response += tag + " OK EXPUNGE completed\r\n";
+            foreach (MailInfo mail in mailBoxInfoList)
+            {
+                File.Delete(mailPath[mail.numrow - 1]);
+                success = SqliteQuery.DeleteMailWithUID(userSession, userMailBox, mail.uid);
+                response += $"* {mail.numrow} EXPUNGE\r\n";
+            }    
+            response += tag + " OK EXPUNGE completed";
             return response;
         }
 

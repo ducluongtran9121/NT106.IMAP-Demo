@@ -10,34 +10,24 @@ namespace MailServer.Imap
 {
     internal static class SqliteQuery
     {
-        public static List<MailBox> LoadMailBoxInfo(string userSession, string userMailBox)
+        public static List<MailBoxInfo> LoadMailBoxInfo(string userSession, string userMailBox)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<MailBox>($"select * from MailBox where user = '{userSession}' and name = '{userMailBox}'", new DynamicParameters());
+                var query = cnn.Query<MailBoxInfo>($"select * from MailBoxInfo where user = '{userSession}' and name = '{userMailBox}'", new DynamicParameters());
                 return query.ToList();
             }
         }
 
-        public static List<User> LoadUserInfo(string userSession, string password)
+        public static List<UserInfo> LoadUserInfo(string userSession, string password)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<User>($"select * from User where name = '{userSession}' and password = '{password}'", new DynamicParameters());
+                var query = cnn.Query<UserInfo>($"select * from UserInfo where name = '{userSession}' and password = '{password}'", new DynamicParameters());
                 return query.ToList();
             }
         }
 
-        public static int LoadUIDMail(uint index)
-        {
-            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
-            {
-                var query = cnn.Query<int>($"select uid from MailInfo where uid ='{index}'", new DynamicParameters());
-                List<int> list = query.ToList();
-                if (list.Count() == 0) return -1;
-                return list[0];
-            }
-        }
         public static List<MailInfo> LoadMailInfo()
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
@@ -47,14 +37,33 @@ namespace MailServer.Imap
             }
         }
 
-        public static List<int> LoadDeletedMail()
+        public static List<string> LoadTrashMailBoxName(string userSession,string userMailBox)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<int>($"select uid from MailInfo where deleted = 1", new DynamicParameters());
-                List<int> list = query.ToList();
+                var query = cnn.Query<string>($"select name from MailBoxInfo where trash = 1 and user = {userSession} and mailboxname = {userMailBox}", new DynamicParameters());
+                List<string> list = query.ToList();
                 return list;
             }
+        }
+        public static int InsertMailIntoMailBox(string userSession,string userMalBox, MailInfo mail)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"insert into MailInfo(user,mailboxname,uid,recent,seen,answered,flagged,draft,deleted) values({mail.user},{mail.mailboxname},{mail.uid},1,{mail.seen},{mail.answered},{mail.flagged},{mail.draft},{mail.deleted})", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+
         }
         public static long LoadFirstUnSeen(string userSession, string userMailBox)
         {
@@ -98,13 +107,23 @@ namespace MailServer.Imap
             }
 
         }
+        public static List<MailInfo> LoadDeletedMail(string userSession, string userMailBox)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query = cnn.Query<MailInfo>($"SELECT ROW_NUMBER() OVER(ORDER BY uid) numrow,* FROM MailInfo WHERE user = '{userSession}' and mailboxname = '{userMailBox}' and deleted = 1", new DynamicParameters());
+                return query.ToList();
+            }
+            
+            
+        }
         public static int InsertMailBox(string userSession, string userMailBox)
          {
             IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
             cnn.Open();
             try
             {
-                cnn.Execute($"insert into MailBox(user,name,uidvalidity) values ('{userSession}','{userMailBox}',{DateTimeOffset.Now.ToUnixTimeSeconds()})", new DynamicParameters());
+                cnn.Execute($"insert into MailBoxInfo(user,name) values ('{userSession}','{userMailBox}')", new DynamicParameters());
                 return 1;
             }
             catch(SQLiteException)
@@ -115,8 +134,6 @@ namespace MailServer.Imap
             {
                 cnn.Close();
             }
-                
-
          }
         public static int UpdateMailBoxSubcribed(string userSession,string userMailBox,int subscribed)
         {
@@ -124,7 +141,7 @@ namespace MailServer.Imap
             cnn.Open();
             try
             {
-                cnn.Execute($"update MailBox set subscribed={subscribed} where user = '{userSession}' and name = '{userMailBox}'", new DynamicParameters());
+                cnn.Execute($"update MailBoxInfo set subscribed={subscribed} where user = '{userSession}' and name = '{userMailBox}'", new DynamicParameters());
                 return 1;
             }
             catch (SQLiteException)
@@ -239,10 +256,23 @@ namespace MailServer.Imap
             }
         }
 
-
-
-
-
-
+        internal static int DeleteMailWithUID(string userSession, string userMailBox, long uid)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"delete from table MailInfo Where user = {userSession} and mailboxname = {userMailBox} and uid = {uid}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
     }
 }

@@ -297,7 +297,7 @@ namespace MailServer.Imap
                     break;
 
                 case "expunge":
-                    this.respose = Response.ReturnExpungeResponse(this.tag);
+                    this.respose = Response.ReturnExpungeResponse(this.tag,this.userSession,this.userMailBox);
                     break;
                 case "search":
                     

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MailServer.Imap
 {
-    internal class MailBox
+    internal class MailBoxInfo
     {
         public string user { get; set; }
         public string name { get; set; }
