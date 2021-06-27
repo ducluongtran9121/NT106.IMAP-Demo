@@ -89,12 +89,29 @@ namespace MailServer.Imap
                 return query.ToList();
             }
         }
+        public static List<MailInfo> LoadMailInfoWithUID(string userSession, string userMailBox, string uid)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                var query = cnn.Query<MailInfo>($"select * from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and uid = {uid}", new DynamicParameters());
+                return query.ToList();
+            }
+        }
         public static List<MailInfo> LoadMailInfoWithIndex(string userSession, string userMailBox, string left, string right)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
                 string tempVar = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,* FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
                 var query = cnn.Query<MailInfo>($"{tempVar} select * from var where numrow>={left} and numrow<={right}", new DynamicParameters());
+                return query.ToList();
+            }
+        }
+        public static List<MailInfo> LoadMailInfoWithIndex(string userSession, string userMailBox, string index)
+        {
+            using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
+            {
+                string tempVar = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,* FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
+                var query = cnn.Query<MailInfo>($"{tempVar} select * from var where numrow={index}", new DynamicParameters());
                 return query.ToList();
             }
         }
@@ -189,6 +206,24 @@ namespace MailServer.Imap
                 cnn.Close();
             }
         }
+        public static int UpdateSeenFlagWithUID(string userSession, string userMailBox,string uid)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and uid={uid}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
         public static int UpdateFlagsWithUID(string userSession, string userMailBox, string left, string right, Flags flags)
         {
             IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
@@ -216,6 +251,26 @@ namespace MailServer.Imap
             {
                 string tempVar1 = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,uid FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
                 string tempVar2 = $"({tempVar1} select uid from var where numrow>={left} and numrow<={right})";
+                cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and uid in {tempVar2}", new DynamicParameters());
+                return 1;
+            }
+            catch (SQLiteException)
+            {
+                return 0;
+            }
+            finally
+            {
+                cnn.Close();
+            }
+        }
+        public static int UpdateSeenFlagWithIndex(string userSession, string userMailBox, string index)
+        {
+            IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db");
+            cnn.Open();
+            try
+            {
+                string tempVar1 = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,uid FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
+                string tempVar2 = $"({tempVar1} select uid from var where numrow = {index})";
                 cnn.Execute($"update MailInfo set seen = 1 where user = '{userSession}' and mailboxname = '{userMailBox}' and uid in {tempVar2}", new DynamicParameters());
                 return 1;
             }

@@ -245,43 +245,51 @@ namespace MailServer.Imap
             }
             return response + tag + " OK LSUB completed";
         }
-
-
-
         //selected state
 
-        public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox,bool fromUIDCommand=false,bool slient=false) //mới được có 2 cái header và text body thôi nha mấy cha
+        public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox, bool fromUIDCommand = false, bool slient = false) //mới được có 2 cái header và text body thôi nha mấy cha
         {
             string response = "";
-            var math = Regex.Match(argument, @"^(\d+|(?:\d+|\*):(?:\d+|\*)) \(([^\(\)]*)\)");
+            var math = Regex.Match(argument, @"^((?:(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+),)*(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+)) \(([^\(\)]*)\)");
             if (!math.Success) return ReturnParseErrorResponse(tag, "FETCH");
-            string mailIndex = math.Groups[1].Value;
-            string right;
-            string left;
-            List<MailInfo> mailInfoList;
-            if (mailIndex.Contains(':'))
+            List<MailInfo> tempMailInfoList;
+            List<MailInfo> mailInfoList = new List<MailInfo>();
+            string right="";
+            string left="";
+            string[] mailIndexArr = math.Groups[1].Value.Split(',');
+            foreach(string mailIndex in mailIndexArr)
             {
-                string[] temp = mailIndex.Split(':',StringSplitOptions.RemoveEmptyEntries);
-                if (temp[0] == "*")
+                if (mailIndex.Contains(':'))
                 {
-                    if (fromUIDCommand) left = "uid";
-                    else left = "rowid";
+                    string[] temp = mailIndex.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                    if (temp[0] == "*")
+                    {
+                        if (fromUIDCommand) left = "uid";
+                        else left = "rowid";
+                    }
+                    else left = temp[0];
+                    if (temp[1] == "*")
+                    {
+                        if (fromUIDCommand) right = "uid";
+                        else right = "rowid";
+                    }
+                    else right = temp[1];
+                    if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, left, right);
+                    else tempMailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox, left, right);
                 }
-                else left = temp[0];
-                if (temp[1] == "*")
+                else
                 {
-                    if (fromUIDCommand) right = "uid";
-                    else right = "rowid";
+                    if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession,userMailBox,mailIndex);
+                    else tempMailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox,mailIndex);
                 }
-                else right = temp[1];
+                foreach(MailInfo tempMail in tempMailInfoList)
+                {
+                    if (!mailInfoList.Contains(tempMail)) mailInfoList.Add(tempMail);
+                }    
             }
-            else
-            {
-                right = mailIndex;
-                left = right;
-            }
-            if (fromUIDCommand) mailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, left, right);
-            else mailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox, left, right);
+            mailInfoList.Sort((x, y) => x.uid.CompareTo(y.uid));
+            
+            
 
             string[] items = math.Groups[2].Value.Split(' ');
             string[] arguments = argument.Split(' ');
@@ -289,11 +297,11 @@ namespace MailServer.Imap
             DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
             string mailbBoxDir = Environment.CurrentDirectory + $"/ImapMailBox/{userSession}/{userMailBox}/";
             string emailPath;
-            if(mailInfoList.Count==0) return tag + " OK FETCH completed";
+            if (mailInfoList.Count == 0) return tag + " OK FETCH completed";
             foreach (MailInfo mailInfo in mailInfoList)
             {
                 emailPath = mailbBoxDir + $"email_{mailInfo.uid}";
-                if(File.Exists(emailPath+".eml"))
+                if (File.Exists(emailPath + ".eml"))
                 {
                     if (File.Exists(emailPath + ".msg")) emailPath += ".msg";
                     else emailPath += ".eml";
@@ -306,11 +314,11 @@ namespace MailServer.Imap
                 FileInfo email = new FileInfo(emailPath);
                 response += "* " + (fromUIDCommand ? mailInfo.uid : mailInfo.numrow) + " FETCH (";
                 bool first = true;
-                foreach(string item in items)
+                foreach (string item in items)
                 {
                     if (!first) response += " ";
                     first = false;
-                    switch(item.ToLower())
+                    switch (item.ToLower())
                     {
                         case "uid":
                             response += $"UID {mailInfo.uid}";
@@ -323,13 +331,13 @@ namespace MailServer.Imap
                                             (mailInfo.seen == 1 ? "\\Seen" : ""),
                                             (mailInfo.draft == 1 ? "\\Draft" : "")};
                             tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-                            response += "FLAGS ("+string.Join(' ',tempArr)+")";
+                            response += "FLAGS (" + string.Join(' ', tempArr) + ")";
                             break;
                         case "rfc822.size":
                             response += $"RFC822.SIZE {email.Length}";
                             break;
                         case "body.peek[]":
-                            response += "BODY[] {"+email.Length+"}\r\n";
+                            response += "BODY[] {" + email.Length + "}\r\n";
                             using (StreamReader sr = new StreamReader(email.OpenRead()))
                             {
                                 string temp = sr.ReadToEnd();
@@ -339,7 +347,7 @@ namespace MailServer.Imap
                             break;
                         case "internaldate":
                             dtDateTime = dtDateTime.AddSeconds(mailInfo.intertime).ToLocalTime();
-                            response += "INTERNALDATE \"" + dtDateTime.ToString("dd-MMM-yyyy HH:mm:ss zzz") +"\"";
+                            response += "INTERNALDATE \"" + dtDateTime.ToString("dd-MMM-yyyy HH:mm:ss zzz") + "\"";
                             break;
                         default:
                             break;
@@ -348,11 +356,14 @@ namespace MailServer.Imap
                 response += $")\r\n";
             }
             int success;
-            if(!slient)
+            if (!slient)
             {
-                if (fromUIDCommand) success = SqliteQuery.UpdateSeenFlagWithUID(userSession, userMailBox, left, right);
-                else success = SqliteQuery.UpdateSeenFlagWithIndex(userSession, userMailBox, left, right);
-            }    
+                foreach(MailInfo  mailInfo in mailInfoList)
+                {
+                    if (fromUIDCommand) success = SqliteQuery.UpdateSeenFlagWithUID(userSession, userMailBox, mailInfo.uid.ToString());
+                    else success = SqliteQuery.UpdateSeenFlagWithIndex(userSession, userMailBox, mailInfo.numrow.ToString());
+                }    
+            }
             response += tag + " OK FETCH completed";
             return response;
         }
@@ -471,34 +482,47 @@ namespace MailServer.Imap
 
         private static string ReturnStoreResponse(string tag, string argument, string userSession, string userMailBox, bool fromUIDCommand)
         {
-            var math = Regex.Match(argument, @"^(\d+|(?:\d+|\*):(?:\d+|\*)) ([^\s]+) \(([^\(\)]*)\)");
+            var math = Regex.Match(argument, @"^((?:(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+),)*(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+)) ([^\s]+) \(([^\(\)]*)\)");
             if (!math.Success) return ReturnParseErrorResponse(tag, "STORE");
-            string mailIndex = math.Groups[1].Value;
             string item = math.Groups[2].Value;
-            string right;
-            string left;
-            if (mailIndex.Contains(':'))
+            if (!math.Success) return ReturnParseErrorResponse(tag, "FETCH");
+            List<MailInfo> tempMailInfoList;
+            List<MailInfo> mailInfoList = new List<MailInfo>();
+            string right = "";
+            string left = "";
+            string[] mailIndexArr = math.Groups[1].Value.Split(',');
+            foreach (string mailIndex in mailIndexArr)
             {
-                string[] temp = mailIndex.Split(':', StringSplitOptions.RemoveEmptyEntries);
-                if (temp[0] == "*")
+                if (mailIndex.Contains(':'))
                 {
-                    if (fromUIDCommand) left = "uid";
-                    else left = "rowid";
+                    string[] temp = mailIndex.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                    if (temp[0] == "*")
+                    {
+                        if (fromUIDCommand) left = "uid";
+                        else left = "rowid";
+                    }
+                    else left = temp[0];
+                    if (temp[1] == "*")
+                    {
+                        if (fromUIDCommand) right = "uid";
+                        else right = "rowid";
+                    }
+                    else right = temp[1];
+                    if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, left, right);
+                    else tempMailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox, left, right);
                 }
-                else left = temp[0];
-                if (temp[1] == "*")
+                else
                 {
-                    if (fromUIDCommand) right = "uid";
-                    else right = "rowid";
+                    if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, mailIndex);
+                    else tempMailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox, mailIndex);
                 }
-                else right = temp[1];
+                foreach (MailInfo tempMail in tempMailInfoList)
+                {
+                    if (!mailInfoList.Contains(tempMail)) mailInfoList.Add(tempMail);
+                }
             }
-            else
-            {
-                right = mailIndex;
-                left = right;
-            }
-            string newArgument = mailIndex + " (FLAGS)";
+            mailInfoList.Sort((x, y) => x.uid.CompareTo(y.uid));
+            string newArgument = math.Groups[1].Value + " (FLAGS)";
             Flags flags = new Flags();
             int success;
             if (math.Groups[3].Value!="")
