@@ -265,13 +265,13 @@ namespace MailServer.Imap
                     if (temp[0] == "*")
                     {
                         if (fromUIDCommand) left = "uid";
-                        else left = "rowid";
+                        else left = "numrow";
                     }
                     else left = temp[0];
                     if (temp[1] == "*")
                     {
                         if (fromUIDCommand) right = "uid";
-                        else right = "rowid";
+                        else right = "numrow";
                     }
                     else right = temp[1];
                     if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, left, right);
@@ -480,7 +480,7 @@ namespace MailServer.Imap
             }
         }
 
-        private static string ReturnStoreResponse(string tag, string argument, string userSession, string userMailBox, bool fromUIDCommand)
+        public static string ReturnStoreResponse(string tag, string argument, string userSession, string userMailBox, bool fromUIDCommand=false)
         {
             var math = Regex.Match(argument, @"^((?:(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+),)*(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+)) ([^\s]+) \(([^\(\)]*)\)");
             if (!math.Success) return ReturnParseErrorResponse(tag, "STORE");
@@ -499,13 +499,13 @@ namespace MailServer.Imap
                     if (temp[0] == "*")
                     {
                         if (fromUIDCommand) left = "uid";
-                        else left = "rowid";
+                        else left = "numrow";
                     }
                     else left = temp[0];
                     if (temp[1] == "*")
                     {
                         if (fromUIDCommand) right = "uid";
-                        else right = "rowid";
+                        else right = "numrow";
                     }
                     else right = temp[1];
                     if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, left, right);
@@ -538,26 +538,34 @@ namespace MailServer.Imap
                     if (flags.answered != "1") flags.answered = "0";
                     if (flags.flagged != "1") flags.flagged = "0";
                     if (flags.deleted != "1") flags.deleted = "0";
-                    if (flags.draft != "1") flags.draft = "0";
-                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
-                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    if (flags.draft != "1") flags.draft = "0";               
+                    foreach(MailInfo mailInfo in mailInfoList)
+                    {
+                        success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
+                    }
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
-                case "flags.silent":
+                case "flags.slient":
                     if (flags.seen != "1") flags.seen = "0";
                     if (flags.answered != "1") flags.answered = "0";
                     if (flags.flagged != "1") flags.flagged = "0";
                     if (flags.deleted != "1") flags.deleted = "0";
                     if (flags.draft != "1") flags.draft = "0";
-                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
-                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
-                    return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand,true);
+                    foreach (MailInfo mailInfo in mailInfoList)
+                    {
+                        success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
+                    }
+                    return tag + " OK STORE completed";
                 case "+flags":
-                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
-                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    foreach (MailInfo mailInfo in mailInfoList)
+                    {
+                        success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
+                    }
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
                 case "+flags.slient":
-                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
-                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    foreach (MailInfo mailInfo in mailInfoList)
+                    {
+                        success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
+                    }
                     return tag + " OK STORE completed";
                 case "-flags":
                     if (flags.seen == "1") flags.seen = "0";
@@ -565,8 +573,10 @@ namespace MailServer.Imap
                     if (flags.flagged == "1") flags.flagged = "0";
                     if (flags.deleted == "1") flags.deleted = "0";
                     if (flags.draft == "1") flags.draft = "0";
-                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
-                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    foreach (MailInfo mailInfo in mailInfoList)
+                    {
+                        success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
+                    }
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
                 case "-flags.slient":
                     if (flags.seen == "1") flags.seen = "0";
@@ -574,8 +584,10 @@ namespace MailServer.Imap
                     if (flags.flagged == "1") flags.flagged = "0";
                     if (flags.deleted == "1") flags.deleted = "0";
                     if (flags.draft == "1") flags.draft = "0";
-                    if (fromUIDCommand) success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, left, right, flags);
-                    else success = SqliteQuery.UpdateFlagsWithIndex(userSession, userMailBox, left, right, flags);
+                    foreach (MailInfo mailInfo in mailInfoList)
+                    {
+                        success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
+                    }
                     return tag + " OK STORE completed";
                 default:
                     return ReturnParseErrorResponse(tag, "STORE");

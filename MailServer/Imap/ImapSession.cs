@@ -309,6 +309,7 @@ namespace MailServer.Imap
                     break;
 
                 case "store":
+                    this.respose = Response.ReturnStoreResponse(this.tag, this.agrument, this.userSession, this.userMailBox);
                     break;
 
                 case "copy":
