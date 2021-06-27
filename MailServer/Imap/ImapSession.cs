@@ -199,9 +199,9 @@ namespace MailServer.Imap
                 case "unsubscribe":
                     this.respose = Response.ReturnUnsubcribeResponse(this.tag, this.agrument, this.userSession);
                     break;
-
+                case "xlist":
                 case "list":
-                    this.respose = Response.ReturnListResponse(this.tag, this.agrument, this.userSession);
+                    this.respose = Response.ReturnListResponse(this.tag, this.command.ToUpper(), this.agrument, this.userSession);
                     break;
 
                 case "lsub":
@@ -275,9 +275,9 @@ namespace MailServer.Imap
                 case "unsubscribe":
                     this.respose = Response.ReturnUnsubcribeResponse(this.tag, this.agrument, this.userSession);
                     break;
-
+                case "xlist":
                 case "list":
-                    this.respose = Response.ReturnListResponse(this.tag, this.agrument, this.userSession);
+                    this.respose = Response.ReturnListResponse(this.tag,this.command.ToUpper(), this.agrument, this.userSession);
                     break;
 
                 case "lsub":

@@ -45,7 +45,7 @@ namespace MailServer.Imap
 
         public static string ReturnCapabilityResponse(string tag)
         {
-            return "* CAPABILITY IMAP4rev1 NAMESPACE AUTH=LOGIN AUTH=PLAIN STARTTLS ACL UNSELECT UIDPLUS QUOTA BINARY\r\n" + tag + " OK CAPABILITY completed";
+            return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN STARTTLS UNSELECT UIDPLUS XLIST\r\n" + tag + " OK CAPABILITY completed";
         }
 
         public static string ReturnNoopCommand(string tag)
@@ -115,12 +115,12 @@ namespace MailServer.Imap
             mailMessage.Body = System.Text.Encoding.UTF8.GetString(emlFileMessage.TextBody.Body);
             return mailMessage;
         }
-        public static string ReturnListResponse(string tag, string argument, string userSession)
+        public static string ReturnListResponse(string tag,string command, string argument, string userSession)
         {
             string response = "";
             string root = Environment.CurrentDirectory + $"\\ImapMailBox\\{userSession}\\";
             var math = Regex.Match(argument, "^(\"(?:[^\"]*)\"|(?:[^\\s]+)) (\"(?:[^\"]*)\"|(?:[^\\s]+))");
-            if(!math.Success) return Response.ReturnParseErrorResponse(tag, "LIST");
+            if(!math.Success) return Response.ReturnParseErrorResponse(tag, command);
             // lấy reference từ group
             string reference = math.Groups[1].Value.Replace("\"","");
             string dir=root;
@@ -128,10 +128,10 @@ namespace MailServer.Imap
             // lấy mailboxName từ group
             string mailboxName = math.Groups[2].Value.Replace("\"","");
             // reference = root và mailboxName =""
-            if (dir == root && mailboxName=="") return "* LIST (\\Noselect ) \"/\" \"\"\r\n" + tag + " OK LIST completed";
+            if (dir == root && mailboxName=="") return $"* {command} (\\Noselect ) \"/\" \"\"\r\n" + tag + $" OK {command} completed";
             // kiểm tra đường dẫn
             // kiểm tra mailboxName bằng "*","%"
-            if (!Directory.Exists(dir+mailboxName) && mailboxName != "*" && mailboxName != "%") return tag+" OK LIST completed";
+            if (!Directory.Exists(dir+mailboxName) && mailboxName != "*" && mailboxName != "%") return tag+ $" OK {command} completed";
             int temp = 0;
             if (mailboxName == "%")
             {
@@ -147,7 +147,7 @@ namespace MailServer.Imap
                 if (temp == 1 && Directory.GetDirectories(mailboxDir).Length != 0) continue;
                 string mailbox = mailboxDir.Replace(root, "");
                 List<MailBox> ListmailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailbox);
-                if(ListmailBoxInfo.Count==0) return tag + " OK LIST completed";
+                if(ListmailBoxInfo.Count==0) return tag + $" OK {command} completed";
                 MailBox mailBoxInfo = ListmailBoxInfo[0];
                 string[] tempArr =
                 {
@@ -155,16 +155,13 @@ namespace MailServer.Imap
                     (mailBoxInfo.archive == 1?"\\Archive":""),
                     (mailBoxInfo.drafts == 1?"\\Drafts":""),
                     (mailBoxInfo.flagged == 1?"\\Flagged":""),
-                    (mailBoxInfo.haschildren == 1?"\\HasChildren":""),
-                    (mailBoxInfo.hasnochildren == 1?"\\HasNoChildren":""),
-                    (mailBoxInfo.important == 1?"\\Important":""),
                     (mailBoxInfo.inbox == 1?"\\Inbox":""),
                     (mailBoxInfo.junk == 1?"\\Junk":""),
-                    (mailBoxInfo.marked == 1?"\\Marked":""),
-                    (mailBoxInfo.nointeriors == 1?"\\NoInferiors":""),
-                    (mailBoxInfo.noselect == 1?"\\Noselect":""),
+                    (mailBoxInfo.marked == 1 && command!="XLIST"?"\\Marked":"UnMarked"),
+                    (mailBoxInfo.nointeriors == 1 && command!="XLIST"?"\\NoInferiors":""),
+                    (mailBoxInfo.noselect == 1 && command!="XLIST"?"\\Noselect":""),
                     (mailBoxInfo.sent == 1?"\\Sent":""),
-                    (mailBoxInfo.trash == 1?"\\Trash":""),
+                    (mailBoxInfo.trash == 1?"\\Trash":"")
                 };
                 tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 response += "* LIST (" + string.Join(' ', tempArr) + $") \"/\" \"{reference}{mailbox}\"\r\n";
@@ -234,16 +231,13 @@ namespace MailServer.Imap
                     (mailBoxInfo.archive == 1?"\\Archive":""),
                     (mailBoxInfo.drafts == 1?"\\Drafts":""),
                     (mailBoxInfo.flagged == 1?"\\Flagged":""),
-                    (mailBoxInfo.haschildren == 1?"\\HasChildren":""),
-                    (mailBoxInfo.hasnochildren == 1?"\\HasNoChildren":""),
-                    (mailBoxInfo.important == 1?"\\Important":""),
                     (mailBoxInfo.inbox == 1?"\\Inbox":""),
                     (mailBoxInfo.junk == 1?"\\Junk":""),
-                    (mailBoxInfo.marked == 1?"\\Marked":""),
+                    (mailBoxInfo.marked == 1?"\\Marked":"UnMarked"),
                     (mailBoxInfo.nointeriors == 1?"\\NoInferiors":""),
                     (mailBoxInfo.noselect == 1?"\\Noselect":""),
                     (mailBoxInfo.sent == 1?"\\Sent":""),
-                    (mailBoxInfo.trash == 1?"\\Trash":""),
+                    (mailBoxInfo.trash == 1?"\\Trash":"")
                 };
                 tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 response += "* LSUB (" + string.Join(' ', tempArr) + $") \"/\" \"{reference}{mailbox}\"\r\n";
