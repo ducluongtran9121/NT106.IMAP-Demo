@@ -157,14 +157,15 @@ namespace MailServer.Imap
                     (mailBoxInfo.flagged == 1?"\\Flagged":""),
                     (mailBoxInfo.inbox == 1?"\\Inbox":""),
                     (mailBoxInfo.junk == 1?"\\Junk":""),
-                    (mailBoxInfo.marked == 1 && command!="XLIST"?"\\Marked":"UnMarked"),
+                    (mailBoxInfo.marked == 1 && command!="XLIST"?"\\Marked":""),
+                    (mailBoxInfo.marked == 0 && command!="XLIST"?"\\UnMarked":""),
                     (mailBoxInfo.nointeriors == 1 && command!="XLIST"?"\\NoInferiors":""),
                     (mailBoxInfo.noselect == 1 && command!="XLIST"?"\\Noselect":""),
                     (mailBoxInfo.sent == 1?"\\Sent":""),
                     (mailBoxInfo.trash == 1?"\\Trash":"")
                 };
                 tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-                response += "* LIST (" + string.Join(' ', tempArr) + $") \"/\" \"{reference}{mailbox}\"\r\n";
+                response += $"* {command} (" + string.Join(' ', tempArr) + $") \"/\" \"{reference}{mailbox}\"\r\n";
             }
             return response + tag + " OK LIST completed";
         }
