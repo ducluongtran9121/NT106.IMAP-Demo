@@ -167,7 +167,7 @@ namespace MailServer.Imap
                 tempArr = tempArr.Where(x => !string.IsNullOrEmpty(x)).ToArray();
                 response += $"* {command} (" + string.Join(' ', tempArr) + $") \"/\" \"{reference}{mailbox}\"\r\n";
             }
-            return response + tag + " OK LIST completed";
+            return response + tag + $" OK {command} completed";
         }
         public static string ReturnSubcribeResponse(string tag,string argument,string userSession)
         {
@@ -387,13 +387,13 @@ namespace MailServer.Imap
         public static string ReturnExpungeResponse(string tag,string userSession,string userMailBox)
         {
             List<MailInfo> mailBoxInfoList = SqliteQuery.LoadDeletedMail(userSession, userMailBox);
-            if (mailBoxInfoList.Count == 0) return tag + "OK EXPUNGE completed";
-            List<string> TrashMailbox = SqliteQuery.LoadTrashMailBoxName(userSession,userMailBox);
+            if (mailBoxInfoList.Count == 0) return tag + " OK EXPUNGE completed";
+            List<string> TrashMailbox = SqliteQuery.LoadTrashMailBoxName(userSession);
             string response = "";
             int success;
-            string[] mailPath = new string[mailBoxInfoList.Count];
             string soursePath;
             string desPath;
+            long baseUID;
             string root = Environment.CurrentDirectory + $"/ImapMailBox/{userSession}";
             if(TrashMailbox.IndexOf(userMailBox)==-1)
             {
@@ -401,41 +401,50 @@ namespace MailServer.Imap
                 {
                     List<MailBoxInfo> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailBox);
                     if (mailBoxInfo.Count == 0) return "OK EXPUNGE completed";
-                    long baseUID = mailBoxInfo[0].uidnext;
+                    baseUID = mailBoxInfo[0].uidnext;
                     foreach (MailInfo mail in mailBoxInfoList)
                     {
                         soursePath = root + $"/{userMailBox}/email_{baseUID}";
-                        if(File.Exists(soursePath+".eml"))
+                        if (File.Exists(soursePath + ".msg"))
                         {
-                            if (File.Exists(soursePath + ".msg"))
-                            {
-                                soursePath += ".msg";
-                                desPath = root + $"/{userMailBox}/email_{baseUID}.msg";
-                            }
-                            else desPath = root + $"/{userMailBox}/email_{baseUID}.eml";
+                            soursePath += ".msg";
+                            desPath = root + $"/{mailBox}/email_{baseUID}.msg";
                         }
                         else
                         {
-                            if (File.Exists(soursePath + ".msg"))
+                            if (File.Exists(soursePath + ".eml"))
                             {
-                                soursePath += ".msg";
-                                desPath = root + $"/{userMailBox}/email_{baseUID}.msg";
+                                soursePath += ".eml";
+                                desPath = root + $"/{mailBox}/email_{baseUID}.eml";
                             }
-                            else return "OK EXPUNGE completed";
+                            else return tag + "OK EXPUNGE completed";
                         }
-                        mailPath[mail.numrow-1] = soursePath;
                         File.Copy(soursePath, desPath);
+                        File.Delete(soursePath);
+                        success = SqliteQuery.DeleteMailWithUID(userSession, userMailBox, mail.uid);
                         mail.uid = baseUID++;
+                        mail.mailboxname = mailBox;
                         success = SqliteQuery.InsertMailIntoMailBox(userSession, mailBox, mail);
+                        response += $"* {mail.numrow} EXPUNGE\r\n";
                     }    
                 }    
             }
-            foreach (MailInfo mail in mailBoxInfoList)
+            else
             {
-                File.Delete(mailPath[mail.numrow - 1]);
-                success = SqliteQuery.DeleteMailWithUID(userSession, userMailBox, mail.uid);
-                response += $"* {mail.numrow} EXPUNGE\r\n";
-            }    
+                foreach (MailInfo mail in mailBoxInfoList)
+                {
+                    soursePath = root + $"/{userMailBox}/email_{mail.uid}";
+                    if (File.Exists(soursePath + ".msg")) soursePath += ".msg";
+                    else
+                    {
+                        if (File.Exists(soursePath + ".eml")) soursePath += ".eml";
+                        else return tag + "OK EXPUNGE completed";
+                    }
+                    File.Delete(soursePath);
+                    success = SqliteQuery.DeleteMailWithUID(userSession, userMailBox, mail.uid);
+                    response += $"* {mail.numrow} EXPUNGE\r\n";
+                }
+            }
             response += tag + " OK EXPUNGE completed";
             return response;
         }

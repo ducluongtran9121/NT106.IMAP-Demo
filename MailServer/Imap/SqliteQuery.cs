@@ -37,11 +37,11 @@ namespace MailServer.Imap
             }
         }
 
-        public static List<string> LoadTrashMailBoxName(string userSession,string userMailBox)
+        public static List<string> LoadTrashMailBoxName(string userSession)
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<string>($"select name from MailBoxInfo where trash = 1 and user = {userSession} and mailboxname = {userMailBox}", new DynamicParameters());
+                var query = cnn.Query<string>($"select name from MailBoxInfo where trash = 1 and user = '{userSession}'", new DynamicParameters());
                 List<string> list = query.ToList();
                 return list;
             }
@@ -52,7 +52,7 @@ namespace MailServer.Imap
             cnn.Open();
             try
             {
-                cnn.Execute($"insert into MailInfo(user,mailboxname,uid,recent,seen,answered,flagged,draft,deleted) values({mail.user},{mail.mailboxname},{mail.uid},1,{mail.seen},{mail.answered},{mail.flagged},{mail.draft},{mail.deleted})", new DynamicParameters());
+                cnn.Execute($"insert into MailInfo(user,mailboxname,uid,recent,seen,answered,flagged,draft,deleted) values('{mail.user}','{mail.mailboxname}',{mail.uid},1,{mail.seen},{mail.answered},{mail.flagged},{mail.draft},{mail.deleted})", new DynamicParameters());
                 return 1;
             }
             catch (SQLiteException)
@@ -262,7 +262,7 @@ namespace MailServer.Imap
             cnn.Open();
             try
             {
-                cnn.Execute($"delete from table MailInfo Where user = {userSession} and mailboxname = {userMailBox} and uid = {uid}", new DynamicParameters());
+                cnn.Execute($"delete from MailInfo Where user = '{userSession}' and mailboxname = '{userMailBox}' and uid = {uid}", new DynamicParameters());
                 return 1;
             }
             catch (SQLiteException)

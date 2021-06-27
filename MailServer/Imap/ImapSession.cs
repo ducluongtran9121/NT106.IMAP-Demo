@@ -263,6 +263,7 @@ namespace MailServer.Imap
                     break;
 
                 case "create":
+                    this.respose = Response.ReturnCreateResponse(this.tag, this.agrument, this.userSession);
                     break;
 
                 case "delete":

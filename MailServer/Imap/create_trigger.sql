@@ -6,7 +6,7 @@ BEGIN
 		recent = recent +1,
 		uidnext = uidnext+1,
 		firstunseen = 	CASE
-							WHEN firstunseen = 0 AND NEW.seen = 1 THEN (SELECT count(*)from MailInfo where user = NEW.user AND mailboxname = NEW.mailboxname)
+							WHEN firstunseen = 0 AND NEW.seen = 0 THEN (SELECT count(*)from MailInfo where user = NEW.user AND mailboxname = NEW.mailboxname)
 							ELSE firstunseen
 						END
 	WHERE user = NEW.user
@@ -16,7 +16,7 @@ END;
 CREATE TRIGGER update_MailBox_default_attribute_with_name
 AFTER INSERT ON MailBoxInfo
 BEGIN
-	UPDATE MailBox 
+	UPDATE MailBoxInfo 
 	SET sent = 
 		CASE
 			WHEN name LIKE 'sent items' THEN 1
