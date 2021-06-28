@@ -1,0 +1,192 @@
+﻿<UserControl
+    x:Class="MailClient.UserControls.MessageNavigationControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:imap="using:MailClient.Imap"
+    xmlns:uc="using:MailClient.UserControls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <DataTemplate x:Key="MailMessageTemplate" x:DataType="imap:Message">
+            <StackPanel Margin="6">
+                <TextBlock
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind From, Mode=OneWay}" />
+                <TextBlock
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind Subject, Mode=OneWay}" />
+                <TextBlock
+                    FontSize="12"
+                    Foreground="{ThemeResource BackButtonDisabledForegroundThemeBrush}"
+                    Text="{x:Bind BodyPreview, Mode=OneWay}" />
+            </StackPanel>
+        </DataTemplate>
+
+        <Style TargetType="ListViewItem">
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+            <Setter Property="Background" Value="{ThemeResource ListViewItemBackground}" />
+            <Setter Property="Foreground" Value="{ThemeResource ListViewItemForeground}" />
+            <Setter Property="TabNavigation" Value="Local" />
+            <Setter Property="IsHoldingEnabled" Value="True" />
+            <Setter Property="Padding" Value="12,0,12,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
+            <Setter Property="MinHeight" Value="{ThemeResource ListViewItemMinHeight}" />
+            <Setter Property="AllowDrop" Value="False" />
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="FocusVisualMargin" Value="0" />
+            <Setter Property="FocusVisualPrimaryBrush" Value="{ThemeResource ListViewItemFocusVisualPrimaryBrush}" />
+            <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+            <Setter Property="FocusVisualSecondaryBrush" Value="{ThemeResource ListViewItemFocusVisualSecondaryBrush}" />
+            <Setter Property="FocusVisualSecondaryThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <ListViewItemPresenter
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            CheckBoxBrush="{ThemeResource ListViewItemCheckBoxBrush}"
+                            CheckBrush="{ThemeResource ListViewItemCheckBrush}"
+                            CheckMode="{ThemeResource ListViewItemCheckMode}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            Control.IsTemplateFocusTarget="True"
+                            CornerRadius="8"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragBackground="{ThemeResource ListViewItemDragBackground}"
+                            DragForeground="{ThemeResource ListViewItemDragForeground}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            FocusBorderBrush="{ThemeResource ListViewItemFocusBorderBrush}"
+                            FocusSecondaryBorderBrush="{ThemeResource ListViewItemFocusSecondaryBorderBrush}"
+                            FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                            FocusVisualPrimaryBrush="{TemplateBinding FocusVisualPrimaryBrush}"
+                            FocusVisualPrimaryThickness="{TemplateBinding FocusVisualPrimaryThickness}"
+                            FocusVisualSecondaryBrush="{TemplateBinding FocusVisualSecondaryBrush}"
+                            FocusVisualSecondaryThickness="{TemplateBinding FocusVisualSecondaryThickness}"
+                            PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackground}"
+                            PointerOverBackground="{ThemeResource ListViewItemBackgroundPointerOver}"
+                            PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}"
+                            PressedBackground="{ThemeResource ListViewItemBackgroundPressed}"
+                            ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+                            SelectedBackground="{ThemeResource ListViewItemBackgroundSelected}"
+                            SelectedForeground="{ThemeResource ListViewItemForegroundSelected}"
+                            SelectedPointerOverBackground="{ThemeResource ListViewItemBackgroundSelectedPointerOver}"
+                            SelectedPressedBackground="{ThemeResource ListViewItemBackgroundSelectedPressed}"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource ListViewItemSelectionCheckMarkVisualEnabled}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="12,12,0,12" CornerRadius="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="6" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel
+            Padding="12,6"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Spacing="6">
+            <muxc:ProgressBar
+                x:Name="LoadingBar"
+                Background="Transparent"
+                IsIndeterminate="True" />
+            <uc:SearchBoxControl
+                x:Name="SearchBox"
+                OnSearchButtonClick="SearchBox_OnSearchButtonClick"
+                PlaceholderText="Search something..."
+                TextChanged="UpdateListviewItem" />
+            <Grid>
+                <ComboBox
+                    x:Name="FoldersComboBox"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    BorderThickness="0"
+                    FontWeight="SemiBold"
+                    ItemsSource="{x:Bind FolderItems}" />
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="4">
+                    <Button
+                        x:Name="SyncButton"
+                        BorderThickness="0"
+                        Click="SyncButton_Click"
+                        ToolTipService.ToolTip="Sync current mailbox">
+                        <FontIcon Glyph="&#xE895;" />
+                    </Button>
+                    <Button
+                        x:Name="MultiSelectButton"
+                        BorderThickness="0"
+                        Click="MultiSelectButton_Click"
+                        ToolTipService.ToolTip="Enter selection mode">
+                        <FontIcon Glyph="&#xE762;" />
+                    </Button>
+                    <Button
+                        x:Name="FilterButton"
+                        BorderThickness="0"
+                        ToolTipService.ToolTip="Filter">
+                        <FontIcon Glyph="&#xE712;" />
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <ToggleMenuFlyoutItem Text="Flagged">
+                                    <ToggleMenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE7C1;" />
+                                    </ToggleMenuFlyoutItem.Icon>
+                                </ToggleMenuFlyoutItem>
+                                <ToggleMenuFlyoutItem Text="Unread">
+                                    <ToggleMenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE715;" />
+                                    </ToggleMenuFlyoutItem.Icon>
+                                </ToggleMenuFlyoutItem>
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem Text="Sort by Name">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE97E;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem Text="Sort by Date">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE787;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+        <Border
+            Grid.Row="1"
+            BorderBrush="Transparent"
+            BorderThickness="0,1,0,0" />
+        <Border
+            Grid.Row="2"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <ListView
+                x:Name="MainListView"
+                CornerRadius="8"
+                ItemTemplate="{StaticResource MailMessageTemplate}"
+                Loaded="MainListView_Loaded"
+                SelectionChanged="MainListView_SelectionChanged"
+                SelectionMode="Single" />
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,31 +1,24 @@
 ﻿<Page
     x:Class="MailClient.Views.Pages.MailViewerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Page.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Light">
-                    <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="SystemBackgroundDefaultBrush" />
-                    <Thickness x:Key="CommandBarBorderThicknessOpen">0</Thickness>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Dark">
-                    <StaticResource x:Key="CommandBarBackgroundOpen" ResourceKey="SystemBackgroundDefaultBrush" />
-                    <Thickness x:Key="CommandBarBorderThicknessOpen">0</Thickness>
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-        </ResourceDictionary>
-    </Page.Resources>
+    <Page.Resources />
 
-    <Grid>
+    <Grid Margin="0 12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="6" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid MinHeight="85">
+        <Grid
+            MinHeight="90"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
             <CommandBar
                 Padding="0,0,0,10"
                 VerticalAlignment="Bottom"
@@ -67,12 +60,12 @@
             </CommandBar>
         </Grid>
         <Grid
-            Grid.Row="1"
-            Padding="12,12,12,0"
-            Background="{ThemeResource SystemBackgroundHighBrush}"
-            BorderBrush="{ThemeResource ControlBorderDefaultBrush}"
-            BorderThickness="{ThemeResource ControlBorderDefaulThickness}"
-            CornerRadius="4">
+            Grid.Row="2"
+            Padding="16"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
             <StackPanel Spacing="10">
                 <TextBlock
                     FontSize="20"
@@ -91,9 +84,9 @@
                     <TextBlock
                         FontSize="12"
                         Foreground="{ThemeResource ButtonForegroundDisabled}"
-                        Text="{x:Bind Message.GetToString()}" />
+                        Text="{x:Bind Message.To}" />
                 </StackPanel>
-                <TextBlock Text="{x:Bind Message.Body}" TextWrapping="WrapWholeWords" />
+                <TextBlock Text="{x:Bind Message.DisplayBody}" TextWrapping="WrapWholeWords" />
             </StackPanel>
         </Grid>
     </Grid>

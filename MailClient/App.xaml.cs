@@ -3,7 +3,6 @@ using System;
 using System.Reflection;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.UI.Core.Preview;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -23,7 +22,7 @@ namespace MailClient
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
-                    }
+        }
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -34,9 +33,6 @@ namespace MailClient
         {
             // Create core database (Account Database) if not exist
             await DatabaseHelper.InitalizeAsync();
-
-            // Ensuring free all data
-            SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnCloseRequested;
 
             Frame rootFrame = Window.Current.Content as Frame;
 
@@ -100,11 +96,6 @@ namespace MailClient
         private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
-        }
-
-        private void OnCloseRequested(object sender, SystemNavigationCloseRequestedPreviewEventArgs e)
-        {
-            ConnectionHelper.CurrentClient?.Dispose();
         }
 
         /// <summary>

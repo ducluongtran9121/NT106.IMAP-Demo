@@ -1,4 +1,4 @@
-﻿using MailClient.DataModels.Mail;
+﻿using MailClient.Imap;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
@@ -6,7 +6,7 @@ namespace MailClient.Views.Pages
 {
     public sealed partial class MailViewerPage : Page
     {
-        public MailMessage Message { get; set; }
+        public Message Message { get; set; }
 
         public MailViewerPage()
         {
@@ -17,7 +17,7 @@ namespace MailClient.Views.Pages
         {
             base.OnNavigatedTo(e);
 
-            MailMessage message = e.Parameter as MailMessage;
+            Message message = e.Parameter as Message;
             if (message != null)
             {
                 Message = message;

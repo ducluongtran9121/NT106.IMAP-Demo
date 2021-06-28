@@ -1,0 +1,93 @@
+﻿<muxc:NavigationView
+    x:Class="MailClient.UserControls.SideBarNavigationControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ci="using:MailClient.DataModels.NavigationControlItems"
+    xmlns:local="using:MailClient.UserControls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    IsBackButtonVisible="Collapsed"
+    IsTitleBarAutoPaddingEnabled="False"
+    Loaded="NavigationView_Loaded"
+    MenuItemsSource="{x:Bind NavigationItems}"
+    ItemInvoked="NavigationView_ItemInvoked"
+    mc:Ignorable="d">
+    <muxc:NavigationView.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                    <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                    <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="Transparent" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <SolidColorBrush x:Key="NavigationViewContentBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                    <SolidColorBrush x:Key="NavigationViewExpandedPaneBackground" Color="{ThemeResource SystemColorWindowColor}" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+
+            <!--  Navigationitem template  -->
+            <DataTemplate x:Key="NavItem" x:DataType="ci:NavigationItem">
+                <muxc:NavigationViewItem
+                    BorderThickness="0.8"
+                    CanDrag="False"
+                    Content="{x:Bind Text, Mode=OneWay}"
+                    SelectsOnInvoked="{x:Bind SelectOnInvoked, Mode=OneWay}"
+                    Tag="{x:Bind Tag, Mode=OneWay}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+            <DataTemplate x:Key="NavListItem" x:DataType="ci:NavigationListItem">
+                <muxc:NavigationViewItem
+                    BorderThickness="0.8"
+                    Content="{x:Bind Text, Mode=OneWay}"
+                    IsExpanded="True"
+                    MenuItemsSource="{x:Bind Child, Mode=OneWay}"
+                    SelectsOnInvoked="{x:Bind SelectOnInvoked, Mode=OneWay}"
+                    Tag="{x:Bind Tag, Mode=OneWay}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" />
+                    </muxc:NavigationViewItem.Icon>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+            <DataTemplate x:Key="NavAccountItem" x:DataType="ci:NavigationAccountItem">
+                <muxc:NavigationViewItem
+                    MinHeight="45"
+                    BorderThickness="0.8"
+                    CanDrag="False"
+                    IsRightTapEnabled="True"
+                    SelectsOnInvoked="{x:Bind SelectOnInvoked, Mode=OneWay}"
+                    Tag="{x:Bind Tag, Mode=OneWay}">
+                    <muxc:NavigationViewItem.Icon>
+                        <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" />
+                    </muxc:NavigationViewItem.Icon>
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="15"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind Text, Mode=OneWay}" />
+                        <TextBlock FontSize="12" Text="{x:Bind Address, Mode=OneWay}" />
+                    </StackPanel>
+                </muxc:NavigationViewItem>
+            </DataTemplate>
+            <DataTemplate x:Key="NavEmptyItem" x:DataType="ci:NavigationEmptyItem">
+                <muxc:NavigationViewItemHeader MaxHeight="12" Content="" />
+            </DataTemplate>
+        </ResourceDictionary>
+    </muxc:NavigationView.Resources>
+    <muxc:NavigationView.MenuItemTemplateSelector>
+        <local:NavigationItemDataTemplateSelector
+            NavigationAccountItemTemplate="{StaticResource NavAccountItem}"
+            NavigationEmptyItemTemplate="{StaticResource NavEmptyItem}"
+            NavigationItemTemplate="{StaticResource NavItem}"
+            NavigationListItemTemplate="{StaticResource NavListItem}" />
+    </muxc:NavigationView.MenuItemTemplateSelector>
+</muxc:NavigationView>

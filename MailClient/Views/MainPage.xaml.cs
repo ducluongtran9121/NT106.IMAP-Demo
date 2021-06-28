@@ -1,7 +1,7 @@
-﻿using MailClient.DataModels.Mail;
+﻿using MailClient.DataModels.Imap;
 using MailClient.Helpers;
-using MailClient.IMAP;
-using MailClient.UserControls;
+using MailClient.Imap;
+using MailClient.Imap.Crypto;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation.Metadata;
+using Windows.UI;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using muxc = Microsoft.UI.Xaml.Controls;
@@ -17,179 +19,24 @@ namespace MailClient.Views
 {
     public sealed partial class MainPage : Page
     {
-        public static SideNavigationControl Current;
-
         public MainPage()
         {
             this.InitializeComponent();
 
-            SideNavigation.PaneDisplayMode = muxc.NavigationViewPaneDisplayMode.Left;
-
-            Current = SideNavigation;
-
-            // Set titlebar
+            // Set Titlebar
             Window.Current.SetTitleBar(AppTitleBar);
 
-            // If this page is loaded from Welcome page, LayoutMetricsChanged event
-            // in this page isn't triggered
-            // Set padding ContentContainer
-            ContentContainer.Padding = new Thickness(24, NavigationHelper.TitlebarHeight + 12, 24, 12);
+            SideBarNavigation.PaneDisplayMode = muxc.NavigationViewPaneDisplayMode.Left;
+
+            ApplicationViewTitleBar titleBar = ApplicationView.GetForCurrentView().TitleBar;
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
             CoreApplication.GetCurrentView().TitleBar.LayoutMetricsChanged += (s, e) =>
             {
+                SideBarNavigation.PaneDisplayMode = muxc.NavigationViewPaneDisplayMode.Auto;
                 UpdateAppTitle(s);
-
-                // Set padding ContentContainer
-                ContentContainer.Padding = new Thickness(24, s.Height + 12, 24, 12);
             };
-        }
-
-        // Load accounts and mailboxes from database
-        private async void Page_Loading(FrameworkElement sender, object args)
-        {
-            // Load list of account from database
-            List<string[]> accounts =
-                await DatabaseHelper.GetTableDataAsync(DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName);
-
-            if (accounts == null)
-                return;
-
-            // Load accounts info from database
-            foreach (string[] account in accounts)
-            {
-                Common.ObservableDictionary<string, MailBox> mailboxes = new();
-                MailBox mailBox = new() { Name = "Inbox" };
-                mailboxes.Add("Inbox", mailBox);
-
-                AccountHelper.Accounts.Add(new Account
-                {
-                    Address = account[0],
-                    Name = account[1],
-                    Glyph = account[3],
-                    MailBoxes = mailboxes,
-                    CurrentMailBox = mailBox
-                });
-            }
-
-            // Pass accounts data to SideNavigation control
-            SideNavigation.SetAccountItems(AccountHelper.Accounts.ToArray());
-
-            // Set default account to the first account
-            AccountHelper.CurrentAccount = AccountHelper.Accounts[0];
-
-            // Set default database to the fisrt account
-            DatabaseHelper.CurrentDatabaseName = $"{AccountHelper.CurrentAccount.Address}.db";
-
-            // Load saved mailmessage from database
-            var mess = AccountHelper.CurrentAccount.MailBoxes["Inbox"].Messages;
-
-            int rowCount = await DatabaseHelper.CountRows(DatabaseHelper.CurrentDatabaseName, "Inbox");
-
-            if (rowCount > 0)
-            {
-                List<string[]> rows = await DatabaseHelper.GetTableDataAsync(DatabaseHelper.CurrentDatabaseName, "Inbox");
-
-                foreach (string[] i in rows)
-                {
-                    mess.Add(new MailMessage(i));
-                }
-            }
-
-            LoadingControl.IsLoading = false;
-        }
-
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            NavigationHelper.UpdateTitleBar(NavigationHelper.IsLeftMode);
-
-            MailMessage[] messages = await InitialFetchingMail();
-
-            if (messages != null)
-            {
-                await UpdateMailMessageData(messages);
-            }
-
-            MailNavigation.IsLoadingBarRun = false;
-        }
-
-        private async Task<MailMessage[]> InitialFetchingMail()
-        {
-            try
-            {
-                var client = ConnectionHelper.CurrentClient;
-                if (client == null)
-                {
-                    client = new Client();
-                }
-
-                if (!client.IsConnected)
-                {
-                    if (!await client.InitiallizeConnectionAsync())
-                        return null;
-                }
-
-                if (!client.IsLoggedIn)
-                {
-                    string[] selected = await DatabaseHelper.SelectDataAsync(
-                        DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName, new string[] { "Password" },
-                        new (string, string)[] { ("Address", AccountHelper.CurrentAccount.Address) });
-
-                    if (!await client.LoginAsync(AccountHelper.CurrentAccount.Address, selected[0]))
-                        return null;
-                }
-
-                if (!await client.SelectMailBoxAsync("Inbox"))
-                    return null;
-
-                List<MailMessage> messages = new();
-
-                for (int i = 1; i <= 3; i++)
-                {
-                    string[] header = await client.GetMailHeaderAsync(i);
-                    if (header == null)
-                        return null;
-
-                    string text = await client.GetMailBodyAsync(i);
-                    if (text == null)
-                        return null;
-
-                    messages.Add(new MailMessage(header, text));
-                }
-
-                return messages.ToArray();
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-
-        private async Task UpdateMailMessageData(MailMessage[] messages)
-        {
-            var mess = AccountHelper.CurrentAccount.MailBoxes["Inbox"].Messages;
-
-            foreach (MailMessage i in mess.ToArray())
-            {
-                if (!messages.Any(x => x.Equals(i)))
-                {
-                    _ = mess.Remove(i);
-                    await DatabaseHelper.DeleteRowsAsync(DatabaseHelper.CurrentDatabaseName, "Inbox",
-                        new (string, string)[] { ("Subject", i.Subject) });
-                };
-            }
-
-            int j = 0;
-            foreach (MailMessage i in messages)
-            {
-                if (!mess.Any(x => x.Equals(i)))
-                {
-                    mess.Add(i);
-                    // Temp save to database, will be fixed
-                    await DatabaseHelper.InsertDataAsync(DatabaseHelper.CurrentDatabaseName, "Inbox",
-                        new string[] { j.ToString(), i.From, i.GetToString(), i.Subject, "123", i.Body, "123", "0", "0", "0", "0", "0", "0" });
-                }
-                j += 1;
-            }
         }
 
         private void UpdateAppTitle(CoreApplicationViewTitleBar coreTitleBar)
@@ -199,23 +46,24 @@ namespace MailClient.Views
             AppTitleBar.Margin = new Thickness(currMargin.Left, currMargin.Top, coreTitleBar.SystemOverlayRightInset, currMargin.Bottom);
         }
 
-        private void SideNavigation_PaneOpening(muxc.NavigationView sender, object args)
-        {
-            UpdateAppTitleMargin(sender);
-        }
-
-        private void SideNavigation_PaneClosing(muxc.NavigationView sender, muxc.NavigationViewPaneClosingEventArgs args)
-        {
-            UpdateAppTitleMargin(sender);
-        }
-
-        private void SideNavigation_DisplayModeChanged(muxc.NavigationView sender, muxc.NavigationViewDisplayModeChangedEventArgs args)
+        private void SideBarNavigation_DisplayModeChanged(muxc.NavigationView sender, muxc.NavigationViewDisplayModeChangedEventArgs args)
         {
             Thickness currMargin = AppTitleBar.Margin;
             AppTitleBar.Margin = new Thickness(sender.CompactPaneLength, currMargin.Top, currMargin.Right, currMargin.Bottom);
             UpdateAppTitleMargin(sender);
         }
 
+        private void SideBarNavigation_PaneClosing(muxc.NavigationView sender, muxc.NavigationViewPaneClosingEventArgs args)
+        {
+            UpdateAppTitleMargin(sender);
+        }
+
+        private void SideBarNavigation_PaneOpening(muxc.NavigationView sender, object args)
+        {
+            UpdateAppTitleMargin(sender);
+        }
+
+        // Titlebar animation
         private void UpdateAppTitleMargin(muxc.NavigationView sender)
         {
             const int smallLeftIndent = 4, largeLeftIndent = 24;
@@ -240,7 +88,163 @@ namespace MailClient.Views
             }
         }
 
-        private void MailNavigation_OnMailMessageSelected(object sender, EventArgs e)
+        private async void Page_Loading(FrameworkElement sender, object args)
+        {
+            try
+            {
+                // Load list of account from database
+                List<string[]> accounts =
+                    await DatabaseHelper.GetTableDataAsync(DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName);
+
+                if (accounts == null)
+                    return;
+
+                // Load accounts info from database
+                foreach (string[] account in accounts)
+                    AccountHelper.Accounts.Add(Account.InstanceFromDatabase(account));
+
+                AccountHelper.CurrentAccount = AccountHelper.Accounts[0];
+
+                // Pass accounts data to SideNavigation control
+                SideBarNavigation.SetAccountItems(AccountHelper.Accounts.ToArray());
+
+                // Set default database to the first account
+                DatabaseHelper.CurrentDatabaseName = $"{AccountHelper.CurrentAccount.Address}.db";
+
+                // Get all folder name
+                await MailNavigation.UpdateFolderItems(await DatabaseHelper.GetTableNamesAsync(DatabaseHelper.CurrentDatabaseName));
+
+                // Check folder has mail?
+                if (await DatabaseHelper.CountRows(DatabaseHelper.CurrentDatabaseName, "INBOX") > 0)
+                {
+                    List<string[]> messages = await DatabaseHelper.GetTableDataAsync(DatabaseHelper.CurrentDatabaseName, "INBOX");
+
+                    foreach (string[] message in messages)
+                        MailNavigation.MessageItems.Add(Message.InstanceFromDatabase(message));
+                }
+
+                LoadingControl.IsLoading = false;
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            ImapHelper.IsBusy = true;
+
+            Message[] messages = await InitialFetchingMail();
+
+            if (messages != null)
+            {
+                await UpdateMessageData(messages);
+            }
+
+            ImapHelper.IsBusy = false;
+            MailNavigation.IsLoadingBarRun = false;
+        }
+
+        private async Task<Message[]> InitialFetchingMail()
+        {
+            try
+            {
+                if (ImapHelper.Client == null)
+                {
+                    ImapHelper.Client = new ImapClient();
+                }
+
+                var client = ImapHelper.Client;
+
+                if (!client.IsConnected)
+                {
+                    if (!await client.ConnectAsync(ImapHelper.IPEndPoint))
+                        return null;
+                }
+
+                if (!client.IsAuthenticated)
+                {
+                    string[] selected = await DatabaseHelper.SelectDataAsync(
+                        DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName, new string[] { "Password" },
+                        new (string, string)[] { ("Address", AccountHelper.CurrentAccount.Address) });
+
+                    if (!await client.AuthenticateAsync(AccountHelper.CurrentAccount.Address, AES.DecryptToString(selected[0], ImapHelper.Key, ImapHelper.Iv)))
+                        return null;
+                }
+
+                Folder inbox = client.Inbox;
+
+                List<Message> messages = new();
+
+                await inbox.OpenAsync();
+
+                return await inbox.GetMessagesAsync();
+            }
+            catch (Exception)
+            {
+                ImapHelper.Client?.Dispose();
+                return null;
+            }
+        }
+
+        private async Task<bool> UpdateMessageData(Message[] messages)
+        {
+            try
+            {
+                var mess = MailNavigation.MessageItems;
+                var folders = MailNavigation.FolderItems;
+
+                string[] updatedFolders = await ImapHelper.Client.GetListFolderAsync();
+
+                // Update folder
+                await MailNavigation.UpdateFolderItems(updatedFolders);
+                foreach (string i in folders.ToArray())
+                {
+                    if (!updatedFolders.Any(x => x == i))
+                    {
+                        await DatabaseHelper.DropTableAsync(DatabaseHelper.CurrentDatabaseName, i);
+                    }
+                }
+
+                foreach (string i in updatedFolders)
+                {
+                    if (!folders.Any(x => x == i))
+                    {
+                        await DatabaseHelper.CreateAccountMailboxAsync(DatabaseHelper.CurrentDatabaseName, i);
+                    }
+                }
+
+                // Update message in current mailbox (inbox)
+                foreach (Message i in mess.ToArray())
+                {
+                    if (!messages.Any(x => x.Uid == i.Uid))
+                    {
+                        _ = mess.Remove(i);
+                        await DatabaseHelper.DeleteRowsAsync(DatabaseHelper.CurrentDatabaseName, "INBOX",
+                            new (string, string)[] { ("UID", i.Uid.ToString()) });
+                    };
+                }
+
+                foreach (Message i in messages)
+                {
+                    if (!mess.Any(x => x.Uid == i.Uid))
+                    {
+                        mess.Add(i);
+                        // Temp save to database, will be fixed
+                        await DatabaseHelper.InsertDataAsync(DatabaseHelper.CurrentDatabaseName, "INBOX",
+                            new string[] { i.Uid.ToString(), i.From, i.To, i.Subject, i.DateTime.ToString(), i.Body.ContentType.ToString(), i.Body.Parts[0].Content, "", "", string.Join(' ', i.Flags) });
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private void MailNavigation_OnMessageSelected(object sender, EventArgs e)
         {
             if (sender == null)
                 return;
@@ -256,6 +260,37 @@ namespace MailClient.Views
 
             ContentFrame.Visibility = Visibility.Visible;
             ContentFrame.Navigate(typeof(Pages.MailViewerPage), sender);
+        }
+
+        private async void MailNavigation_OnSyncButtonPressed(object sender, EventArgs e)
+        {
+            try
+            {
+                if (ImapHelper.IsBusy)
+                    return;
+
+                MailNavigation.IsLoadingBarRun = true;
+                Message[] messages = await InitialFetchingMail();
+
+                if (messages == null)
+                    throw new Exception();
+
+                if (messages != null)
+                {
+                    if (!await UpdateMessageData(messages))
+                        throw new Exception();
+                }
+
+                MailNavigation.IsLoadingBarRun = false;
+            }
+            catch (Exception)
+            {
+                ContentDialog dialog = new();
+                dialog.PrimaryButtonText = "OK";
+                dialog.Content = "Failed to sync your mail... Please try again..";
+                _ = dialog.ShowAsync();
+                MailNavigation.IsLoadingBarRun = false;
+            }
         }
     }
 }

@@ -38,6 +38,7 @@ namespace MailClient.Helpers
                     "Name NVARCHAR, " +
                     "Password NVARCHAR NOT NULL, " +
                     "Glyph NVARCHAR NOT NULL, " +
+                    "MailBox NVARCHAR NOT NULL, " +
                     "PRIMARY KEY(Address));";
 
                 SqliteCommand createTable = new(tableCommand, db);
@@ -53,7 +54,7 @@ namespace MailClient.Helpers
         {
             _ = await ApplicationData.Current.LocalFolder.CreateFileAsync(databaseName, CreationCollisionOption.OpenIfExists);
 
-            await CreateAccountMailboxAsync(databaseName, "Inbox");
+            await CreateAccountMailboxAsync(databaseName, "INBOX");
         }
 
         public static async Task CreateAccountMailboxAsync(string databaseName, string mailboxName)
@@ -68,19 +69,16 @@ namespace MailClient.Helpers
 
                 string tableCommand = "CREATE TABLE IF NOT " +
                     $"EXISTS {mailboxName} (" +
-                    "Uid INTEGER NOT NULL, " +
+                    "UID INTEGER NOT NULL, " +
                     "FromAddr VARCHAR, " +
                     "ToAddrs VARCHAR, " +
                     "Subject NVARCHAR, " +
                     "Date VARCHAR, " +
+                    "Type VARCHAR, " +
                     "Body NVARCHAR, " +
+                    "BodyHTML NVARCHAR,  " +
                     "Attachments VARCHAR, " +
-                    "Seen INTEGER NOT NULL, " +
-                    "Answered INTEGER NOT NULL, " +
-                    "Flagged INTEGER NOT NULL, " +
-                    "Deleted INTEGER NOT NULL, " +
-                    "Draft INTEGER NOT NULL, " +
-                    "Recent INTEGER NOT NULL, " +
+                    "Flag VARCHAR, " +
                     "PRIMARY KEY(UID));";
 
                 SqliteCommand createTable = new(tableCommand, db);
@@ -90,6 +88,61 @@ namespace MailClient.Helpers
                 db.Close();
             }
             catch (Exception) { }
+        }
+
+        public static async Task<string[]> GetTableNamesAsync(string databaseName)
+        {
+            try
+            {
+                List<string> entries = new();
+
+                string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
+
+                using SqliteConnection db = new($"Filename={dbpath}");
+
+                await db.OpenAsync();
+
+                SqliteCommand command = new("SELECT * FROM sqlite_master WHERE type='table'", db);
+
+                SqliteDataReader query = await command.ExecuteReaderAsync();
+
+                while (await query.ReadAsync())
+                {
+                    entries.Add(query.GetString(1));
+                }
+
+                db.Close();
+
+                return entries.ToArray();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static async Task DropTableAsync(string databaseName, string tableName)
+        {
+            try
+            {
+                string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
+
+                using SqliteConnection db = new($"Filename={dbpath}");
+
+                await db.OpenAsync();
+
+                //
+                SqliteCommand command = new("DROP TABLE [ IF EXISTS ] @Entry1;", db);
+
+                command.Parameters.AddWithValue($"@Entry1", tableName);
+
+                _ = command.ExecuteReaderAsync();
+
+                db.Close();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public static async Task CreateAccountMailboxesAsync(string databaseName, string[] mailboxNames)
@@ -103,8 +156,6 @@ namespace MailClient.Helpers
                 await db.OpenAsync();
 
                 string tableCommand;
-
-                SqliteCommand createTable;
 
                 foreach (string mailboxName in mailboxNames)
                 {
@@ -125,7 +176,7 @@ namespace MailClient.Helpers
                     "Recent INTEGER NOT NULL, " +
                     "PRIMARY KEY(UID));";
 
-                    createTable = new SqliteCommand(tableCommand, db);
+                    SqliteCommand createTable = new SqliteCommand(tableCommand, db);
 
                     _ = await createTable.ExecuteReaderAsync();
                 }
