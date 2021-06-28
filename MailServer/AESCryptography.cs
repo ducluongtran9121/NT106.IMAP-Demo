@@ -63,6 +63,7 @@ namespace MailServer
             // Return the encrypted bytes from the memory stream.
             return encrypted;
         }
+
         // giải mã (AES)
         static public string DecryptWithAES(byte[] cipher, string keyAES, string ivAES)
         {
@@ -117,7 +118,6 @@ namespace MailServer
                     }
                 }
             }
-
             return plaintext;
         }
     }

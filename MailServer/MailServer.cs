@@ -15,7 +15,6 @@ namespace MailServer
         private TcpListener listener;
         private Thread serverThread;
         private List<TcpClient> clientconnectionList = new List<TcpClient>();
-
         public MailServer(int port)
         {
             this.listener = new TcpListener(IPAddress.Any, port);
@@ -90,12 +89,16 @@ namespace MailServer
                 // khởi tạo luồng đọc ghi
                 StreamReader sr = new StreamReader(client.GetStream());
                 StreamWriter sw = new StreamWriter(client.GetStream());
+                NetworkStream ns = client.GetStream();
                 // cài đặt timeout = 30 phút
                 sr.BaseStream.ReadTimeout = 1800000;
                 // tạo sessionImap
                 ImapSession session = new ImapSession();
                 string msg = "";
                 string resposed = session.GetResposed("");
+                //
+                int msgLength;
+                byte[] encryptMsgLength = new byte[16];
                 
                 sw.WriteLine(resposed);
                 sw.Flush();
@@ -105,25 +108,34 @@ namespace MailServer
                     // try-cacth timeout
                     try
                     {
-                        msg = sr.ReadLine(); // có thể sinh ra exception trong winform xảy ra khi client đột ngột ngắt kết nối
-                        if (msg == null) break; //msg = null khi client đột ngột ngắt kết nối chỉ trên console
-                        //if (msg == "") continue; // bỏ qua nếu chuỗi trống
-                        // trả lời lại các lệnh của client trong session hiện tại
-                        resposed = session.GetResposed(msg);
-                        if (resposed == "") continue;
                         if(session.GetStartTLS())
                         {
-                            byte[] encResponse = session.GetEncrytionResponse(msg);
-                            byte[] numSendBytes = session.GetEncrytionResponse(encResponse.Length.ToString());
+                            ns.Read(encryptMsgLength, 0, 16);
+                            if (!Int32.TryParse(session.DecryptWithDefaultKey_IV(encryptMsgLength), out msgLength)) break;
+                            byte[] encryptCommand = new byte[msgLength];
+                            ns.Read(encryptMsgLength, 0, msgLength);
+                            byte[] encResponse = session.GetEncrytionResponse(encryptMsgLength);
+                            byte[] numSendBytes = session.EncryptWithDefaultKey_IV(encResponse.Length.ToString());
                             // gửi đi trước thông tin mã hóa chứa độ dài của thông điệp mã hóa cần gửi
+                            ns.Write(numSendBytes, 0, 16);
+                            ns.Flush();
+                            // gửi thông điệp dưới dạng mã hóa
+                            ns.Write(encResponse, 0, encResponse.Length);
+                            ns.Flush();
                             string sendNumBytes = Encoding.UTF8.GetString(numSendBytes);
                             sw.WriteLine(sendNumBytes);
                             sw.Flush();
-                            // gửi thông điệp dưới dạng mã hóa
-                            string sendResponse = Encoding.UTF8.GetString(encResponse);
-                            sw.WriteLine(sendResponse);
-                        }    
-                        else sw.WriteLine(resposed);
+                        }
+                        else
+                        {
+                            msg = sr.ReadLine(); // có thể sinh ra exception trong winform xảy ra khi client đột ngột ngắt kết nối
+                            if (msg == null) break; //msg = null khi client đột ngột ngắt kết nối chỉ trên console
+                                                    // trả lời lại các lệnh của client trong session hiện tại
+                            resposed = session.GetResposed(msg);
+                            if (resposed == "") continue;
+                            sw.WriteLine(resposed);
+                        } 
+                            
                         sw.Flush();
                         if (session.GetState() == "Logout") break;
                     }

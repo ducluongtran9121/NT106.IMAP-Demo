@@ -43,9 +43,9 @@ namespace MailServer.Imap
             return "* BYE IMAP4rev1 Server logging out\r\n" + tag + " OK LOGOUT completed";
         }
 
-        public static string ReturnCapabilityResponse(string tag)
+        public static string ReturnCapabilityResponse(string tag,bool startTLS)
         {
-            return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN STARTTLS UNSELECT UIDPLUS XLIST\r\n" + tag + " OK CAPABILITY completed";
+            return "* CAPABILITY IMAP4rev1 AUTH=LOGIN AUTH=PLAIN "+(!startTLS?"STARTTLS ":"") +"UNSELECT UIDPLUS XLIST\r\n" + tag + " OK CAPABILITY completed";
         }
 
         public static string ReturnNoopCommand(string tag)
@@ -246,6 +246,13 @@ namespace MailServer.Imap
             }
             return response + tag + " OK LSUB completed";
         }
+
+        public static string ReturnStartTLSResponse(string tag,ref bool startTLS)
+        {
+            startTLS = true;
+            return tag + " OK STARTTLS completed";
+        }
+
         //selected state
 
         public static string ReturnFetchResponse(string tag, string argument, string userSession, string userMailBox, bool fromUIDCommand = false, bool slient = false) //mới được có 2 cái header và text body thôi nha mấy cha
@@ -703,19 +710,29 @@ namespace MailServer.Imap
             return "+ Ready for literal data";
         }
 
-        public static string ReturnMessagesAppendResponse(string commandLine, AppendCall appendCall)
+        public static string ReturnMessagesAppendResponse(string commandLine, AppendCall appendCall,bool startTLS)
         {
-            appendCall.message += commandLine + "\r\n";
-            if (appendCall.message.Length < appendCall.size) return "";
-            if(appendCall.message.Length> appendCall.size)
+            try
+            {
+                if (startTLS) appendCall.message += commandLine;
+                else appendCall.message += commandLine + "\r\n";
+                if (appendCall.message.Length < appendCall.size) return "";
+                if (appendCall.message.Length > appendCall.size)
+                {
+                    appendCall.reset();
+                    return "";
+                }
+                File.WriteAllText(Environment.CurrentDirectory + $"/ImapMailBox/{appendCall.mailInfo.user}/{appendCall.mailInfo.mailboxname}/email_{appendCall.mailInfo.uid}.msg", appendCall.message);
+                int success = SqliteQuery.InsertMailIntoMailBox(appendCall.mailInfo.user, appendCall.mailInfo.mailboxname, appendCall.mailInfo);
+                appendCall.reset();
+                return appendCall.tag + " OK APPEND completed";
+            }
+            catch (Exception)
             {
                 appendCall.reset();
-                return "";
+                return appendCall.tag + " No Can't APPEND";
             }
-            File.WriteAllText(Environment.CurrentDirectory + $"/ImapMailBox/{appendCall.mailInfo.user}/{appendCall.mailInfo.mailboxname}/email_{appendCall.mailInfo.uid}.msg",appendCall.message);
-            int success = SqliteQuery.InsertMailIntoMailBox(appendCall.mailInfo.user, appendCall.mailInfo.mailboxname, appendCall.mailInfo);
-            appendCall.reset();
-            return appendCall.tag +" OK APPEND completed";
+            
         }
     }
 }

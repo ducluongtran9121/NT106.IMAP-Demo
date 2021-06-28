@@ -15,6 +15,9 @@ namespace MailServer.Imap
         {
             this.isCall = false;
             this.message = "";
+            this.mailInfo = null;
+            this.size = 0;
+            this.tag = "";
         }
     }
 }

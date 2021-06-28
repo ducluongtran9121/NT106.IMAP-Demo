@@ -38,27 +38,36 @@ namespace MailServer.Imap
             return this.state;
         }
         // trả về response ứng với từng lệnh trong session
-        public byte[] GetEncrytionResponse(string commandLine)
-        {
-            string keyAES = "12345678123456781234567812345678";
-            string ivAES = "1122334455667788";
-            this.respose = GetResposed(commandLine);
-            return AESCryptography.EncryptWithAES(this.respose, keyAES, ivAES);
-        }
 
-        public string GetDecrytionResponse(byte[] ciphertext)
+
+        public string DecryptWithDefaultKey_IV(byte[] ciphertext)
         {
             string keyAES = "12345678123456781234567812345678";
             string ivAES = "1122334455667788";
             return AESCryptography.DecryptWithAES(ciphertext, keyAES, ivAES);
         }
+        public byte[] EncryptWithDefaultKey_IV(string plaintext)
+        {
+            string keyAES = "12345678123456781234567812345678";
+            string ivAES = "1122334455667788";
+            return AESCryptography.EncryptWithAES(plaintext, keyAES, ivAES);
+        }
+        public byte[] GetEncrytionResponse(byte[] encryptCommand)
+        {
+            string keyAES = "12345678123456781234567812345678";
+            string ivAES = "1122334455667788";
+            string commandLine = AESCryptography.DecryptWithAES(encryptCommand,keyAES,ivAES);
+            this.respose = GetResposed(commandLine) +"\r\n";
+            return AESCryptography.EncryptWithAES(this.respose, keyAES, ivAES);
+        }
 
         public string GetResposed(string commandLine)
         {
-            if (append.isCall) return Response.ReturnMessagesAppendResponse(commandLine,append);
+            if (append.isCall) return Response.ReturnMessagesAppendResponse(commandLine,append,startTLS);
+            if (commandLine == "") return "";
             Match math;
             // kiểm tra lệnh rỗng
-            if (commandLine == "") return this.respose;
+            if (commandLine == "default") return this.respose;
             // tách tag với phần còn lại("tag" "remain")
             math = Regex.Match(commandLine, @"^(\S+)(?: (.*))?");
             // tag bắt đầu với khoảng trắng (invald tag)
@@ -117,7 +126,7 @@ namespace MailServer.Imap
             switch (this.command.ToLower())
             {
                 case "capability":
-                    this.respose = Response.ReturnCapabilityResponse(this.tag);
+                    this.respose = Response.ReturnCapabilityResponse(this.tag,startTLS);
                     break;
 
                 case "noop":
@@ -129,6 +138,7 @@ namespace MailServer.Imap
                     break;
 
                 case "starttls":
+                    this.respose = Response.ReturnStartTLSResponse(this.tag,ref this.startTLS);
                     break;
 
                 case "authenticate":
@@ -172,7 +182,7 @@ namespace MailServer.Imap
             switch (this.command.ToLower())
             {
                 case "capability":
-                    this.respose = Response.ReturnCapabilityResponse(this.tag);
+                    this.respose = Response.ReturnCapabilityResponse(this.tag,startTLS);
                     break;
 
                 case "noop":
@@ -184,6 +194,8 @@ namespace MailServer.Imap
                     break;
 
                 case "starttls":
+                    this.respose = Response.ReturnStartTLSResponse(this.tag,ref this.startTLS);
+                    break;
                 case "authenticate":
                 case "login":
                     this.respose = Response.ReturnBadStateResponse(this.tag, this.command);
@@ -250,7 +262,7 @@ namespace MailServer.Imap
             switch (this.command.ToLower())
             {
                 case "capability":
-                    this.respose = Response.ReturnCapabilityResponse(this.tag);
+                    this.respose = Response.ReturnCapabilityResponse(this.tag,startTLS);
                     break;
 
                 case "noop":
@@ -262,6 +274,8 @@ namespace MailServer.Imap
                     break;
 
                 case "starttls":
+                    this.respose = Response.ReturnStartTLSResponse(this.tag,ref startTLS);
+                    break;
                 case "authenticate":
                 case "login":
                     this.respose = Response.ReturnBadStateResponse(this.tag, this.command);
