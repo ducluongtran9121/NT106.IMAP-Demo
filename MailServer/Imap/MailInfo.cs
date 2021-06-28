@@ -16,6 +16,6 @@ namespace MailServer.Imap
         public int flagged { get; set; }
         public int draft { get; set; }
         public int deleted { get; set; }
-        public int intertime { get; set; }
+        public long intertime { get; set; }
     }
 }

@@ -107,9 +107,10 @@ namespace MailServer
                     {
                         msg = sr.ReadLine(); // có thể sinh ra exception trong winform xảy ra khi client đột ngột ngắt kết nối
                         if (msg == null) break; //msg = null khi client đột ngột ngắt kết nối chỉ trên console
-                        if (msg == "") continue; // bỏ qua nếu chuỗi trống
+                        //if (msg == "") continue; // bỏ qua nếu chuỗi trống
                         // trả lời lại các lệnh của client trong session hiện tại
                         resposed = session.GetResposed(msg);
+                        if (resposed == "") continue;
                         if(session.GetStartTLS())
                         {
                             byte[] encResponse = session.GetEncrytionResponse(msg);

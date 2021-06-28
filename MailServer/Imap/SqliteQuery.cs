@@ -85,7 +85,8 @@ namespace MailServer.Imap
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<MailInfo>($"select * from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and uid>={left} and uid<={right}", new DynamicParameters());
+                string tempVar = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,* FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
+                var query = cnn.Query<MailInfo>($" {tempVar} select * from var where uid>={left} and uid<={right}", new DynamicParameters());
                 return query.ToList();
             }
         }
@@ -93,7 +94,8 @@ namespace MailServer.Imap
         {
             using (IDbConnection cnn = new SQLiteConnection("Data Source = .\\Imap\\ImapDB.db"))
             {
-                var query = cnn.Query<MailInfo>($"select * from MailInfo where user='{userSession}' and mailboxname = '{userMailBox}' and uid = {uid}", new DynamicParameters());
+                string tempVar = $"WITH var AS (SELECT ROW_NUMBER () OVER (ORDER BY MailInfo.uid ) numrow,* FROM MailInfo WHERE MailInfo.user = '{userSession}' and MailInfo.mailboxname = '{userMailBox}')";
+                var query = cnn.Query<MailInfo>($" {tempVar} select * from var where uid={uid}", new DynamicParameters());
                 return query.ToList();
             }
         }

@@ -72,6 +72,7 @@ namespace MailServer.Imap
             return tag + " OK LOGIN completed";
         }
 
+
         //authenticate state
         public static string ReturnSelectedResponse(string tag, string argument, ref string state, string userSession, ref string userMailBox)
         {
@@ -395,10 +396,51 @@ namespace MailServer.Imap
             }
             return tag + " NO Mailbox already exists";
         }
-        public static string ReturnExpungeResponse(string tag,string userSession,string userMailBox)
+        public static string ReturnExpungeResponse(string tag,string userSession,string userMailBox,bool fromUIDCommand=false,string argument = "")
         {
-            List<MailInfo> mailBoxInfoList = SqliteQuery.LoadDeletedMail(userSession, userMailBox);
-            if (mailBoxInfoList.Count == 0) return tag + " OK EXPUNGE completed";
+            List<MailInfo> mailInfoList = new List<MailInfo>();
+            if (argument!="")
+            {
+                var math = Regex.Match(argument, @"^((?:(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+),)*(?:(?:[1-9]+|\*):(?:[1-9]+|\*)|[1-9]+))");
+                if (!math.Success) return ReturnParseErrorResponse(tag, "FETCH");
+                List<MailInfo> tempMailInfoList; 
+                string right = "";
+                string left = "";
+                string[] mailIndexArr = math.Groups[1].Value.Split(',');
+                foreach (string mailIndex in mailIndexArr)
+                {
+                    if (mailIndex.Contains(':'))
+                    {
+                        string[] temp = mailIndex.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                        if (temp[0] == "*")
+                        {
+                            if (fromUIDCommand) left = "uid";
+                            else left = "numrow";
+                        }
+                        else left = temp[0];
+                        if (temp[1] == "*")
+                        {
+                            if (fromUIDCommand) right = "uid";
+                            else right = "numrow";
+                        }
+                        else right = temp[1];
+                        if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, left, right);
+                        else tempMailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox, left, right);
+                    }
+                    else
+                    {
+                        if (fromUIDCommand) tempMailInfoList = SqliteQuery.LoadMailInfoWithUID(userSession, userMailBox, mailIndex);
+                        else tempMailInfoList = SqliteQuery.LoadMailInfoWithIndex(userSession, userMailBox, mailIndex);
+                    }
+                    foreach (MailInfo tempMail in tempMailInfoList)
+                    {
+                        if (!mailInfoList.Contains(tempMail) && tempMail.deleted==1) mailInfoList.Add(tempMail);
+                    }
+                }
+                mailInfoList.Sort((x, y) => x.uid.CompareTo(y.uid));
+            }
+            else mailInfoList = SqliteQuery.LoadDeletedMail(userSession, userMailBox);
+            if (mailInfoList.Count == 0) return tag + " OK EXPUNGE completed";
             List<string> TrashMailbox = SqliteQuery.LoadTrashMailBoxName(userSession);
             string response = "";
             int success;
@@ -406,14 +448,14 @@ namespace MailServer.Imap
             string desPath;
             long baseUID;
             string root = Environment.CurrentDirectory + $"/ImapMailBox/{userSession}";
-            if(TrashMailbox.IndexOf(userMailBox)==-1)
+            if(TrashMailbox.IndexOf(userMailBox)==-1 && TrashMailbox.Count != 0)
             {
                 foreach(string mailBox in TrashMailbox)
                 {
                     List<MailBoxInfo> mailBoxInfo = SqliteQuery.LoadMailBoxInfo(userSession, mailBox);
                     if (mailBoxInfo.Count == 0) return "OK EXPUNGE completed";
                     baseUID = mailBoxInfo[0].uidnext;
-                    foreach (MailInfo mail in mailBoxInfoList)
+                    foreach (MailInfo mail in mailInfoList)
                     {
                         soursePath = root + $"/{userMailBox}/email_{baseUID}";
                         if (File.Exists(soursePath + ".msg"))
@@ -442,7 +484,7 @@ namespace MailServer.Imap
             }
             else
             {
-                foreach (MailInfo mail in mailBoxInfoList)
+                foreach (MailInfo mail in mailInfoList)
                 {
                     soursePath = root + $"/{userMailBox}/email_{mail.uid}";
                     if (File.Exists(soursePath + ".msg")) soursePath += ".msg";
@@ -475,6 +517,8 @@ namespace MailServer.Imap
                     return Response.ReturnFetchResponse(tag, newArgument, userSession, userMailBox, true);
                 case "store":
                     return Response.ReturnStoreResponse(tag, newArgument, userSession, userMailBox, true);
+                case "expunge":
+                    return Response.ReturnExpungeResponse(tag, userSession, userMailBox, true, newArgument);
                 default:
                     return ReturnInvaildCommandResponse(tag);
             }
@@ -544,7 +588,7 @@ namespace MailServer.Imap
                         success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
                     }
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
-                case "flags.slient":
+                case "flags.silent":
                     if (flags.seen != "1") flags.seen = "0";
                     if (flags.answered != "1") flags.answered = "0";
                     if (flags.flagged != "1") flags.flagged = "0";
@@ -561,7 +605,7 @@ namespace MailServer.Imap
                         success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
                     }
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
-                case "+flags.slient":
+                case "+flags.silent":
                     foreach (MailInfo mailInfo in mailInfoList)
                     {
                         success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
@@ -578,7 +622,7 @@ namespace MailServer.Imap
                         success = SqliteQuery.UpdateFlagsWithUID(userSession, userMailBox, mailInfo.uid.ToString(), flags);
                     }
                     return Response.StoreFormatReturn(tag, newArgument, userSession, userMailBox, fromUIDCommand);
-                case "-flags.slient":
+                case "-flags.silent":
                     if (flags.seen == "1") flags.seen = "0";
                     if (flags.answered == "1") flags.answered = "0";
                     if (flags.flagged == "1") flags.flagged = "0";
@@ -604,5 +648,74 @@ namespace MailServer.Imap
             return response;
         }
 
+        public static string ReturnAppendResponse(string tag, string argument, string userSession,AppendCall appendCall)
+        {
+            //var maths = Regex.Match(argument, "");
+            var math = Regex.Match(argument, "^(?:((?:\"[\\w\\s]+\"|\\w+) \\((?:\\\\\\w+)*\\) \"[^\"]*\" \\{\\d*\\})|((?:\"[\\w\\s]+\"|\\w+) \\((?:\\\\\\w+)*\\) \\{\\d*\\})|((?:\"[\\w\\s]+\"|\\w+) \\{\\d*\\}))");
+            if (!math.Success) return Response.ReturnParseErrorResponse(tag, "APPEND");
+            MailInfo mailAppend = new MailInfo();
+            Flags flags = new Flags();
+            string mailBoxName;
+            List<string> strFlag = new List<string>();
+            DateTime Date = DateTime.Now;
+            int messageSize = 0;
+            if(math.Groups[3].Success)
+            {
+                math = Regex.Match(math.Groups[3].Value, "(?:(\"[\\w\\s]+\"|\\w+) \\{(\\d*)\\})");
+                mailBoxName = math.Groups[1].Value.Replace("\"", "");
+                if (math.Groups[2].Value != "" && !Int32.TryParse(math.Groups[3].Value, out messageSize)) return Response.ReturnParseErrorResponse(tag, "APPEND");
+            }
+            else
+            {
+                if(math.Groups[2].Success)
+                {
+                    math = Regex.Match(math.Groups[2].Value, "(?:(\"[\\w\\s]+\"|\\w+) \\(((?:\\\\\\w+)*)\\) \\{(\\d*)\\})");
+                    mailBoxName = math.Groups[1].Value.Replace("\"", "");
+                    if (math.Groups[2].Value != "") strFlag = math.Groups[2].Value.Split(' ').ToList();
+                    if (math.Groups[3].Value != "" && !Int32.TryParse(math.Groups[3].Value, out messageSize)) return Response.ReturnParseErrorResponse(tag, "APPEND");
+                }
+                else
+                {
+                    math = Regex.Match(math.Groups[1].Value, "(?:(\"[\\w\\s]+\"|\\w+) \\(((?:\\\\\\w+)*)\\) (\"[^\"]*\") \\{(\\d*)\\})");
+                    mailBoxName = math.Groups[1].Value.Replace("\"","");
+                    if (math.Groups[2].Value != "") strFlag = math.Groups[2].Value.Split(' ').ToList();
+                    if (math.Groups[3].Value != "" && DateTime.TryParse(math.Groups[3].Value, out Date)) return Response.ReturnParseErrorResponse(tag, "APPEND");
+                    if (math.Groups[4].Value != "" && !Int32.TryParse(math.Groups[4].Value, out messageSize)) return Response.ReturnParseErrorResponse(tag, "APPEND");
+                }    
+            }
+            List<MailBoxInfo> mailBoxInfoList = SqliteQuery.LoadMailBoxInfo(userSession, mailBoxName);
+            if (mailBoxInfoList.Count == 0) return tag + " NO Mailbox does not exist";
+            if(!flags.BuildFlagItem(strFlag.ToArray())) return Response.ReturnParseErrorResponse(tag, "APPEND");
+            mailAppend.user = userSession;
+            mailAppend.mailboxname = mailBoxName;
+            mailAppend.uid = mailBoxInfoList[0].uidnext;
+            mailAppend.recent = 1;
+            mailAppend.seen = (flags.seen == "1" ? 1 : 0);
+            mailAppend.answered = (flags.answered == "1" ? 1 : 0);
+            mailAppend.deleted = (flags.deleted == "1" ? 1 : 0);
+            mailAppend.draft = (flags.draft == "1" ? 1 : 0);
+            mailAppend.flagged = (flags.flagged == "1" ? 1 : 0);
+            mailAppend.intertime = ((DateTimeOffset)Date).ToUnixTimeSeconds();
+            appendCall.isCall = true;
+            appendCall.mailInfo = mailAppend;
+            appendCall.size = messageSize;
+            appendCall.tag = tag;
+            return "+ Ready for literal data";
+        }
+
+        public static string ReturnMessagesAppendResponse(string commandLine, AppendCall appendCall)
+        {
+            appendCall.message += commandLine + "\r\n";
+            if (appendCall.message.Length < appendCall.size) return "";
+            if(appendCall.message.Length> appendCall.size)
+            {
+                appendCall.reset();
+                return "";
+            }
+            File.WriteAllText(Environment.CurrentDirectory + $"/ImapMailBox/{appendCall.mailInfo.user}/{appendCall.mailInfo.mailboxname}/email_{appendCall.mailInfo.uid}.msg",appendCall.message);
+            int success = SqliteQuery.InsertMailIntoMailBox(appendCall.mailInfo.user, appendCall.mailInfo.mailboxname, appendCall.mailInfo);
+            appendCall.reset();
+            return appendCall.tag +" OK APPEND completed";
+        }
     }
 }

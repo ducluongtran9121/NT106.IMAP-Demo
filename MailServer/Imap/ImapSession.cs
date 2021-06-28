@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using MailServer;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace MailServer.Imap
@@ -16,7 +17,16 @@ namespace MailServer.Imap
         private string respose = "* OK IMAP4rev1 Service Ready";
         private string userSession = "";
         private string userMailBox = "";
+        private AppendCall append = new AppendCall();
         private bool startTLS = false;
+
+    
+
+        // lệnh append đang gọi thực hiện
+        public bool GetAppendCall()
+        {
+            return this.append.isCall;
+        }
         // trả về TLS
         public bool GetStartTLS()
         {
@@ -45,6 +55,7 @@ namespace MailServer.Imap
 
         public string GetResposed(string commandLine)
         {
+            if (append.isCall) return Response.ReturnMessagesAppendResponse(commandLine,append);
             Match math;
             // kiểm tra lệnh rỗng
             if (commandLine == "") return this.respose;
@@ -212,6 +223,7 @@ namespace MailServer.Imap
                     break;
 
                 case "append":
+                    this.respose = Response.ReturnAppendResponse(this.tag, this.agrument, this.userSession,this.append);
                     break;
 
                 case "check":
@@ -289,6 +301,7 @@ namespace MailServer.Imap
                     break;
 
                 case "append":
+                    this.respose = Response.ReturnAppendResponse(this.tag, this.agrument, this.userSession, this.append);
                     break;
 
                 case "check":
