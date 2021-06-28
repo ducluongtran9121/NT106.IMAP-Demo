@@ -92,8 +92,8 @@ namespace MailServer
                 sr.BaseStream.ReadTimeout = 1800000;
                 // tạo sessionImap
                 ImapSession session = new ImapSession();
-                string msg = "";
-                string resposed = session.GetResposed("");
+                string msg = "t";
+                string resposed = session.GetResposed("default");
                 //
                 int msgLength;
                 byte[] encryptMsgLength = new byte[16];
