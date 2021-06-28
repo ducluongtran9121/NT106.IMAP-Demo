@@ -103,19 +103,6 @@ namespace MailServer.Imap
             return respose;
         }
 
-        private static MailMessage GetMail(string path)
-        {
-            //dịch mail bằng msgReader vào đưa vào MailMessage
-            MailMessage mailMessage = new MailMessage();
-            FileInfo fileInfo = new FileInfo(path);
-            var emlFileMessage = MsgReader.Mime.Message.Load(fileInfo);
-            mailMessage.From = new MailAddress(emlFileMessage.Headers.From.Address);
-            foreach (var recipient in emlFileMessage.Headers.To)
-                mailMessage.To.Add(recipient.Address);
-            mailMessage.Subject = emlFileMessage.Headers.Subject;
-            mailMessage.Body = System.Text.Encoding.UTF8.GetString(emlFileMessage.TextBody.Body);
-            return mailMessage;
-        }
         public static string ReturnListResponse(string tag,string command, string argument, string userSession)
         {
             string response = "";
