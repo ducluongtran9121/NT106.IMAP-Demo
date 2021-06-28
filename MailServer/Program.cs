@@ -8,6 +8,8 @@ namespace MailServer
     {
         private static void Main(string[] args)
         {
+            // disable for test
+            // Directory.CreateDirectory(Environment.CurrentDirectory + "ImapMailBox/");
             // contruct for test
             if (Directory.Exists(Environment.CurrentDirectory + "/ImapMailBox/")) Directory.Delete(Environment.CurrentDirectory + "/ImapMailBox/", true);
             Directory.CreateDirectory(Environment.CurrentDirectory + "/ImapMailBox/thihuynh/INBOX/");

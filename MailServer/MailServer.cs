@@ -49,8 +49,6 @@ namespace MailServer
             //try-catch lỗi server và khỏi động lại server
             try
             {
-                // disable for test
-                // Directory.CreateDirectory(Environment.CurrentDirectory + "ImapMailBox/");
                 while (true)
                 {
                     // đợi client connect
@@ -110,9 +108,11 @@ namespace MailServer
                     {
                         if(session.GetStartTLS())
                         {
+                            // đọc kích thước chuỗi mã hóa được gửi từ client
                             ns.Read(encryptMsgLength, 0, 16);
                             if (!Int32.TryParse(session.DecryptWithDefaultKey_IV(encryptMsgLength), out msgLength)) break;
                             byte[] encryptCommand = new byte[msgLength];
+                            // đọc thông điệp mã hóa
                             ns.Read(encryptMsgLength, 0, msgLength);
                             byte[] encResponse = session.GetEncrytionResponse(encryptMsgLength);
                             byte[] numSendBytes = session.EncryptWithDefaultKey_IV(encResponse.Length.ToString());
@@ -134,18 +134,21 @@ namespace MailServer
                             resposed = session.GetResposed(msg);
                             if (resposed == "") continue;
                             sw.WriteLine(resposed);
-                        } 
-                            
-                        sw.Flush();
+                            sw.Flush();
+                        }
+
+                        sr.BaseStream.ReadTimeout = 1800000;
                         if (session.GetState() == "Logout") break;
                     }
                     catch (IOException ex)
                     {
-                        Console.WriteLine(ex.InnerException.GetType());
+                        Console.WriteLine(ex.Message);
                         sr.Dispose();
                         sr.Close();
                         sw.Dispose();
                         sw.Close();
+                        ns.Dispose();
+                        ns.Close();
                         // thông báo timeout cho client
                         sw.WriteLine("* BYE connection timed out");
                         sw.Flush();
@@ -162,7 +165,9 @@ namespace MailServer
                 sr.Dispose();
                 sr.Close();
                 sw.Dispose();
-                sw.Close(); 
+                sw.Close();
+                ns.Dispose();
+                ns.Close();
                 clientconnectionList.Remove(client);
             }
             catch (Exception ex)
