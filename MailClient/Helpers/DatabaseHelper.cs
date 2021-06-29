@@ -8,6 +8,19 @@ using Windows.Storage;
 
 namespace MailClient.Helpers
 {
+    [Serializable]
+    public class DatabaseException : Exception
+    {
+        public DatabaseException()
+        {
+        }
+
+        public DatabaseException(string message)
+            : base(message)
+        {
+        }
+    }
+
     public static class DatabaseHelper
     {
         public const string AccountsDatabaseName = "MailClientAccounts.db";
@@ -44,6 +57,8 @@ namespace MailClient.Helpers
                 SqliteCommand createTable = new(tableCommand, db);
 
                 _ = await createTable.ExecuteReaderAsync();
+
+                db.Close();
             }
             catch (Exception)
             {
@@ -515,7 +530,50 @@ namespace MailClient.Helpers
             }
         }
 
-        public static async Task DeleteRowsAsync(string databaseName, string tableName, (string, string)[] conditions)
+        public static async Task<bool> UpdateCellAsync(string databaseName, string tableName, string columnName, string value, (string, string)[] conditions)
+        {
+            try
+            {
+                if (conditions.Length == 0) return false;
+
+                List<string> entries = new();
+
+                string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, databaseName);
+                using SqliteConnection db = new($"Filename={dbpath}");
+
+                await db.OpenAsync();
+
+                string commandText = $"UPDATE {tableName} SET {columnName} = @Entry1 ";
+                commandText += $" WHERE {conditions[0].Item1} = @Con0";
+
+                for (int i = 1; i < conditions.Length; i++)
+                {
+                    commandText += $" AND {conditions[i].Item1} = @Con{i}";
+                }
+
+                // Use parameterized query to prevent SQL injection attacks
+                SqliteCommand command = new(commandText, db);
+
+               command.Parameters.AddWithValue($"@Entry1", value);
+
+                for (int i = 0; i < conditions.Length; i++)
+                {
+                    command.Parameters.AddWithValue($"@Con{i}", conditions[i].Item2);
+                }
+
+                SqliteDataReader query = await command.ExecuteReaderAsync();
+
+                db.Close();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+            public static async Task DeleteRowsAsync(string databaseName, string tableName, (string, string)[] conditions)
         {
             try
             {

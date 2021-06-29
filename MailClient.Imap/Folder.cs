@@ -52,9 +52,15 @@ namespace MailClient.Imap
             PermanentFlags = (MessageFlag[])permanentflags.Clone();
         }
 
-        public Folder(string name)
+        public Folder(string name, ImapClient client)
         {
             Name = name;
+            CoreClient = client.CoreClient;
+        }
+
+        public Folder()
+        {
+
         }
 
         internal Folder(string name, CoreClient client)
@@ -63,7 +69,7 @@ namespace MailClient.Imap
             CoreClient = client;
         }
 
-        public async Task OpenAsync()
+        public async Task<bool> OpenAsync()
         {
             if (CoreClient == null)
                 throw new NullReferenceException("CoreClient not set to an instance of an object");
@@ -80,6 +86,8 @@ namespace MailClient.Imap
 
             Folder folder = FragmentCommand.SelectFolder(data);
 
+            if (folder == null) return false;
+
             Exists = folder.Exists;
             Recent = folder.Recent;
             UidValidity = folder.UidValidity;
@@ -88,6 +96,8 @@ namespace MailClient.Imap
             PermanentFlags = folder.PermanentFlags;
 
             Uids = await GetMessagesUid();
+
+            return true;
         }
 
         public async Task<List<int>> GetMessagesUid()
@@ -106,6 +116,24 @@ namespace MailClient.Imap
             if (data == null) throw new ReadDataException();
 
             return FragmentCommand.Search(data);
+        }
+
+        public async Task<List<MessageFlag[]>> SetMessageFlag(long uid, bool isAdd, params MessageFlag[] flags)
+        {
+            if (CoreClient == null)
+                throw new NullReferenceException("CoreClient not set to an instance of an object");
+
+            if (!CoreClient.IsConnected)
+                throw new ConnectionException("CoreClient is not connected");
+
+            if (!await CoreClient.WriteDataAsync(Command.Store(++CoreClient.Tag, uid.ToString(), true, isAdd, flags)))
+                throw new WriteDataException();
+
+            byte[] data = await CoreClient.ReadDataAsync();
+
+            if (data == null) throw new ReadDataException();
+
+            return FragmentCommand.Store(data);
         }
 
         public async Task<Message> GetMessageAsync(int index)

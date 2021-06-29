@@ -115,6 +115,12 @@
                     <TextBlock VerticalAlignment="Center" Text="New to MailClient?" />
                     <HyperlinkButton Content="Create an account." />
                 </StackPanel>-->
+                <ToggleSwitch
+                    x:Name="TLSToggleButton"
+                    HorizontalAlignment="Center"
+                    OffContent="Not use TLS Session"
+                    OnContent="Use TLS Session"
+                    Toggled="TLSToggleButton_Toggled" />
             </StackPanel>
             <controlstk:Loading
                 x:Name="LoadingControl"

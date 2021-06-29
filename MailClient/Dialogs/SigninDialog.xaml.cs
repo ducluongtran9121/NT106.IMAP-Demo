@@ -1,43 +1,45 @@
-﻿using MailClient.Helpers;
+﻿using MailClient.DataModels.Imap;
+using MailClient.Helpers;
 using MailClient.Imap;
 using MailClient.Imap.Crypto;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Core;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 
-namespace MailClient.Views
+
+namespace MailClient.Dialogs
 {
-    public sealed partial class WelcomePage : Page
+    public sealed partial class SigninDialog : ContentDialog
     {
         private const string MailAddressPattern = @"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)";
 
-        public WelcomePage()
+        public bool IsLoggedIn { get; set; }
+
+        public Account Account { get; set; }
+
+        public SigninDialog()
         {
             this.InitializeComponent();
-
-            this.InitializeComponent();
-
-            ApplicationViewTitleBar titleBar = ApplicationView.GetForCurrentView().TitleBar;
-            titleBar.ButtonBackgroundColor = Colors.Transparent;
-            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-            CoreApplication.GetCurrentView().TitleBar.LayoutMetricsChanged += TitleBar_LayoutMetricsChanged;
-
-            TLSToggleButton.IsOn = SettingsHelper.IsUseTLS;
         }
 
-        private void TitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            TitlebarHelper.TitlebarHeight = sender.Height;
-            CoreApplication.GetCurrentView().TitleBar.LayoutMetricsChanged -= TitleBar_LayoutMetricsChanged;
+            this.Hide();
         }
 
         private void SetEnabledControl(bool value)
@@ -45,11 +47,6 @@ namespace MailClient.Views
             SigninButton.IsEnabled = value;
             UsernameTextbox.IsEnabled = value;
             PasswordPbox.IsEnabled = value;
-        }
-
-        private void TLSToggleButton_Toggled(object sender, RoutedEventArgs e)
-        {
-            SettingsHelper.IsUseTLS = TLSToggleButton.IsOn;
         }
 
         private async void SigninButton_Click(object sender, RoutedEventArgs e)
@@ -91,13 +88,11 @@ namespace MailClient.Views
 
                 Processbar.IsIndeterminate = false;
                 SigninStatusTextblock.Text = "Signed in! Please wait...";
-                await Task.Delay(1000);
-
-                LoadingControl.IsLoading = true;
 
                 // Logged in, create this account database, and add logged account into account database
                 AccountHelper.CurrentAccount =
-                    new DataModels.Imap.Account { Address = UsernameTextbox.Text, Name = "Huỳnh Thái Thi", Glyph = "\xED56" };
+                    new Account { Address = UsernameTextbox.Text, Glyph = "\xED56" };
+
 
                 SettingsHelper.IsFirstTimeLogin = true;
 
@@ -108,39 +103,30 @@ namespace MailClient.Views
                 await DatabaseHelper.InsertDataAsync(DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName,
                     new string[] { account.Address, account.Name, AES.EncryptToHex(PasswordPbox.Password, ImapHelper.Key, ImapHelper.Iv), account.Glyph, "" });
 
-                // Show beautiful loading control longer :D
-                await Task.Delay(1000);
+                IsLoggedIn = true;
+                Account = new Account { Address = UsernameTextbox.Text, Glyph = "\xED56" };
+                this.Hide();
 
-                // Navigate to MainPage
-                _ = (Window.Current.Content as Frame).Navigate(typeof(MainPage));
             }
             catch (ConnectionException)
             {
-                ContentDialog dialog = new();
-                dialog.PrimaryButtonText = "OK";
-                dialog.Content = "Failed to connect to the server. Please check your connection and try again!";
-                _ = await dialog.ShowAsync();
+                SigninStatusTextblock.Text = "Failed to connect to the server. Please check your connection and try again!";
                 ImapHelper.Client?.Dispose();
             }
             catch (AuthenticationException)
             {
-                ContentDialog dialog = new();
-                dialog.PrimaryButtonText = "OK";
-                dialog.Content = "Wrong Username or Password. Please try again!";
-                _ = await dialog.ShowAsync();
+                SigninStatusTextblock.Text = "Wrong Username or Password. Please try again!";
                 ImapHelper.Client?.Dispose();
             }
             catch (Exception)
             {
-                ContentDialog dialog = new();
-                dialog.PrimaryButtonText = "OK";
-                dialog.Content = "An error occurred Please try again!";
-                _ = await dialog.ShowAsync();
+                SigninStatusTextblock.Text = "An error occurred Please try again!";
+                ImapHelper.Client?.Dispose();
 
-                //if (File.Exists(Path.Combine(ApplicationData.Current.LocalFolder.Path, DatabaseHelper.CurrentDatabaseName)))
-                //{
-                //    File.Delete(Path.Combine(ApplicationData.Current.LocalFolder.Path, DatabaseHelper.CurrentDatabaseName));
-                //}
+                if (File.Exists(Path.Combine(ApplicationData.Current.LocalFolder.Path, DatabaseHelper.CurrentDatabaseName)))
+                {
+                    File.Delete(Path.Combine(ApplicationData.Current.LocalFolder.Path, DatabaseHelper.CurrentDatabaseName));
+                }
 
                 ImapHelper.Client?.Dispose();
 
@@ -149,9 +135,7 @@ namespace MailClient.Views
             finally
             {
                 SetEnabledControl(true);
-                LoadingControl.IsLoading = false;
                 Processbar.ShowError = true;
-                SigninStatusTextblock.Visibility = Visibility.Collapsed;
             }
         }
     }

@@ -1,13 +1,13 @@
 ﻿<Page
     x:Class="MailClient.Views.Pages.MailViewerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Page.Resources />
 
-    <Grid Margin="0 12">
+    <Grid Margin="0,12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="6" />
@@ -25,11 +25,6 @@
                 Background="Transparent"
                 DefaultLabelPosition="Right"
                 IsOpen="False">
-                <AppBarButton Label="Reply">
-                    <AppBarButton.Icon>
-                        <FontIcon Glyph="&#xE8CA;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
                 <AppBarButton Label="Archive">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE7B8;" />
@@ -40,23 +35,22 @@
                         <FontIcon Glyph="&#xE74D;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="Mark as read">
+                <AppBarButton
+                    x:Name="MarkAsReadButton"
+                    Click="MarkAsReadButton_Click"
+                    Label="Mark as read">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE8C3;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <AppBarButton Label="Set flag">
+                <AppBarButton
+                    x:Name="SetFlagButton"
+                    Click="SetFlagButton_Click"
+                    Label="Set flag">
                     <AppBarButton.Icon>
                         <FontIcon Glyph="&#xE7C1;" />
                     </AppBarButton.Icon>
                 </AppBarButton>
-                <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Setting" Label="Settings">
-                        <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="I" Modifiers="Control" />
-                        </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-                </CommandBar.SecondaryCommands>
             </CommandBar>
         </Grid>
         <Grid

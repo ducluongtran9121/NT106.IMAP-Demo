@@ -1,8 +1,8 @@
 ﻿<Page
-    x:Class="MailClient.Views.SettingsPages.Appearances"
+    x:Class="MailClient.Views.SettingsPages.Settings"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
@@ -11,7 +11,7 @@
             <TextBlock
                 FontSize="30"
                 FontWeight="SemiBold"
-                Text="Appearances ✨" />
+                Text="Settings ⚙⚙" />
             <StackPanel Spacing="5">
                 <TextBlock Text="Themes:" />
                 <ComboBox
@@ -22,6 +22,14 @@
                     <ComboBoxItem Content="Light" />
                     <ComboBoxItem Content="Dark" />
                 </ComboBox>
+            </StackPanel>
+            <StackPanel Spacing="5">
+                <TextBlock Text="TLS Session:" />
+                <ToggleSwitch
+                    x:Name="TLSToggleButton"
+                    OffContent="Not use TLS Session"
+                    OnContent="Use TLS Session"
+                    Toggled="TLSToggleButton_Toggled" />
             </StackPanel>
         </StackPanel>
     </Grid>

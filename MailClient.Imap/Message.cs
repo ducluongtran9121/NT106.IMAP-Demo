@@ -93,6 +93,42 @@ namespace MailClient.Imap
             }
         }
 
+        public bool IsSeen
+        {
+            get => Flags.Any(x => x == MessageFlag.Seen);
+            set
+            {
+                if (value)
+                {
+                    Flags.Add(MessageFlag.Seen);
+                }
+                else
+                {
+                    Flags.Remove(MessageFlag.Seen);
+                }
+
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsFlagged
+        {
+            get => Flags.Any(x => x == MessageFlag.Flagged);
+            set
+            {
+                if (value)
+                {
+                    Flags.Add(MessageFlag.Flagged);
+                }
+                else
+                {
+                    Flags.Remove(MessageFlag.Flagged);
+                }
+
+                OnPropertyChanged();
+            }
+        }
+
         public Message()
         {
         }
@@ -149,6 +185,15 @@ namespace MailClient.Imap
             {
                 BodyPreview = string.Empty;
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Message message)
+            {
+                return base.Equals(message) && this.Flags.Except(message.Flags).ToArray().Length == 0;
+            }
+            return false;
         }
     }
 }

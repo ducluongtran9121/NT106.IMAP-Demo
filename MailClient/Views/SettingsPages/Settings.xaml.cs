@@ -4,11 +4,13 @@ using Windows.UI.Xaml.Controls;
 
 namespace MailClient.Views.SettingsPages
 {
-    public sealed partial class Appearances : Page
+    public sealed partial class Settings : Page
     {
-        public Appearances()
+        public Settings()
         {
             this.InitializeComponent();
+
+            TLSToggleButton.IsOn = SettingsHelper.IsUseTLS;
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -19,6 +21,11 @@ namespace MailClient.Views.SettingsPages
         private void ThemeChooser_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ThemeHelper.RootTheme = (ElementTheme)(sender as ComboBox).SelectedIndex;
+        }
+
+        private void TLSToggleButton_Toggled(object sender, RoutedEventArgs e)
+        {
+            SettingsHelper.IsUseTLS = TLSToggleButton.IsOn;
         }
     }
 }

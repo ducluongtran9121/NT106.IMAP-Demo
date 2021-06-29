@@ -134,18 +134,19 @@ namespace MailClient.Views
         {
             ImapHelper.IsBusy = true;
 
-            Message[] messages = await InitialFetchingMail();
+            Message[] messages = await InitialFetchingMail("INBOX");
 
             if (messages != null)
             {
-                await UpdateMessageData(messages);
+                await UpdateMessageData(messages, "INBOX");
             }
 
             ImapHelper.IsBusy = false;
+
             MailNavigation.IsLoadingBarRun = false;
         }
 
-        private async Task<Message[]> InitialFetchingMail()
+        private async Task<Message[]> InitialFetchingMail(string folderName)
         {
             try
             {
@@ -154,11 +155,17 @@ namespace MailClient.Views
                     ImapHelper.Client = new ImapClient();
                 }
 
+                if (ImapHelper.Client.IsEncrypt != SettingsHelper.IsUseTLS)
+                {
+                    ImapHelper.Client.Dispose();
+                    ImapHelper.Client = new ImapClient();
+                }
+
                 var client = ImapHelper.Client;
 
                 if (!client.IsConnected)
                 {
-                    if (!await client.ConnectAsync(ImapHelper.IPEndPoint))
+                    if (!await client.ConnectAsync(ImapHelper.IPEndPoint, SettingsHelper.IsUseTLS))
                         return null;
                 }
 
@@ -172,13 +179,16 @@ namespace MailClient.Views
                         return null;
                 }
 
-                Folder inbox = client.Inbox;
+                Folder folder = new Folder(folderName, ImapHelper.Client);
 
                 List<Message> messages = new();
 
-                await inbox.OpenAsync();
+                if (!await folder.OpenAsync())
+                    throw new Exception();
 
-                return await inbox.GetMessagesAsync();
+                ImapHelper.CurrentFolder = folder;
+
+                return await folder.GetMessagesAsync();
             }
             catch (Exception)
             {
@@ -187,17 +197,15 @@ namespace MailClient.Views
             }
         }
 
-        private async Task<bool> UpdateMessageData(Message[] messages)
+        private async Task<bool> UpdateMessageData(Message[] messages, string folderName)
         {
             try
             {
                 var mess = MailNavigation.MessageItems;
                 var folders = MailNavigation.FolderItems;
 
-                string[] updatedFolders = await ImapHelper.Client.GetListFolderAsync();
+                string[] updatedFolders = await ImapHelper.Client.GetListFolderWithoutFlagAsync();
 
-                // Update folder
-                await MailNavigation.UpdateFolderItems(updatedFolders);
                 foreach (string i in folders.ToArray())
                 {
                     if (!updatedFolders.Any(x => x == i))
@@ -214,13 +222,16 @@ namespace MailClient.Views
                     }
                 }
 
+                // Update folder
+                await MailNavigation.UpdateFolderItems(updatedFolders);
+
                 // Update message in current mailbox (inbox)
                 foreach (Message i in mess.ToArray())
                 {
                     if (!messages.Any(x => x.Uid == i.Uid))
                     {
                         _ = mess.Remove(i);
-                        await DatabaseHelper.DeleteRowsAsync(DatabaseHelper.CurrentDatabaseName, "INBOX",
+                        await DatabaseHelper.DeleteRowsAsync(DatabaseHelper.CurrentDatabaseName, folderName,
                             new (string, string)[] { ("UID", i.Uid.ToString()) });
                     };
                 }
@@ -231,7 +242,7 @@ namespace MailClient.Views
                     {
                         mess.Add(i);
                         // Temp save to database, will be fixed
-                        await DatabaseHelper.InsertDataAsync(DatabaseHelper.CurrentDatabaseName, "INBOX",
+                        await DatabaseHelper.InsertDataAsync(DatabaseHelper.CurrentDatabaseName, folderName,
                             new string[] { i.Uid.ToString(), i.From, i.To, i.Subject, i.DateTime.ToString(), i.Body.ContentType.ToString(), i.Body.Parts[0].Content, "", "", string.Join(' ', i.Flags) });
                     }
                 }
@@ -269,26 +280,174 @@ namespace MailClient.Views
                 if (ImapHelper.IsBusy)
                     return;
 
+                ImapHelper.IsBusy = true;
                 MailNavigation.IsLoadingBarRun = true;
-                Message[] messages = await InitialFetchingMail();
+                string name = sender as string;
+
+                Message[] messages = await InitialFetchingMail(name);
 
                 if (messages == null)
                     throw new Exception();
 
                 if (messages != null)
                 {
-                    if (!await UpdateMessageData(messages))
+                    if (!await UpdateMessageData(messages, name))
                         throw new Exception();
                 }
 
+                ImapHelper.IsBusy = false;
                 MailNavigation.IsLoadingBarRun = false;
             }
             catch (Exception)
             {
                 ContentDialog dialog = new();
                 dialog.PrimaryButtonText = "OK";
-                dialog.Content = "Failed to sync your mail... Please try again..";
+                dialog.Content = "Failed to sync your mail! Please try again...";
                 _ = dialog.ShowAsync();
+                MailNavigation.IsLoadingBarRun = false;
+                ImapHelper.IsBusy = false;
+            }
+        }
+
+        private async void MailNavigation_OnFolderSelected(object sender, EventArgs e)
+        {
+            try
+            {
+                if (ImapHelper.IsBusy)
+                    return;
+
+                ImapHelper.IsBusy = true;
+
+                string name = sender as string;
+
+                MailNavigation.IsLoadingBarRun = true;
+
+                foreach (Message i in MailNavigation.FilteredMessageItems.ToArray())
+                    MailNavigation.MessageItems.Remove(i);
+
+                foreach (Message i in MailNavigation.MessageItems.ToArray())
+                    MailNavigation.MessageItems.Remove(i);
+
+                // Check folder has mail?
+                if (await DatabaseHelper.CountRows(DatabaseHelper.CurrentDatabaseName, name) > 0)
+                {
+                    List<string[]> messagesDatabase = await DatabaseHelper.GetTableDataAsync(DatabaseHelper.CurrentDatabaseName, name);
+
+                    foreach (string[] message in messagesDatabase)
+                        MailNavigation.MessageItems.Add(Message.InstanceFromDatabase(message));
+                }
+
+                Message[] messages = await InitialFetchingMail(name);
+
+                if (messages == null)
+                    throw new Exception();
+
+                if (messages != null)
+                {
+                    if (!await UpdateMessageData(messages, name))
+                        throw new Exception();
+                }
+
+                ImapHelper.IsBusy = false;
+                MailNavigation.IsLoadingBarRun = false;
+            }
+            catch (Exception)
+            {
+                ImapHelper.Client?.Dispose();
+                ContentDialog dialog = new();
+                dialog.PrimaryButtonText = "OK";
+                dialog.Content = "Failed to sync your mail! Please try again...";
+                _ = dialog.ShowAsync();
+                MailNavigation.IsLoadingBarRun = false;
+                ImapHelper.IsBusy = false;
+            }
+        }
+
+        private async void SideBarNavigation_OnAccountSignedIn(object sender, EventArgs e)
+        {
+            try
+            {
+                if (ImapHelper.IsBusy)
+                    return;
+
+                MailNavigation.IsLoadingBarRun = true;
+                ImapHelper.IsBusy = true;
+
+                foreach (Message i in MailNavigation.FilteredMessageItems.ToArray())
+                    MailNavigation.MessageItems.Remove(i);
+
+                foreach (Message i in MailNavigation.MessageItems.ToArray())
+                    MailNavigation.MessageItems.Remove(i);
+
+                ContentFrame.Content = null;
+
+                Message[] messages = await InitialFetchingMail("INBOX");
+
+                if (messages == null)
+                    throw new Exception();
+
+                if (messages != null)
+                {
+                    if (!await UpdateMessageData(messages, "INBOX"))
+                        throw new Exception();
+                }
+
+                ImapHelper.IsBusy = false;
+                MailNavigation.IsLoadingBarRun = false;
+            }
+            catch (Exception)
+            {
+                ContentDialog dialog = new();
+                dialog.PrimaryButtonText = "OK";
+                dialog.Content = "Failed to sync your mail! Please try again...";
+                _ = dialog.ShowAsync();
+
+                ImapHelper.IsBusy = false;
+                MailNavigation.IsLoadingBarRun = false;
+            }
+        }
+
+        private async void SideBarNavigation_OnChangedAccount(object sender, EventArgs e)
+        {
+            try
+            {
+                if (ImapHelper.IsBusy)
+                    return;
+
+                ImapHelper.Client?.Dispose();
+
+                ImapHelper.IsBusy = true;
+                MailNavigation.IsLoadingBarRun = true;
+
+                foreach (Message i in MailNavigation.FilteredMessageItems.ToArray())
+                    MailNavigation.MessageItems.Remove(i);
+
+                foreach (Message i in MailNavigation.MessageItems.ToArray())
+                    MailNavigation.MessageItems.Remove(i);
+
+                Message[] messages = await InitialFetchingMail("INBOX");
+
+                if (messages == null)
+                    throw new Exception();
+
+                if (messages != null)
+                {
+                    if (!await UpdateMessageData(messages, "INBOX"))
+                        throw new Exception();
+                }
+
+                ImapHelper.IsBusy = false;
+                MailNavigation.IsLoadingBarRun = false;
+            }
+
+            catch (Exception)
+            {
+                ContentDialog dialog = new();
+                dialog.PrimaryButtonText = "OK";
+                dialog.Content = "Failed to sync your mail! Please try again...";
+                _ = dialog.ShowAsync();
+
+                ImapHelper.IsBusy = false;
                 MailNavigation.IsLoadingBarRun = false;
             }
         }

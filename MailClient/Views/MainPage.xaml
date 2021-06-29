@@ -1,12 +1,12 @@
 ﻿<Page
     x:Class="MailClient.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uc="using:MailClient.UserControls"
-    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:toolkitcontrols="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:uc="using:MailClient.UserControls"
     muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     IsTabStop="True"
     Loaded="Page_Loaded"
@@ -77,9 +77,11 @@
             x:Name="SideBarNavigation"
             Canvas.ZIndex="0"
             DisplayModeChanged="SideBarNavigation_DisplayModeChanged"
+            OnAccountSignedIn="SideBarNavigation_OnAccountSignedIn"
+            OnChangedAccount="SideBarNavigation_OnChangedAccount"
             PaneClosing="SideBarNavigation_PaneClosing"
             PaneOpening="SideBarNavigation_PaneOpening">
-            <Grid x:Name="ContentContainer">
+            <Grid x:Name="ContentContainer" Margin="24,0,24,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition
                         Width="*"
@@ -90,6 +92,7 @@
                 </Grid.ColumnDefinitions>
                 <uc:MessageNavigationControl
                     x:Name="MailNavigation"
+                    OnFolderSelected="MailNavigation_OnFolderSelected"
                     OnMessageSelected="MailNavigation_OnMessageSelected"
                     OnSyncButtonPressed="MailNavigation_OnSyncButtonPressed" />
                 <toolkitcontrols:GridSplitter

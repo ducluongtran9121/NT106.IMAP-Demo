@@ -11,7 +11,7 @@ namespace MailClient.Imap
 
         public string Address { get; private set; }
 
-        private CoreClient CoreClient { get; set; }
+        internal CoreClient CoreClient { get; set; }
 
         public Folder Inbox { get; private set; }
 
@@ -19,16 +19,18 @@ namespace MailClient.Imap
 
         public bool IsAuthenticated { get; private set; }
 
+        public bool IsEncrypt;
+
         public ImapClient()
         {
         }
 
-        public async Task<bool> ConnectAsync(string host, int port)
+        public async Task<bool> ConnectAsync(string host, int port, bool IsUseTLS)
         {
-            return await ConnectAsync(new IPEndPoint(IPAddress.Parse(host), port));
+            return await ConnectAsync(new IPEndPoint(IPAddress.Parse(host), port), IsUseTLS);
         }
 
-        public async Task<bool> ConnectAsync(IPEndPoint endPoint)
+        public async Task<bool> ConnectAsync(IPEndPoint endPoint, bool IsUseTLS)
         {
             CoreClient = new();
 
@@ -39,7 +41,25 @@ namespace MailClient.Imap
 
             if (data == null) throw new ReadDataException("Failed to read server connected message");
 
-            return FragmentCommand.Connect(data);
+            if (!FragmentCommand.Connect(data)) return false;
+
+            if (IsUseTLS)
+            {
+                if (!await CoreClient.WriteDataAsync(Command.StartTLS(++CoreClient.Tag)))
+                    throw new WriteDataException("Failed to send authentication command");
+
+                byte[] data1 = await CoreClient.ReadDataAsync();
+
+                if (data1 == null) throw new ReadDataException("Failed to read server connected message");
+
+                if (FragmentCommand.StartTLS(data1)) CoreClient.IsEncrypt = true;
+            }
+            
+            else CoreClient.IsEncrypt = false;
+
+            IsEncrypt = CoreClient.IsEncrypt;
+
+            return true;
         }
 
         public async Task<bool> AuthenticateAsync(string username, string password)
@@ -67,7 +87,7 @@ namespace MailClient.Imap
             return false;
         }
 
-        public async Task<string[]> GetListFolderAsync()
+        public async Task<(string, string)[]> GetListFolderAsync()
         {
             if (CoreClient == null)
                 throw new NullReferenceException("CoreClient not set to an instance of an object");
@@ -75,14 +95,32 @@ namespace MailClient.Imap
             if (!CoreClient.IsConnected)
                 throw new ConnectionException("CoreClient is not connected");
 
-            if (!await CoreClient.WriteDataAsync(Command.List(CoreClient.Tag, "", "*")))
+            if (!await CoreClient.WriteDataAsync(Command.XList(CoreClient.Tag, "", "*")))
                 throw new WriteDataException("Failed to send authentication command");
 
             byte[] data = await CoreClient.ReadDataAsync();
 
             if (data == null) throw new ReadDataException();
 
-            return FragmentCommand.List(data);
+            return FragmentCommand.XList(data);
+        }
+
+        public async Task<string[]> GetListFolderWithoutFlagAsync()
+        {
+            if (CoreClient == null)
+                throw new NullReferenceException("CoreClient not set to an instance of an object");
+
+            if (!CoreClient.IsConnected)
+                throw new ConnectionException("CoreClient is not connected");
+
+            if (!await CoreClient.WriteDataAsync(Command.XList(CoreClient.Tag, "", "*")))
+                throw new WriteDataException("Failed to send authentication command");
+
+            byte[] data = await CoreClient.ReadDataAsync();
+
+            if (data == null) throw new ReadDataException();
+
+            return FragmentCommand.XListWithoutFlag(data);
         }
 
         public void Dispose()
@@ -90,6 +128,7 @@ namespace MailClient.Imap
             if (_disposed)
                 return;
 
+            IsAuthenticated = false;
             CoreClient?.Dispose();
         }
     }

@@ -25,6 +25,7 @@
         STORE,
         COPY,
         UID,
+        XLIST,
         LOGOUT
     }
 }

@@ -1,4 +1,7 @@
 ﻿using MailClient.Imap.Enums;
+using MailClient.Imap.Crypto;
+using System;
+using System.Text;
 
 namespace MailClient.Imap.Commands
 {
@@ -18,8 +21,8 @@ namespace MailClient.Imap.Commands
         public static string Search(int tagCount, string condition, bool useUid) =>
             $"{string.Format("a{0:0000}", tagCount)}{(useUid ? " UID " : " ")}{CommandType.SEARCH} {condition}\r\n";
 
-        public static string List(int tagCount, string reference, string mailboxName) =>
-            GetString(tagCount, CommandType.LIST, $"\"{reference}\"", $"\"{mailboxName}\"");
+        public static string XList(int tagCount, string reference, string mailboxName) =>
+            GetString(tagCount, CommandType.XLIST, $"\"{reference}\"", $"\"{mailboxName}\"");
 
         public static string Noop(int tagCount) =>
             GetString(tagCount, CommandType.NOOP);
@@ -27,8 +30,22 @@ namespace MailClient.Imap.Commands
         public static string Fetch(int tagCount, string uidRange, bool useUid, params string[] items) =>
             $"{string.Format("a{0:0000}", tagCount)}{(useUid ? " UID " : " ")}{CommandType.FETCH} {uidRange} ({string.Join(" ", items)})\r\n";
 
-        public static string FetchMailText(int tagCount, int Sequence) =>
-            GetString(tagCount, CommandType.FETCH, Sequence.ToString(), "body[text]");
+        public static string Delete(int tagCount, string folderName) =>
+            GetString(tagCount, CommandType.DELETE, folderName);
+
+        public static string Store(int tagCount, string range, bool useUid, bool isAdd, params MessageFlag[] flags)
+        {
+            string command = $"{string.Format("a{0:0000}", tagCount)}{(useUid ? " UID " : " ")}{CommandType.STORE} {range}{(isAdd ? " +" : " -")}FLAGS (";
+            foreach (MessageFlag flag in flags)
+                command += $"\\{flag} ";
+
+            return command.Remove(command.Length - 1) + ")\r\n";
+        }
+
+        public static string StartTLS(int tagCount)
+        {
+            return $"{string.Format("a{0:0000}", tagCount)} STARTTLS\r\n";
+        }
 
         public static string Logout(int tagCount) =>
             GetString(tagCount, CommandType.LOGOUT);

@@ -27,7 +27,7 @@ namespace MailClient.Dialogs
             _ = tag switch
             {
                 "Nav_About" => SettingsContentFrame.Navigate(typeof(About)),
-                "Nav_Appearances" => SettingsContentFrame.Navigate(typeof(Appearances)),
+                "Nav_Appearances" => SettingsContentFrame.Navigate(typeof(Settings)),
                 _ => SettingsContentFrame.Navigate(typeof(About))
             };
         }

@@ -16,11 +16,22 @@ namespace MailClient.Imap.Commands
             return Encoding.ASCII.GetString(data) == "* OK IMAP4rev1 Service Ready\r\n";
         }
 
+        public static bool IsEnd(byte[] data)
+        {
+            string temp = Encoding.UTF8.GetString(data);
+            return temp.Contains("* OK IMAP4rev1 Service Ready\r\n") || Regex.IsMatch(temp, @".+\s?[A-Z]+\s?(\[.*\])*\s[A-Z]+ .+\r\n") || Regex.IsMatch(temp, ".+ NO Mailbox does not exist");
+        }
+
         public static bool Bad(string data)
         {
             string[] frag = data.Trim().Split(" ");
 
             return frag[1] == "BAD" || frag[1] == "NO";
+        }
+
+        public static bool StartTLS(byte[] data)
+        {
+            return Regex.IsMatch(Encoding.UTF8.GetString(data), @".+ OK STARTTLS completed");
         }
 
         public static bool Authenticate(byte[] data)
@@ -33,6 +44,10 @@ namespace MailClient.Imap.Commands
         public static Folder SelectFolder(byte[] data)
         {
             string[] lines = Encoding.ASCII.GetString(data).Trim().Split("\r\n");
+
+            if (Regex.IsMatch(lines[0], ".+ NO Mailbox does not exist"))
+                return null;
+
             int exists = 0, recent = 0, unseen = 0, uidValidity = 0, uidNext = 0;
             List<MessageFlag> flags = new(), permanentFlags = new();
             FolderAccess access = FolderAccess.ReadOnly;
@@ -107,14 +122,13 @@ namespace MailClient.Imap.Commands
 
         public static List<int> Search(byte[] data)
         {
-            List<int> uids = new();
             string[] lines = Encoding.ASCII.GetString(data).Trim().Split("\r\n");
             string[] stringData = lines[0].Split(' ');
 
-            return new List<int>(stringData[2..].Select(x => int.Parse(x)).ToArray());
+            return stringData.Length > 3 ? new List<int>(stringData[2..].Select(x => int.Parse(x)).ToArray()) : new List<int>();
         }
 
-        public static string[] List(byte[] data)
+        public static string[] XListWithoutFlag(byte[] data)
         {
             List<string> names = new();
             string[] lines = Encoding.ASCII.GetString(data).Trim().Split("\r\n");
@@ -135,6 +149,48 @@ namespace MailClient.Imap.Commands
             }
 
             return names.ToArray();
+        }
+
+        public static (string, string)[] XList(byte[] data)
+        {
+            List<(string, string)> names = new();
+            string[] lines = Encoding.ASCII.GetString(data).Trim().Split("\r\n");
+
+            string flag = string.Empty;
+            string name = string.Empty;
+
+            for (int i = 0; i < lines.Length - 1; i++)
+            {
+                string[] frag = lines[i].Split(' ');
+                flag = frag[2];
+                name = lines[i][(string.Join(" ", frag[..3]).Length + 1)..].Replace("\"", string.Empty);
+            }
+
+            return names.ToArray();
+        }
+
+        public static List<MessageFlag[]> Store(byte[] data)
+        {
+            string[] lines = Encoding.ASCII.GetString(data).Trim().Split("\r\n");
+
+            List<MessageFlag[]> flags = new();
+
+            for (int i = 0; i < lines.Length - 1; i++)
+            {
+                List<MessageFlag> temp = new();
+                var result = Regex.Matches(lines[i], @"\\[A-Za-z]+");
+                foreach(Match match in result)
+                {
+                    temp.Add((MessageFlag)Enum.Parse(typeof(MessageFlag), match.Value.Replace("\\", ""), true));
+                }
+
+                if (temp.Count > 0)
+                    flags.Add(temp.ToArray());
+            }
+
+            if (flags.Count == 0) return null;
+
+            return flags;
         }
 
         public static Message FetchMessage(byte[] data)

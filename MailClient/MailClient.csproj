@@ -124,6 +124,8 @@
     </Compile>
     <Compile Include="Common\BindableBase.cs" />
     <Compile Include="Common\ObservableDictionary.cs" />
+    <Compile Include="Converters\BoolToVisibility.cs" />
+    <Compile Include="Converters\DatetimeToString.cs" />
     <Compile Include="DataModels\Imap\Account.cs" />
     <Compile Include="DataModels\NavigationControlItems\INavigationControlItems.cs" />
     <Compile Include="DataModels\NavigationControlItems\NavigationAccountItem.cs" />
@@ -132,6 +134,9 @@
     <Compile Include="DataModels\NavigationControlItems\NavigationListItem.cs" />
     <Compile Include="Dialogs\SettingsDialog.xaml.cs">
       <DependentUpon>SettingsDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SigninDialog.xaml.cs">
+      <DependentUpon>SigninDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\AccountHelper.cs" />
     <Compile Include="Helpers\DatabaseHelper.cs" />
@@ -158,8 +163,8 @@
     <Compile Include="Views\SettingsPages\About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SettingsPages\Appearances.xaml.cs">
-      <DependentUpon>Appearances.xaml</DependentUpon>
+    <Compile Include="Views\SettingsPages\Settings.xaml.cs">
+      <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WelcomePage.xaml.cs">
       <DependentUpon>WelcomePage.xaml</DependentUpon>
@@ -189,6 +194,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Dialogs\SigninDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\MessageNavigationControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -213,7 +222,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\SettingsPages\Appearances.xaml">
+    <Page Include="Views\SettingsPages\Settings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

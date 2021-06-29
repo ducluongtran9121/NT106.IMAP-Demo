@@ -1,6 +1,12 @@
-﻿using MailClient.Imap;
+﻿using MailClient.Helpers;
+using MailClient.Imap;
+using MailClient.Imap.Crypto;
+using MailClient.Imap.Enums;
+using MailClient.Views.Pages;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -12,19 +18,21 @@ namespace MailClient.UserControls
 {
     public sealed partial class MessageNavigationControl : UserControl
     {
-        public ObservableCollection<Message> MessageItems = new();
+        public ObservableCollection<Message> MessageItems { get; set; } = new();
 
-        private ObservableCollection<Message> FilteredMessageItems { get; set; } = new();
+        public ObservableCollection<Message> FilteredMessageItems { get; set; } = new();
 
         public ObservableCollection<string> FolderItems { get; set; } = new();
 
-        private Message CurrentMessageItem { get; set; }
+        private Message CurrentMessageItem;
 
-        private string CurrentFolderName { get; set; }
+        private bool IsFirstTimeSelectFolder { get; set; } = true;
 
         public delegate void EvenHandler(object sender, EventArgs e);
 
         public event EventHandler OnMessageSelected;
+
+        public event EvenHandler OnFolderSelected;
 
         public event EvenHandler OnSyncButtonPressed;
 
@@ -47,6 +55,80 @@ namespace MailClient.UserControls
             this.InitializeComponent();
 
             MessageItems.CollectionChanged += MessageItems_CollectionChanged;
+
+            MailViewerPage.OnMessagePropertyChanged += MailViewerPage_OnMessagePropertyChanged;
+        }
+
+        private async void MailViewerPage_OnMessagePropertyChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (ImapHelper.Client == null)
+                {
+                    ImapHelper.Client = new ImapClient();
+                }
+
+                if (ImapHelper.Client.IsEncrypt != SettingsHelper.IsUseTLS)
+                {
+                    ImapHelper.Client.Dispose();
+                    ImapHelper.Client = new ImapClient();
+                }
+
+                var client = ImapHelper.Client;
+
+                if (!client.IsConnected)
+                {
+                    if (!await client.ConnectAsync(ImapHelper.IPEndPoint, SettingsHelper.IsUseTLS))
+                        return;
+                }
+
+                if (!client.IsAuthenticated)
+                {
+                    string[] selected = await DatabaseHelper.SelectDataAsync(
+                        DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName, new string[] { "Password" },
+                        new (string, string)[] { ("Address", AccountHelper.CurrentAccount.Address) });
+
+                    if (!await client.AuthenticateAsync(AccountHelper.CurrentAccount.Address, AES.DecryptToString(selected[0], ImapHelper.Key, ImapHelper.Iv)))
+                        return;
+                }
+
+                if (ImapHelper.CurrentFolder == null)
+                {
+                    if (FoldersComboBox.SelectedIndex == -1)
+                        return;
+
+                    Folder folder = new Folder(FolderItems[FoldersComboBox.SelectedIndex], ImapHelper.Client);
+
+                    await folder.OpenAsync();
+
+                    if (!await folder.OpenAsync())
+                        return;
+
+                    ImapHelper.CurrentFolder = folder;
+                }
+
+                MessageFlag flag = (MessageFlag)sender;
+
+                List<MessageFlag[]> updatedFlags = new();
+
+                if (flag == MessageFlag.Seen)
+                {
+                    updatedFlags = await ImapHelper.CurrentFolder.SetMessageFlag(CurrentMessageItem.Uid, CurrentMessageItem.IsSeen, flag);
+                }
+                else if (flag == MessageFlag.Flagged)
+                {
+                    updatedFlags = await ImapHelper.CurrentFolder.SetMessageFlag(CurrentMessageItem.Uid, CurrentMessageItem.IsFlagged, flag);
+                }
+
+                if (updatedFlags == null)
+                    await DatabaseHelper.UpdateCellAsync(DatabaseHelper.CurrentDatabaseName, ImapHelper.CurrentFolder.Name, "Flag", "", new (string, string)[] { ("UID", CurrentMessageItem.Uid.ToString()) });
+                else
+                    await DatabaseHelper.UpdateCellAsync(DatabaseHelper.CurrentDatabaseName, ImapHelper.CurrentFolder.Name, "Flag", string.Join(" ", updatedFlags[0]), new (string, string)[] { ("UID", CurrentMessageItem.Uid.ToString()) });
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         private void SearchBox_OnSearchButtonClick(object sender, EventArgs e)
@@ -75,12 +157,9 @@ namespace MailClient.UserControls
                 }
             });
 
-            FolderItems.Add("New mailbox...");
-
-            if (FolderItems.Count > 1 && FoldersComboBox.SelectedItem == null)
+            if (FolderItems.Count > 0 && FoldersComboBox.SelectedItem == null)
             {
                 FoldersComboBox.SelectedItem = FolderItems[0];
-                CurrentFolderName = FolderItems[0];
             }
         }
 
@@ -113,12 +192,18 @@ namespace MailClient.UserControls
             if (sender is not ListView listView)
                 return;
 
+
             if (listView.SelectionMode == ListViewSelectionMode.Single && listView.SelectedIndex != -1)
             {
                 CurrentMessageItem = MessageItems[listView.SelectedIndex];
             }
 
             OnMessageSelected(CurrentMessageItem, null);
+        }
+
+        private async void CurrentMessageItem_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        { 
+
         }
 
         private bool Filter(Message Message, string value)
@@ -147,7 +232,22 @@ namespace MailClient.UserControls
 
         private void SyncButton_Click(object sender, RoutedEventArgs e)
         {
-            OnSyncButtonPressed(null, null);
+            if (FoldersComboBox.SelectedIndex != - 1)
+            OnSyncButtonPressed(FolderItems[FoldersComboBox.SelectedIndex], null);
+        }
+
+        private void FoldersComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var combobox = sender as ComboBox;
+
+            if (IsFirstTimeSelectFolder)
+            {
+                IsFirstTimeSelectFolder = false;
+                return;
+            }
+
+            if (combobox.SelectedIndex != -1)
+                OnFolderSelected(FolderItems[combobox.SelectedIndex], null);
         }
     }
 }

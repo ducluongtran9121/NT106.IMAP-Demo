@@ -133,7 +133,6 @@
     <Compile Include="Enums\Charset.cs" />
     <Compile Include="Enums\ContentType.cs" />
     <Compile Include="Enums\FileExtensionType.cs" />
-    <Compile Include="IBody.cs" />
     <Compile Include="CoreClient.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\FragmentCommand.cs" />
