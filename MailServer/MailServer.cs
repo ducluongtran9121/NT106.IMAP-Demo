@@ -122,6 +122,9 @@ namespace MailServer
                             // gửi thông điệp dưới dạng mã hóa
                             ns.Write(encResponse, 0, encResponse.Length);
                             ns.Flush();
+
+                            // in console server
+                            Console.WriteLine("Messages is Encrypted");
                         }
                         else
                         {
@@ -132,6 +135,10 @@ namespace MailServer
                             if (resposed == "") continue;
                             sw.WriteLine(resposed);
                             sw.Flush();
+
+                            // in console server
+                            Console.WriteLine(msg);
+                            Console.WriteLine(resposed);
                         }
 
                         sr.BaseStream.ReadTimeout = 1800000;
@@ -151,9 +158,7 @@ namespace MailServer
                         sw.Flush();
                         break;
                     }
-                    // in console server
-                    Console.WriteLine(msg);
-                    Console.WriteLine(resposed);
+
                 }
                 Console.WriteLine(clientIP + " : " + clientPort + " disconnected");
                 // giải phóng stream và TCPclient connection

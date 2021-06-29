@@ -707,7 +707,7 @@ namespace MailServer.Imap
                 if (appendCall.message.Length > appendCall.size)
                 {
                     appendCall.reset();
-                    return "";
+                    return appendCall.tag + " NO APPEND Failed";
                 }
                 File.WriteAllText(Environment.CurrentDirectory + $"/ImapMailBox/{appendCall.mailInfo.user}/{appendCall.mailInfo.mailboxname}/email_{appendCall.mailInfo.uid}.msg", appendCall.message);
                 int success = SqliteQuery.InsertMailIntoMailBox(appendCall.mailInfo.user, appendCall.mailInfo.mailboxname, appendCall.mailInfo);
