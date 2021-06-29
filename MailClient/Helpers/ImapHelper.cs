@@ -12,7 +12,7 @@ namespace MailClient.Helpers
 
         public static bool IsBusy;
 
-        public static IPEndPoint IPEndPoint = new(IPAddress.Parse("127.0.0.1"), 1578);
+        public static IPEndPoint IPEndPoint = new(IPAddress.Parse("1.54.83.178"), 1580);
 
         internal static byte[] Key = Encoding.ASCII.GetBytes("12345678123456781234567812345678");
 

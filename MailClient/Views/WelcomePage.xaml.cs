@@ -2,12 +2,11 @@
 using MailClient.Imap;
 using MailClient.Imap.Crypto;
 using System;
-using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
-using Windows.Storage;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -54,105 +53,102 @@ namespace MailClient.Views
 
         private async void SigninButton_Click(object sender, RoutedEventArgs e)
         {
-            SetEnabledControl(false);
-
-            SigninStatusTextblock.Visibility = Visibility.Visible;
-
-            if (UsernameTextbox.Text == string.Empty || PasswordPbox.Password == string.Empty)
+            await Windows.
+                ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
             {
-                SigninStatusTextblock.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 95, 95));
-                SigninStatusTextblock.Text = "Please do not empty Username or Password! 😡";
-                SetEnabledControl(true);
-                return;
-            }
+                SetEnabledControl(false);
 
-            if (!Regex.IsMatch(UsernameTextbox.Text, MailAddressPattern))
-            {
-                SigninStatusTextblock.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 95, 95));
-                SigninStatusTextblock.Text = "Please use a valid address! 😡";
-                SetEnabledControl(true);
-                return;
-            }
+                SigninStatusTextblock.Visibility = Visibility.Visible;
 
-            SigninStatusTextblock.Foreground = (SolidColorBrush)Application.Current.Resources["ButtonForeground"];
-            SigninStatusTextblock.Text = "Signing you in... ";
-            Processbar.IsIndeterminate = true;
-            Processbar.ShowError = false;
+                if (UsernameTextbox.Text == string.Empty || PasswordPbox.Password == string.Empty)
+                {
+                    SigninStatusTextblock.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 95, 95));
+                    SigninStatusTextblock.Text = "Please do not empty Username or Password! 😡";
+                    SetEnabledControl(true);
+                    return;
+                }
 
-            try
-            {
-                ImapHelper.Client = new ImapClient();
+                if (!Regex.IsMatch(UsernameTextbox.Text, MailAddressPattern))
+                {
+                    SigninStatusTextblock.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 95, 95));
+                    SigninStatusTextblock.Text = "Please use a valid address! 😡";
+                    SetEnabledControl(true);
+                    return;
+                }
 
-                if (!await ImapHelper.Client.ConnectAsync(ImapHelper.IPEndPoint, SettingsHelper.IsUseTLS))
-                    throw new ConnectionException();
+                SigninStatusTextblock.Foreground = (SolidColorBrush)Application.Current.Resources["ButtonForeground"];
+                SigninStatusTextblock.Text = "Signing you in... ";
+                Processbar.IsIndeterminate = true;
+                Processbar.ShowError = false;
 
-                if (!await ImapHelper.Client.AuthenticateAsync(UsernameTextbox.Text, PasswordPbox.Password))
-                    throw new AuthenticationException();
+                try
+                {
+                    ImapHelper.Client = new ImapClient();
 
-                Processbar.IsIndeterminate = false;
-                SigninStatusTextblock.Text = "Signed in! Please wait...";
-                await Task.Delay(1000);
+                    if (!await ImapHelper.Client.ConnectAsync(ImapHelper.IPEndPoint, SettingsHelper.IsUseTLS))
+                        throw new ConnectionException();
 
-                LoadingControl.IsLoading = true;
+                    if (!await ImapHelper.Client.AuthenticateAsync(UsernameTextbox.Text, PasswordPbox.Password))
+                        throw new AuthenticationException();
 
-                // Logged in, create this account database, and add logged account into account database
-                AccountHelper.CurrentAccount =
-                    new DataModels.Imap.Account { Address = UsernameTextbox.Text, Name = "Huỳnh Thái Thi", Glyph = "\xED56" };
+                    Processbar.IsIndeterminate = false;
+                    SigninStatusTextblock.Text = "Signed in! Please wait...";
+                    await Task.Delay(1000);
 
-                SettingsHelper.IsFirstTimeLogin = true;
+                    LoadingControl.IsLoading = true;
 
-                var account = AccountHelper.CurrentAccount;
-                DatabaseHelper.CurrentDatabaseName = $"{AccountHelper.CurrentAccount.Address}.db";
+                    // Logged in, create this account database, and add logged account into account database
+                    AccountHelper.CurrentAccount =
+                        new DataModels.Imap.Account { Address = UsernameTextbox.Text, Name = "Huỳnh Thái Thi", Glyph = "\xED56" };
 
-                await DatabaseHelper.InitializeAccountDatabaseAsync(DatabaseHelper.CurrentDatabaseName);
-                await DatabaseHelper.InsertDataAsync(DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName,
-                    new string[] { account.Address, account.Name, AES.EncryptToHex(PasswordPbox.Password, ImapHelper.Key, ImapHelper.Iv), account.Glyph, "" });
+                    SettingsHelper.IsFirstTimeLogin = true;
 
-                // Show beautiful loading control longer :D
-                await Task.Delay(1000);
+                    var account = AccountHelper.CurrentAccount;
+                    DatabaseHelper.CurrentDatabaseName = $"{AccountHelper.CurrentAccount.Address}.db";
 
-                // Navigate to MainPage
-                _ = (Window.Current.Content as Frame).Navigate(typeof(MainPage));
-            }
-            catch (ConnectionException)
-            {
-                ContentDialog dialog = new();
-                dialog.PrimaryButtonText = "OK";
-                dialog.Content = "Failed to connect to the server. Please check your connection and try again!";
-                _ = await dialog.ShowAsync();
-                ImapHelper.Client?.Dispose();
-            }
-            catch (AuthenticationException)
-            {
-                ContentDialog dialog = new();
-                dialog.PrimaryButtonText = "OK";
-                dialog.Content = "Wrong Username or Password. Please try again!";
-                _ = await dialog.ShowAsync();
-                ImapHelper.Client?.Dispose();
-            }
-            catch (Exception)
-            {
-                ContentDialog dialog = new();
-                dialog.PrimaryButtonText = "OK";
-                dialog.Content = "An error occurred Please try again!";
-                _ = await dialog.ShowAsync();
+                    await DatabaseHelper.InitializeAccountDatabaseAsync(DatabaseHelper.CurrentDatabaseName);
+                    await DatabaseHelper.InsertDataAsync(DatabaseHelper.AccountsDatabaseName, DatabaseHelper.AccountTableName,
+                        new string[] { account.Address, account.Name, AES.EncryptToHex(PasswordPbox.Password, ImapHelper.Key, ImapHelper.Iv), account.Glyph, "" });
 
-                //if (File.Exists(Path.Combine(ApplicationData.Current.LocalFolder.Path, DatabaseHelper.CurrentDatabaseName)))
-                //{
-                //    File.Delete(Path.Combine(ApplicationData.Current.LocalFolder.Path, DatabaseHelper.CurrentDatabaseName));
-                //}
+                    // Show beautiful loading control longer :D
+                    await Task.Delay(1000);
 
-                ImapHelper.Client?.Dispose();
+                    // Navigate to MainPage
+                    _ = (Window.Current.Content as Frame).Navigate(typeof(MainPage));
+                }
+                catch (ConnectionException)
+                {
+                    ContentDialog dialog = new();
+                    dialog.PrimaryButtonText = "OK";
+                    dialog.Content = "Failed to connect to the server. Please check your connection and try again!";
+                    _ = await dialog.ShowAsync();
+                    ImapHelper.Client?.Dispose();
+                }
+                catch (AuthenticationException)
+                {
+                    ContentDialog dialog = new();
+                    dialog.PrimaryButtonText = "OK";
+                    dialog.Content = "Wrong Username or Password. Please try again!";
+                    _ = await dialog.ShowAsync();
+                    ImapHelper.Client?.Dispose();
+                }
+                catch (Exception)
+                {
+                    ContentDialog dialog = new();
+                    dialog.PrimaryButtonText = "OK";
+                    dialog.Content = "An error occurred Please try again!";
+                    _ = await  dialog.ShowAsync();
 
-                ImapHelper.Client?.Dispose();
-            }
-            finally
-            {
-                SetEnabledControl(true);
-                LoadingControl.IsLoading = false;
-                Processbar.ShowError = true;
-                SigninStatusTextblock.Visibility = Visibility.Collapsed;
-            }
+                    ImapHelper.Client?.Dispose();
+                }
+                finally
+                {
+                    SetEnabledControl(true);
+                    LoadingControl.IsLoading = false;
+                    Processbar.ShowError = true;
+                    SigninStatusTextblock.Visibility = Visibility.Collapsed;
+                }
+            });
         }
     }
 }
