@@ -122,9 +122,6 @@ namespace MailServer
                             // gửi thông điệp dưới dạng mã hóa
                             ns.Write(encResponse, 0, encResponse.Length);
                             ns.Flush();
-                            string sendNumBytes = Encoding.UTF8.GetString(numSendBytes);
-                            sw.WriteLine(sendNumBytes);
-                            sw.Flush();
                         }
                         else
                         {
