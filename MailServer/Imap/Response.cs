@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Net.Mail;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace MailServer.Imap
@@ -653,7 +654,7 @@ namespace MailServer.Imap
             List<string> strFlag = new List<string>();
             DateTime Date = DateTime.Now;
             int messageSize = 0;
-            if(math.Groups[3].Success)
+            if (math.Groups[3].Success)
             {
                 math = Regex.Match(math.Groups[3].Value, "(?:(\"[\\w\\s]+\"|\\w+) \\{(\\d*)\\})");
                 mailBoxName = math.Groups[1].Value.Replace("\"", "");
@@ -661,7 +662,7 @@ namespace MailServer.Imap
             }
             else
             {
-                if(math.Groups[2].Success)
+                if (math.Groups[2].Success)
                 {
                     math = Regex.Match(math.Groups[2].Value, "(?:(\"[\\w\\s]+\"|\\w+) \\(((?:\\\\\\w+)*)\\) \\{(\\d*)\\})");
                     mailBoxName = math.Groups[1].Value.Replace("\"", "");
@@ -670,16 +671,26 @@ namespace MailServer.Imap
                 }
                 else
                 {
-                    math = Regex.Match(math.Groups[1].Value, "(?:(\"[\\w\\s]+\"|\\w+) \\(((?:\\\\\\w+)*)\\) (\"[^\"]*\") \\{(\\d*)\\})");
-                    mailBoxName = math.Groups[1].Value.Replace("\"","");
+                    math = Regex.Match(math.Groups[1].Value, "(?:(\"[\\w\\s]+\"|\\w+) \\(((?:\\\\\\w+)*)\\) \"([^\"]*)\" \\{(\\d*)\\})");
+                    mailBoxName = math.Groups[1].Value.Replace("\"", "");
                     if (math.Groups[2].Value != "") strFlag = math.Groups[2].Value.Split(' ').ToList();
-                    if (math.Groups[3].Value != "" && DateTime.TryParse(math.Groups[3].Value, out Date)) return Response.ReturnParseErrorResponse(tag, "APPEND");
+                    if (math.Groups[3].Value != "")
+                    {
+                        try
+                        {
+                            Date = Convert.ToDateTime(math.Groups[3].Value);
+                        }
+                        catch
+                        {
+                            return Response.ReturnParseErrorResponse(tag, "APPEND");
+                        }
+                    }
                     if (math.Groups[4].Value != "" && !Int32.TryParse(math.Groups[4].Value, out messageSize)) return Response.ReturnParseErrorResponse(tag, "APPEND");
-                }    
+                }
             }
             List<MailBoxInfo> mailBoxInfoList = SqliteQuery.LoadMailBoxInfo(userSession, mailBoxName);
             if (mailBoxInfoList.Count == 0) return tag + " NO Mailbox does not exist";
-            if(!flags.BuildFlagItem(strFlag.ToArray())) return Response.ReturnParseErrorResponse(tag, "APPEND");
+            if (!flags.BuildFlagItem(strFlag.ToArray())) return Response.ReturnParseErrorResponse(tag, "APPEND");
             mailAppend.user = userSession;
             mailAppend.mailboxname = mailBoxName;
             mailAppend.uid = mailBoxInfoList[0].uidnext;
@@ -694,21 +705,27 @@ namespace MailServer.Imap
             appendCall.mailInfo = mailAppend;
             appendCall.size = messageSize;
             appendCall.tag = tag;
-            return "+ Ready for literal data";
+            return "+ Ready for append literal";
         }
 
         public static string ReturnMessagesAppendResponse(string commandLine, AppendCall appendCall,bool startTLS)
         {
             try
             {
-                if (startTLS) appendCall.message += commandLine;
-                else appendCall.message += commandLine + "\r\n";
-                if (appendCall.message.Length < appendCall.size) return "";
-                if (appendCall.message.Length > appendCall.size)
+                if(!appendCall.completed)
                 {
-                    appendCall.reset();
-                    return appendCall.tag + " NO APPEND Failed";
-                }
+                    if (startTLS) appendCall.message += commandLine;
+                    else appendCall.message += commandLine + "\r\n";
+                    if (appendCall.message.Length < appendCall.size) return "";
+                    if (appendCall.message.Length > appendCall.size)
+                    {
+                        appendCall.reset();
+                        return appendCall.tag + " NO APPEND Failed";
+                    }
+                    appendCall.completed = true;
+                    return "";
+                }    
+
                 File.WriteAllText(Environment.CurrentDirectory + $"/ImapMailBox/{appendCall.mailInfo.user}/{appendCall.mailInfo.mailboxname}/email_{appendCall.mailInfo.uid}.msg", appendCall.message);
                 int success = SqliteQuery.InsertMailIntoMailBox(appendCall.mailInfo.user, appendCall.mailInfo.mailboxname, appendCall.mailInfo);
                 appendCall.reset();

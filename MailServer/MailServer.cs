@@ -131,13 +131,14 @@ namespace MailServer
                             msg = sr.ReadLine(); // có thể sinh ra exception trong winform xảy ra khi client đột ngột ngắt kết nối
                             if (msg == null) break; //msg = null khi client đột ngột ngắt kết nối chỉ trên console
                                                     // trả lời lại các lệnh của client trong session hiện tại
+                            // in console server
+                            Console.WriteLine(msg);
                             resposed = session.GetResposed(msg);
                             if (resposed == "") continue;
                             sw.WriteLine(resposed);
                             sw.Flush();
 
                             // in console server
-                            Console.WriteLine(msg);
                             Console.WriteLine(resposed);
                         }
 

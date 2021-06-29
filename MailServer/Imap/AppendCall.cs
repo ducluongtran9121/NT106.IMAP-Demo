@@ -11,13 +11,14 @@ namespace MailServer.Imap
         public string message = "";
         public int size { get; set; }
         public string tag { get; set; }
+        public bool completed = false;
         public void reset()
         {
             this.isCall = false;
             this.message = "";
             this.mailInfo = null;
             this.size = 0;
-            this.tag = "";
+            this.completed = true;
         }
     }
 }
