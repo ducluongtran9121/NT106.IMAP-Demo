@@ -113,8 +113,8 @@ namespace MailServer
                             if (!Int32.TryParse(session.DecryptWithDefaultKey_IV(encryptMsgLength), out msgLength)) break;
                             byte[] encryptCommand = new byte[msgLength];
                             // đọc thông điệp mã hóa
-                            ns.Read(encryptMsgLength, 0, msgLength);
-                            byte[] encResponse = session.GetEncrytionResponse(encryptMsgLength);
+                            ns.Read(encryptCommand, 0, msgLength);
+                            byte[] encResponse = session.GetEncrytionResponse(encryptCommand);
                             byte[] numSendBytes = session.EncryptWithDefaultKey_IV(encResponse.Length.ToString());
                             // gửi đi trước thông tin mã hóa chứa độ dài của thông điệp mã hóa cần gửi
                             ns.Write(numSendBytes, 0, 16);
